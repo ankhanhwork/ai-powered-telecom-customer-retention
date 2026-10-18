@@ -56,4 +56,4 @@ Sau khi ổn, các push tiếp theo lên `main` sẽ deploy qua Vercel Git integ
 - [Node.js 24 trên Vercel](https://vercel.com/changelog/node-js-24-lts-is-now-generally-available-for-builds-and-functions)
 - [Supabase Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls)
 
-Trạng thái: cấu hình đã chuẩn bị; deploy và kiểm tra domain thật là bước tiếp theo. Không gọi local build là evidence production đã chạy.
+Trạng thái: source đã push lên GitHub `main` (initial commit `3b34e76`), upstream `origin/main` đã thiết lập; cấu hình đã chuẩn bị. 8 UI/deployment tests và 5 workflow validator tests đạt; production build đạt. Deploy và kiểm tra domain thật là bước tiếp theo. Không gọi local build là evidence production đã chạy.
