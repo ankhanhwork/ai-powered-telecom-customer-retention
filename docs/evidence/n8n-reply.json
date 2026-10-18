@@ -1,0 +1,10 @@
+{
+  "mode": "reply",
+  "checked_at": "2026-10-18T08:32:34.729Z",
+  "checks": [
+    "Mock delivery appeared exactly once in portal",
+    "Customer reply deduplicates",
+    "Agent sees reply and case moves to Outreach"
+  ],
+  "message_id": "4356df5a-b95a-4573-89ad-bc0940ee96d5"
+}

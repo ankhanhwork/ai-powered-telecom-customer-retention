@@ -1,0 +1,129 @@
+{
+  "checks_passed": true,
+  "customers": 5517,
+  "model_features": 22,
+  "snapshot_rows": 38680,
+  "month_summary": [
+    {
+      "snapshot_date": "2026-01-31",
+      "customers": 5517,
+      "known_labels": 5517,
+      "churned": 259,
+      "split": "holdout_history"
+    },
+    {
+      "snapshot_date": "2026-02-28",
+      "customers": 5258,
+      "known_labels": 5258,
+      "churned": 328,
+      "split": "holdout_history"
+    },
+    {
+      "snapshot_date": "2026-03-31",
+      "customers": 4930,
+      "known_labels": 4930,
+      "churned": 403,
+      "split": "holdout_history"
+    },
+    {
+      "snapshot_date": "2026-04-30",
+      "customers": 4527,
+      "known_labels": 4527,
+      "churned": 269,
+      "split": "holdout_history"
+    },
+    {
+      "snapshot_date": "2026-05-31",
+      "customers": 4258,
+      "known_labels": 4258,
+      "churned": 349,
+      "split": "holdout_history"
+    },
+    {
+      "snapshot_date": "2026-06-30",
+      "customers": 3909,
+      "known_labels": 3909,
+      "churned": 264,
+      "split": "holdout_history"
+    },
+    {
+      "snapshot_date": "2026-07-31",
+      "customers": 3645,
+      "known_labels": 3645,
+      "churned": 211,
+      "split": "holdout_history"
+    },
+    {
+      "snapshot_date": "2026-08-31",
+      "customers": 3434,
+      "known_labels": 3434,
+      "churned": 232,
+      "split": "test"
+    },
+    {
+      "snapshot_date": "2026-09-30",
+      "customers": 3202,
+      "known_labels": 0,
+      "churned": null,
+      "split": "inference"
+    }
+  ],
+  "rows_by_table": {
+    "customers": 5517,
+    "daily_service_history": 1256384,
+    "billing_history": 22574,
+    "support_tickets": 5480,
+    "support_contacts": 7708,
+    "customer_features": 38680,
+    "churn_labels": 38680,
+    "inference_latest": 3202
+  },
+  "feature_null_counts": {
+    "disconnect_count_30d": 0,
+    "outage_minutes_30d": 0,
+    "evening_speed_ratio_30d": 1128,
+    "service_issue_days_30d": 0,
+    "usage_gb_7d": 285,
+    "usage_gb_30d": 1128,
+    "usage_change_pct_30d": 12372,
+    "inactive_days_14d": 537,
+    "monthly_fee_vnd": 0,
+    "fee_change_pct_30d": 0,
+    "overdue_days": 18809,
+    "overdue_amount_vnd": 18809,
+    "billing_mode": 0,
+    "prepaid_days_remaining": 19871,
+    "promo_days_remaining": 38422,
+    "support_contacts_30d": 0,
+    "unresolved_tickets_30d": 0,
+    "repeat_contacts_30d": 0,
+    "avg_resolution_hours_90d": 29697,
+    "tenure_months": 0,
+    "plan_speed_mbps": 0,
+    "plan_change_requests_30d": 0
+  },
+  "limitations": [
+    "Deliberately easier strong-signal synthetic task; no real FPT evidence.",
+    "One locked config/seed; generated probabilities and episode labels are audit-only, never features.",
+    "One September test month, held-out customer IDs; October labels Unknown."
+  ],
+  "customer_disjoint_test": true,
+  "source_fields_read": [
+    "Customer ID",
+    "Tenure in Months",
+    "Internet Service"
+  ],
+  "cohort_counts": {
+    "development": 4134,
+    "audit_holdout": 1383
+  },
+  "month_summary_split_field_note": "Representative first split only; actual splits vary by cohort. See lightgbm_v4/snapshot_cohort_summary.csv.",
+  "split_counts": {
+    "train": 21267,
+    "holdout_history": 8054,
+    "inference": 3202,
+    "validation": 2723,
+    "unused_development": 2566,
+    "test": 868
+  }
+}

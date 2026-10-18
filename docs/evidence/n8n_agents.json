@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-10-18T09:49:41.327Z",
+  "elapsed_seconds": 12,
+  "requests": [
+    {
+      "type": "message",
+      "job_id": "bd509c8f-b7e9-4db6-8392-db716ed4baf7"
+    },
+    {
+      "type": "call_script",
+      "job_id": "e21a2631-f2b1-493d-98ae-216cce1265bd"
+    },
+    {
+      "type": "explanation",
+      "job_id": "7c32851c-ef61-4609-8a73-3a1f573b15dc"
+    }
+  ],
+  "checks": [
+    "Authenticated immediate webhooks completed all three AI Agent artifacts with Google Sheets tool",
+    "Duplicate requests coalesced and duplicate webhooks claimed each job only once",
+    "Message remains unapproved and unsent; explanation/call script create no outbound",
+    "Demo portal lists and reads both Outreach recipients"
+  ],
+  "portal_thread_count": 2
+}

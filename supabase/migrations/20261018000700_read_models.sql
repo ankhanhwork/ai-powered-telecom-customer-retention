@@ -1,0 +1,73 @@
+create function public.retention_case_detail(p_case_id uuid) returns jsonb
+language plpgsql stable security definer set search_path='' as $$
+declare v_case public.retention_cases;
+begin
+  perform app_private.require_staff(p_case_id);
+  select * into v_case from public.retention_cases where id=p_case_id;
+  return jsonb_build_object(
+    'case',to_jsonb(v_case),
+    'customer',(select to_jsonb(c) from public.customers c where id=v_case.customer_id),
+    'prediction',(select to_jsonb(p) from public.churn_predictions p where id=v_case.prediction_id),
+    'contexts',coalesce((select jsonb_agg(to_jsonb(p)) from public.prediction_contexts p where prediction_id=v_case.prediction_id),'[]'),
+    'recommendations',coalesce((select jsonb_agg(to_jsonb(r) order by created_at desc) from public.ai_recommendations r where case_id=p_case_id),'[]'),
+    'conversations',coalesce((select jsonb_agg(to_jsonb(c) order by created_at) from public.conversations c where case_id=p_case_id),'[]'),
+    'messages',coalesce((select jsonb_agg(to_jsonb(m)||jsonb_build_object('body',r.body,'offer_id',r.offer_id,'content_hash',r.content_hash)
+      order by m.created_at,m.id) from public.messages m join public.message_revisions r on r.message_id=m.id and r.revision=m.current_revision
+      where m.case_id=p_case_id),'[]'),
+    'follow_up_tasks',coalesce((select jsonb_agg(to_jsonb(t) order by due_at) from public.follow_up_tasks t where case_id=p_case_id),'[]'),
+    'support_requests',coalesce((select jsonb_agg(to_jsonb(r) order by created_at) from public.support_requests r where case_id=p_case_id),'[]'),
+    'outcomes',coalesce((select jsonb_agg(to_jsonb(o)) from public.retention_outcomes o where case_id=p_case_id),'[]'),
+    'contact_preferences',coalesce((select jsonb_agg(to_jsonb(p)) from public.contact_preferences p where customer_id=v_case.customer_id),'[]'),
+    'eligible_offers',coalesce((select jsonb_agg(to_jsonb(o)||jsonb_build_object('eligibility_reason',e.reason))
+      from public.offers o join public.customer_offer_eligibility e on e.offer_id=o.id
+      where e.customer_id=v_case.customer_id and e.eligible and e.valid_until>now()
+        and o.active and o.valid_from<=now() and o.valid_until>now()),'[]'),
+    'activity',coalesce((select jsonb_agg(to_jsonb(e) order by occurred_at desc) from public.interaction_events e where case_id=p_case_id),'[]'));
+end $$;
+revoke all on function public.retention_case_detail(uuid) from public,anon,service_role;
+grant execute on function public.retention_case_detail(uuid) to authenticated;
+
+create function public.retention_worker_context(p_job_id uuid) returns jsonb
+language plpgsql stable security definer set search_path='' as $$
+declare v_job public.automation_jobs; v_case public.retention_cases; v_context jsonb;
+begin
+  perform app_private.require_worker();
+  select * into v_job from public.automation_jobs where id=p_job_id and status='queued';
+  if not found then raise exception 'Job is not pending'; end if;
+  select * into v_case from public.retention_cases where id=v_job.case_id;
+  select context into v_context from public.prediction_contexts where prediction_id=v_case.prediction_id order by created_at desc limit 1;
+  -- Deliberately omit feature vectors, score, raw SHAP, labels and generator audit.
+  -- Customer text is untrusted content, never an instruction to override policy.
+  return jsonb_build_object('snapshot_date',(select snapshot_date from public.churn_predictions where id=v_case.prediction_id),'target_period_start',v_case.target_period_start,'requested_at',v_job.created_at,'current_time',now(),'rewrite_instructions',v_job.rewrite_instructions,'rewrite_source_text',v_job.rewrite_source_text,'case_id',v_case.id,'requested_output',case when split_part(v_job.request_key,':',1)='manual' then split_part(v_job.request_key,':',2) else 'care_pack' end,'language','English','requires_staff_review',true,
+    'customer',(select jsonb_build_object('display_name',display_name,'plan_name',plan_name,
+      'monthly_fee',monthly_fee,'currency',currency,'billing_mode',billing_mode,'tenure_months',tenure_months)
+      from public.customers where id=v_case.customer_id),
+    'driver_groups',coalesce((select jsonb_agg(jsonb_build_object('rank',d->'rank','group_name',d->'group_name',
+      'evidence_status',d->'evidence_status','supports_customer_situation_claim',d->'supports_customer_situation_claim',
+      'suggested_action',d->'suggested_action','facts',coalesce((select jsonb_agg(jsonb_build_object('label',f->'label',
+        'value',f->'value','unit',f->'unit','missing',f->'missing','observation',f->'observation'))
+        from jsonb_array_elements(d->'facts') f),'[]'))) from jsonb_array_elements(v_context->'drivers') d),'[]'),
+    'eligible_offers',coalesce((select jsonb_agg(jsonb_build_object('id',o.id,'title',o.title,'description',o.description,
+      'requires_supervisor',o.requires_supervisor)) from public.offers o join public.customer_offer_eligibility e on e.offer_id=o.id
+      where e.customer_id=v_case.customer_id and e.eligible and e.valid_until>now()
+        and o.active and o.valid_from<=now() and o.valid_until>now()),'[]'),
+    'conversation',coalesce((select jsonb_agg(jsonb_build_object('direction',m.direction,'body',r.body,'created_at',m.created_at)
+      order by m.created_at,m.id) from public.messages m join public.message_revisions r on r.message_id=m.id
+        and r.revision=case when m.direction='outbound' then m.sent_revision else m.current_revision end
+      where m.case_id=v_case.id and m.visibility='external' and
+        (m.direction='inbound' or (m.direction='outbound' and m.delivery_status='sent'))),'[]'));
+end $$;
+revoke all on function public.retention_worker_context(uuid) from public,anon,authenticated;
+grant execute on function public.retention_worker_context(uuid) to service_role;
+
+create function public.retention_set_contact_policy(p_cooldown_minutes integer,p_daily_limit integer,
+  p_window_start time default null,p_window_end time default null) returns void
+language plpgsql security definer set search_path='' as $$
+begin
+  if not app_private.is_supervisor() then raise exception 'Supervisor required' using errcode='42501'; end if;
+  if p_cooldown_minutes is null or p_cooldown_minutes<0 then raise exception 'Invalid cooldown'; end if;
+  update public.workspace_settings set contact_cooldown=make_interval(mins=>p_cooldown_minutes),
+    daily_contact_limit=p_daily_limit,contact_window_start=p_window_start,contact_window_end=p_window_end,updated_at=now() where singleton;
+end $$;
+revoke all on function public.retention_set_contact_policy(integer,integer,time,time) from public,anon,service_role;
+grant execute on function public.retention_set_contact_policy(integer,integer,time,time) to authenticated;

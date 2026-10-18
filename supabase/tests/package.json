@@ -1,0 +1,7 @@
+{
+  "name": "retention-database-tests",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node workspace.test.mjs" },
+  "devDependencies": { "@electric-sql/pglite": "0.3.15" }
+}

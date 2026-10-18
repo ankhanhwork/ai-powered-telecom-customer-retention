@@ -1,0 +1,428 @@
+# Hướng dẫn triển khai và tiếp tục dự án
+
+Cập nhật: **18/10/2026**. Tài liệu làm việc chung cho leader, thành viên và AI ở các chat tiếp theo. Đây là thứ tự triển khai, tiêu chí nghiệm thu và trạng thái thực tế; không phải tuyên bố sản phẩm đã hoạt động.
+
+## Tiếp tục từ đây
+
+**AI ở chat mới phải đọc mục này trước khi làm việc**, rồi kiểm tra file thực tế trong repo. Không dựa vào việc nhớ một cuộc chat khác.
+
+| Nội dung | Trạng thái tại lần cập nhật này |
+|---|---|
+| Đã có | Problem/System, ML/SHAP, bản thảo báo cáo, 7 trách nhiệm logic, 5 workflow n8n theo evidence và English mockup; Supabase cloud 25 bảng/32 RPC, 3.202 khách synthetic/260 case. Phiên rà soát này chạy lại đạt 39 DB checks, 7 UI checks, 5 workflow validator checks và web build |
+| Mockup hiện hành | English: `01-care-queue-en.png`, `02-customer-details-en.png`, `03-customer-chat-en.png` trong `website/mockups/`; bản VI lưu `tmp/mockups-vi-20261017/`, không dùng để code |
+| Nguồn dữ liệu đã nhận | telecom_customer_churn.csv, telecom_data_dictionary.csv và group_features_exp_3 (1).py từ Downloads. Người dùng xác nhận file Python là tài liệu nhóm cần tham khảo; đã profile bằng ml/generation/profile_source_data.py, kết quả docs/evidence/source_data_profile.json |
+| Chưa có | Kaggle URL/license đầy đủ; kiểm định trên dữ liệu thật FPT |
+| Đã chốt về phạm vi | App nghiệp vụ chỉ cho DVKH; model doanh nghiệp đã có; kỹ thuật dùng phần mềm riêng, DVKH chỉ gửi yêu cầu hỗ trợ |
+| Ngôn ngữ bắt buộc | Giảng viên yêu cầu sản phẩm, report/executive summary, slide và nội dung trình bày demo bằng tiếng Anh. Docs nội bộ vẫn tiếng Việt; không cần dịch toàn bộ repo |
+| Chưa hoàn thiện | Cost form và chart; catalog/eligibility được duyệt; delay 3 giờ còn là cấu hình đề xuất; UI polish; deadline/phân công tên |
+| Bước hiện tại | Đang bước 8–9; bước 7 hoàn thành kỹ thuật với model/6 nhóm đã duyệt và đã tích hợp. Bước 10 có bản thảo nhưng chưa có bộ nộp cuối. Xem đánh giá và gói giao việc ở mục 4; chưa phải production-ready |
+| Việc tiếp theo | Gán tên cho 6 owner ở mục 4; ưu tiên QA rehearsal trên 7801, sửa fixture smoke lỗi thời, UI/UX, cost/chart và report English song song. 2931 giữ opt-out. Catalog cần leader duyệt; không chặn demo No offer. Sheet trống dư không cản luồng, chưa được phép dọn |
+| Đã xác minh về dữ liệu | 7.043×38; 5.517 khách Internet, 5.245 Stayed/Churned có tỷ lệ churn 33,48%; 9 nhóm công ty/1.964 feature; nguồn public mô tả fictional. Cột reason/category hậu churn và 120 Monthly Charge âm cần được xử lý đúng phạm vi |
+| SHAP UI 18/10 | Mỗi nhóm hiện % của net SHAP increase trên cả 6 nhóm: contribution_log_odds / (logit(probability) − baseline). Không phải % xác suất churn; có thể >100% do nhóm âm bù trừ; không chuẩn hóa riêng top 3. Dữ liệu invalid/net không dương hiện Unavailable. 7 UI checks + build đạt; đối chiếu toàn bộ 3.202 dòng group_shap.csv đạt. Chưa kiểm browser ở phiên này; không đổi model/data/schema/workflow. |
+| Phiên gần nhất | Chuẩn bị Vercel: website/app/vercel.json, 3 proxy routes cùng domain cho production; local vẫn dùng webhook trực tiếp. Có deployment regression; 8 UI/deploy checks + 5 workflow checks và build đạt, bundle không giữ local-only webhook base. Đã khởi tạo Git main, remote GitHub trống đã kiểm; 160 candidate files (~7,1 MB) không có mẫu secret qua scan, data/model/env/password/build/log bị ignore. Commit/push sau kiểm tra staging; chưa deploy Vercel hoặc kiểm proxy domain thật |
+| File cần đọc tiếp | DEPLOYMENT.md (Root Directory/env và smoke sau deploy); mục 4 file này (giao việc/nghiệm thu); n8n/README.md; SYSTEM.md |
+| Deploy hiện hành | Repo đích ankhanhwork/ai-powered-telecom-customer-retention; Vercel Root Directory website/app, Vite, npm ci, npm run build, dist, Node 24.x. Chỉ cần 2 biến VITE_SUPABASE_* public. Không di chuyển Supabase/n8n và không mở wildcard CORS; domain/production smoke còn chờ deploy |
+
+**Auth/mapping đã kiểm chứng:** 3 accounts confirmed; 2 staff và 1 portal mapping. Password login thật cho cả 3 accounts qua Auth API đạt; PostgREST: Supervisor 260 case, Agent 1 case, Customer 0 internal case và 1 portal thread. Agent lưu note idempotent; Customer bị chặn detail và không đọc note. Evidence: docs/evidence/hosted_auth_checks.json. Credentials test được người dùng cho phép lưu tại tmp/demo-auth/accounts.md (Git ignore), không sao chép nội dung vào docs/source/log. Script chạy lại: node tests/hosted-smoke.mjs trong website/app; tạo một internal test note idempotent, không gửi tin hay gọi điện.
+
+**Tóm tắt cần giữ khi chuyển chat:** trọng tâm là hệ thống phối hợp sau cảnh báo, không phải chỉ xây thêm một mô hình churn. Vấn đề ở phạm vi Internet FPT Telecom toàn quốc; Bình Dương là case/pilot theo [Problem hiện hành](PROBLEM.md). Không tự quay về bản bối cảnh địa phương cũ hoặc khôi phục nhận định so sánh đã được sửa.
+
+**Bàn giao Supabase 18/10 — hiện hành:** `telecom-retention-demo`; n8n Cloud đã nối Supabase và Gateway credits; Supabase thay S3. Chưa nối GitHub/local không có Git metadata. Source hiện có 25 bảng/30 public RPC; build_setup.py tạo setup.sql (project mới/6 bảng) và upgrade_lean.sql (đã có full bản cũ). Không chạy lại setup trên full workspace. AI dùng retention_pending_jobs → worker_context(job.id) → complete_job(job.id,...), không có lease_token/claim_job; fail_job chỉ đánh dấu lỗi cuối; lỗi/retry ở n8n. Outbox gửi tin giữ transaction/lease/retry, mọi outbound cần duyệt. Seed true chỉ khởi tạo, không reset opt-out; reply chỉ hủy no_reply, giữ nhắc thủ công. 37 DB checks local đạt, gồm migration full cũ giữ draft/job; có regression old lock-order thất bại và new order đạt. Evidence supabase/tests/results.json. Local Auth/Storage/JWT dùng stub; cloud schema/import/RLS đã được kiểm tra riêng bên dưới. Hosted password login/PostgREST đã kiểm riêng; chưa chứng minh multi-connection concurrency. Đã tạo/map 3 Auth users; tiếp tục dựng web+n8n thành một luồng trước khi chia việc.
+
+**Kết quả xử lý Ponytail review:** cả ba vấn đề đã sửa và có regression: import không ghi đè opt-out, reply không hủy manual_reminder, staff write khóa case trước kiểm quyền. Phần AI job giản lược về yêu cầu/kết quả idempotent, n8n quản lý execution/error; không cắt RLS, approval theo revision, chống trùng, kiểm dữ liệu hoặc outcome đúng kỳ. shortcut: demo một AI workflow tuần tự; execution chồng có thể gọi LLM dư nhưng không lưu hai draft. Chỉ thêm claim/lease AI khi cần parallel workers. Skill Ponytail 5.3.2 vẫn bật; không cần cài thêm dependency trong lượt sửa này.
+
+**Kết nối và cloud đã xác minh 18/10:** MCP project `azeqdnbtzwaehewnyfdq` hoạt động. Đã áp riêng 14 source migrations bằng apply_migration (history version do MCP sinh); không chạy lại setup/upgrade. Import đủ 3.202 khách synthetic từ canonical October output, 127 features/khách; 3.202 snapshots/predictions/contexts, 260 cases >500. Snapshot 30/09 → October, model catboost_tuned; source SHA-256 khớp local. Reimport 5 hồ sơ không nhân đôi; chỉ 5 hồ sơ có explicit fictional demo consent. Kiểm tra cloud: 25/25 bảng RLS, 30 RPC, anon table/RPC=0, authenticated/worker direct writes=0, bucket private. Người chưa mapping thấy 0 case và portal rỗng. Security advisor có 18 cảnh báo authenticated SECURITY DEFINER ở RPC được thiết kế kiểm quyền, cần giữ access tests; đã kiểm hosted password login/PostgREST, xem hosted_auth_checks.json. Evidence: docs/evidence/supabase_cloud.json. Auth users=3 confirmed, mapping và SQL role checks đã xong; sau đó web+n8n. Chưa upload CSV vào Storage hoặc kiểm concurrency nhiều connection. E2E n8n/hosted API đã đạt; xem evidence/n8n_workflows.json.
+
+**Website local hiện hành:** React/Vite/Supabase ở website/app, preview http://127.0.0.1:5173/. Queue Pipeline/Table; detail care progress/status, facts, request AI explanation, tab Message/Call script/Internal notes, approval→queue, support, reminder, notifications và period-end outcome form (chặn trước khi đủ kỳ); portal reply/opt-out. Labels cố định; số liệu/facts/rank lấy Supabase, không render Python explanation_draft/suggested_action như AI. Kết quả AI phải generation_mode=llm và đúng loại request. Call script/explanation không tạo outbound draft. Ba workflow AI Agent dùng LLM thật và worker RPC; không dùng nội dung giả làm LLM. Kanban 4 care columns và 2 outcome columns; Unknown không tự biến thành retained. Chưa có cost form/chart cuối. Kiểm build, 4 UI checks, 37 DB checks; hosted Auth/API checks và browser Agent queue/detail/tabs/request đạt, E2E hosted API/n8n LLM/delivery/reply đạt (không thay thế usability browser toàn luồng). File cần đọc: docs/SYSTEM.md delta, n8n/README.md manual contract, website/app/src/Queue.jsx/Progress.jsx/Notes.jsx và main.jsx. Evidence website_checks.json, hosted_auth_checks.json và website-pipeline.png. Chỉ local, chưa publish.
+
+**Rewrite request:** website/app/src/RewriteRequest.jsx, hai ô độc lập cho Message/Call script; chỉ queue khi staff bấm Request AI rewrite. Message lấy nội dung hiện tại của editor, Call script lấy script đang hiển thị; nếu chưa có bản gốc thì instruction hướng dẫn draft đầu tiên. RPC retention_request_recommendation thêm optional p_instructions/p_source_text, vẫn gọi được với 2 đối số cũ; job lưu rewrite_instructions/rewrite_source_text, worker_context trả cả hai. Không gửi notes vào context; không tự đổi bản đã duyệt. Đã sinh bản viết lại qua n8n/Gateway LLM. Nối workflow cần coi instruction/source là dữ liệu staff yêu cầu, không được ghi đè system policy/facts/consent.
+
+**n8n hiện hành:** 5 worker active: AI message 6vz0G2kEFy1v0f6V, call script Ead0Qlw8LGkl0Ncv, explanation MBnCQdjOKV2XX0GU; mock delivery BtozaQeAwIhpQu4m và follow-ups/support DCKhogHvYb4cIEVs. AI gộp cũ đã unpublish. Mỗi loại output dùng AI Agent + Chat Model + demo knowledge tool. Request đánh thức webhook ngay, xác thực job qua JWT/RLS trước worker credential. Fallback mỗi phút lọc loại trước limit. Không lưu production execution data để tránh giữ JWT. Export active=false; live active=true. Ba Agent requests hoàn tất trong 10 giây, invalid JWT bị chặn trước Agent. Evidence: evidence/n8n_agents.json. FAQ Sheet 15 mục đã tạo, 14 enabled, Google Sheets tool đã chạy thực; link và dataset trong n8n/README.md.
+
+### Cách cập nhật bàn giao cuối mỗi phiên
+
+Sửa trực tiếp bảng trên, bảng tiến độ và các checklist liên quan; không tạo bản sao theo ngày. Cuối mục này có thể thay bằng một ghi chú ngắn gồm:
+
+- Đã làm: đầu ra và file thật đã tạo/sửa.
+- Đã kiểm tra: lệnh hoặc thao tác, kết quả và giới hạn.
+- Chưa xong: việc còn thiếu, quyết định cần người dùng hoặc lỗi cụ thể.
+- Làm tiếp: một đến ba việc có thứ tự, input cần có và điều kiện hoàn thành.
+
+Tài liệu này và [AGENTS.md](../AGENTS.md) là cơ chế tiếp nối khi chat mới truy cập cùng repo. Không có dịch vụ nền tự cập nhật tiến độ; mỗi phiên làm việc phải cập nhật bằng chứng thực tế. Nếu chat mới không có quyền đọc repo, người dùng cần cung cấp tài liệu thay vì giả định AI đã biết.
+
+## 1. Nguyên tắc và phạm vi phải giữ
+
+1. **Giá trị cốt lõi:** cảnh báo → phân công DVKH → hiểu tình trạng khách → chọn hành động → duyệt → liên hệ → theo dõi/phối hợp → outcome.
+2. **Người dùng:** nhân viên và quản lý DVKH. Portal khách là kênh demo bên ngoài; kỹ thuật/Finance/Analyst không cần thêm các ứng dụng hoặc trang quản trị trong MVP này.
+3. **Giao diện:** hai màn hình nội bộ (hàng chờ, chi tiết) và một portal chat demo. Tận dụng tab/form trong trang chi tiết để tránh sinh quá nhiều trang.
+4. **Kỹ thuật:** nút chuyển hỗ trợ + nhập yêu cầu + trạng thái bàn giao. Không xây quản lý nhân viên, tiến độ hoặc SLA xử lý nội bộ kỹ thuật.
+5. **AI:** giải thích từ dữ kiện có nguồn, đề xuất action/message/call script. Nhân viên duyệt từng outbound revision; AI không tự quyết ưu đãi hoặc nguyên nhân churn.
+6. **ML:** model doanh nghiệp là input mục tiêu. Model public-data là nguồn demo khi chưa truy cập model thật. Ngưỡng điểm nội bộ >500 tương đương probability >0,5; không tự đồng nhất độ tin cậy của model demo với model nội bộ.
+7. **Dữ liệu:** giữ observed, synthetic, simulated và giả định tách rõ. Top 3 nhóm trong ảnh chỉ minh họa; số liệu và group mapping phải được xác định theo nguồn thật trước khi dùng như kết quả model.
+8. **Nghiệm thu:** đầu ra tồn tại, chạy được theo phạm vi và có kiểm tra thì mới đánh dấu xong. Không dùng mockup/placeholder thay bằng chứng tính năng hoạt động.
+9. **Quy mô demo:** không cần tạo đủ 210.000 khách hoặc 8.000 case ngay. Dùng một hồ sơ, sau đó một tập nhỏ đa dạng để kiểm chứng; tách kiểm thử tải khỏi demo nghiệp vụ.
+10. **Ngôn ngữ:** sản phẩm và bản nộp bằng tiếng Anh. UI, explanation, recommendation, draft, call script, portal, empty/error và screenshot dùng English thống nhất; docs nội bộ được tiếng Việt. Model/data source không thay đổi chỉ vì đổi ngôn ngữ.
+
+Nguồn chuẩn: [Problem](PROBLEM.md), [System](SYSTEM.md), [Data/ML](DATA_ML.md), [Report](REPORT.md), [brief mockup](../website/mockups/BRIEF.md), [n8n](../n8n/README.md). Nếu các tài liệu khác nhau, kiểm tra yêu cầu mới nhất và nguồn dữ liệu; giải quyết mâu thuẫn, không tự chọn số liệu thuận tiện.
+
+## 2. Thứ tự và bảng tiến độ
+
+Trạng thái dùng thống nhất: **Chưa bắt đầu / Đang làm / Chờ đầu vào / Chờ review / Hoàn thành**. Chờ dataset không ngăn phần mockup hoặc schema nghiệp vụ độc lập tiến triển.
+
+| Bước | Công việc | Phụ thuộc | Trạng thái hiện tại |
+|---|---|---|---|
+| 1 | Chốt phạm vi và luồng nghiệp vụ | Câu trả lời leader đã ghi nhận; rule runtime còn cấu hình | Hoàn thành |
+| 2 | Nhận và kiểm tra dataset | Dataset v4/127 đã chốt, QA và split đã có; còn URL/license nguồn | Chờ đầu vào |
+| 3 | Chốt schema, trạng thái và contract | Bước 1; feature contract cần bước 2 | Chờ review: 25 bảng/32 RPC/state contract đã triển khai; local tests và cloud schema/import/RLS smoke checks đạt. Hosted Auth/PostgREST đã đạt ở bước 5 |
+| 4 | Duyệt mockup và chia module | English mockup được duyệt baseline; Channel/Notifications đã có trong app | Đang làm: có gói giao việc ở mục 4; chưa gán tên/nhận bàn giao, UX còn hoàn thiện |
+| 5 | Supabase, Auth/RLS và seed demo | Bước 3 | Hoàn thành nền demo: cloud 25 bảng/32 RPC theo evidence, data/Auth mapping; chạy lại 39 local checks đạt. Catalog/eligibility chưa được duyệt để trống; không phải kiểm định production |
+| 6 | Một luồng xuyên suốt cho một khách | Bước 4–5; prediction đã có từ model chốt | Hoàn thành luồng cốt lõi: real LLM draft → staff approval → mock delivery → customer reply; evidence/n8n_workflows.json |
+| 7 | Hoàn thiện ML và giải thích nhóm rủi ro | CatBoost tuned/127 features và 6 nhóm đã duyệt; output đã import, UI và 3 LLM requests đã có evidence | Hoàn thành kỹ thuật trong phạm vi synthetic demo; review chất lượng lời AI tiếp tục ở bước 9. Không train lại |
+| 8 | Hoàn thiện workflow và UI/UX | Bước 6; tích hợp output bước 7 | Đang làm: 5 workflow active; còn cost/chart, catalog và UI polish |
+| 9 | Kiểm thử, sửa lỗi và thu bằng chứng | Module có thể chạy; chốt sau bước 8 | Đang làm: chạy lại 39 DB + 7 UI + 5 workflow checks, build đạt; có hosted E2E evidence cũ. Chưa tổng nghiệm thu browser/usability/concurrency |
+| 10 | Chốt báo cáo, xuất file và diễn tập | Evidence bước 7–9 | Đang làm nội dung: có REPORT.md và figures; chưa có executive summary/slide/data-code package cuối hoặc rehearsal |
+
+Bước 2 và mockup của bước 4 có thể song song. Bước 7 có thể chạy song song bước 5–6 khi đã chốt feature/output contract. Bước 6 dùng prediction simulated có nhãn nếu model demo chưa sẵn sàng; không báo đó là prediction đã train. Research, viết báo cáo và soạn checklist bắt đầu từ bước 1, không chờ đến bước 10.
+
+## 3. Hướng dẫn chi tiết từng bước
+
+### Bước 1 — Chốt phạm vi và luồng nghiệp vụ
+
+**Mục tiêu:** thống nhất app làm gì, ai quyết định gì và thế nào là một case đã được xử lý. Leader cùng AI rà [System](SYSTEM.md), [Problem](PROBLEM.md) và brief hiện tại.
+
+**Việc cần làm:**
+
+1. Xác nhận Internet là dịch vụ trong phạm vi; Bình Dương là pilot, không suy rộng kết quả địa phương ra toàn quốc.
+2. Khóa hai màn hình DVKH và portal demo; không thêm dashboard/trang kỹ thuật riêng.
+3. Viết lại happy path bằng actor và hành động: nhận prediction, mở case, xác minh, đề xuất, duyệt/gửi, reply, nhắc lại, bàn giao kỹ thuật và ghi outcome.
+4. Chốt quyền ai xem case, ai sửa nội dung, ai duyệt/gửi và ai phân công. Xác định nhân viên được tự duyệt trong hạn mức hay cần supervisor; không để nút UI tự quyết quyền.
+5. Đã xác nhận đầu tháng t dự báo cùng tháng t; demo ngày 01/10/2026 cho tháng 10. Khi có dataset vẫn kiểm tra snapshot và giới hạn horizon thật, không giả dữ liệu public có timestamp.
+6. Thống nhất nghĩa của đã gửi, khách đã trả lời, đã liên hệ, case đóng và churn/retained/unknown. Chúng không thay thế cho nhau.
+7. Chốt contact preference, opt-out, offer eligibility và quy tắc nhắc theo thời lượng cấu hình (mặc định làm việc 3 giờ). Làm rõ đây là rule đề xuất khi chưa được doanh nghiệp xác nhận.
+8. Ghi các quyết định đã chốt vào phần tương ứng của System; câu hỏi chưa chốt ghi vào bảng bàn giao của file này.
+
+**Đầu ra:** scope và luồng được review, role/approval rule rõ; quyết định chưa chốt không bị ghi thành fact.
+
+**Điều kiện hoàn thành:** leader xác nhận phạm vi và luồng; không còn mâu thuẫn cản trở schema/contract. Chưa tự coi các ảnh đã được duyệt chỉ vì đã tạo xong.
+
+### Bước 2 — Nhận và kiểm tra dataset Kaggle
+
+**Mục tiêu:** biết dataset hỗ trợ được gì trước khi thiết kế features, nhóm rủi ro và train. Leader/AI phụ trách; kết quả cập nhật vào Data/ML.
+
+**Việc cần làm:**
+
+1. Nhận link/file, tên/version, tác giả, license; xác định được tải/chia sẻ những gì.
+2. Giữ raw nguyên trạng ở `data/raw/`; lưu thông tin nguồn, hash và cách tải tái lập. Chưa commit raw khi chưa kiểm tra license/PII.
+3. Kiểm tra grain: một khách, hợp đồng hay snapshot; customer ID có ổn định và có nhiều dòng/khách không.
+4. Kiểm tra cỡ mẫu, schema, kiểu dữ liệu, missingness, duplicate, phân bố nhãn, outlier và đơn vị tiền/thời gian.
+5. Xác định nhãn churn là gì, có timestamp/horizon thật không. Không gọi snapshot classifier là dự báo theo kỳ tương lai nếu dữ liệu không hỗ trợ; nhãn kịch bản demo tháng 10 không thay thế bằng chứng thời gian của dataset.
+6. Loại hoặc đánh dấu leakage: churn reason, ngày hủy, score có sẵn và dữ liệu phát sinh sau outcome.
+7. Lập data dictionary ngắn và feature list được phép train; tách ID, label, observed features và context dùng chăm sóc.
+8. So sánh với mockup: ticket, giảm sử dụng, lịch sử liên hệ có trong dataset không? Trường không có phải thu thập hoặc tạo context synthetic có nhãn, không coi là feature thật đã ảnh hưởng model.
+9. Dataset B đã chuyển sang snapshot cuối tháng 2026, nhãn tháng sau và temporal split theo DATA_ML v2; không random-split các dòng panel. Customer có thể lặp theo thời gian, ID không là feature.
+
+**Đầu ra:** nguồn/license, data quality findings, dictionary, leakage exclusions và split proposal. Khi có bằng chứng mới tạo `docs/evidence/` hoặc notebook cần thiết; không sinh nhiều file rỗng.
+
+**Điều kiện hoàn thành:** hiểu nhãn và grain, xác định features hợp lệ, biết giới hạn bằng chứng và có cách tái tạo split.
+
+### Bước 3 — Chốt schema, trạng thái và contract tích hợp
+
+**Mục tiêu:** frontend/n8n/ML phát triển song song mà không tự đặt tên trường hoặc trạng thái khác nhau. Leader chốt; người frontend/n8n cùng review.
+
+**Việc cần làm:**
+
+1. Rà các entity trong System; xác định bảng MVP thật cần và liên kết customer/snapshot/prediction/case/message/approval/outbox/outcome.
+2. Chốt ID, version, timestamp UTC, đơn vị tiền, enum/check, FK và unique constraints; xác định dữ liệu nullable khi chưa biết.
+3. Chốt case lifecycle riêng với message approval/delivery lifecycle. Support request chỉ theo dõi việc gửi ra ngoài, không quản lý kỹ thuật.
+4. Thiết kế ownership: mapping Auth user với staff/customer demo; quyền staff và supervisor. Secret chỉ ở server/worker.
+5. Chốt prediction payload: score/probability, source, model/version, kỳ dự báo, snapshot nếu có; thiếu driver thì ghi unavailable.
+6. Chốt top-group payload: group ID/rank, feature contributions có provenance, facts có nguồn, câu diễn giải và tình trạng thiếu dữ liệu.
+7. Chốt action/offer/draft, approval revision/hash, message send/receive, follow-up, support request và outcome payload.
+8. Chốt phần nào chạy bằng database transaction/RPC/server function, phần nào n8n chỉ điều phối. Không đẩy xác thực approval xuống prompt LLM.
+9. Thống nhất một example payload an toàn cho mỗi đường nối và lỗi điển hình; thống nhất idempotency key.
+
+**Đầu ra:** schema/payload/state/auth design trong System; mỗi thành viên biết field nào mình nhận/ghi và ai sở hữu thay đổi.
+
+**Điều kiện hoàn thành:** có thể truy vết một case qua các module bằng ID; không có quyền public rộng, score bị hiểu sai hoặc hành động thiếu bước kiểm quyền. SQL và sample thực thi sẽ tạo ở bước 5, không nhầm thiết kế là đã triển khai.
+
+### Bước 4 — Duyệt mockup và chia module
+
+**Mục tiêu:** chốt cách nhân viên sử dụng đầy đủ công cụ trong ít trang. Hai người frontend dẫn dắt, leader review cùng người n8n.
+
+**Việc cần làm:**
+
+1. Review hàng chờ, trang chi tiết English và portal demo English theo [brief](../website/mockups/BRIEF.md); không dùng bản VI đã lưu trữ.
+2. Kiểm tra tìm/lọc, phân công, mở case; xác định trường nào thật có trong contract, trường nào chỉ là minh họa.
+3. Ở trang chi tiết, chốt top 3 nhóm + facts + diễn giải, action/offer, draft, duyệt/gửi, call script, ghi chú, hội thoại/nhật ký, nhắc lại và outcome.
+4. Chốt hành vi các tab/form, trạng thái loading/empty/error, thiếu driver, bị từ chối, đang gửi, gửi lỗi, opt-out và outcome unknown.
+5. Chốt form chuyển kỹ thuật: nội dung, thông tin được gửi kèm, giờ mong muốn nullable và xác nhận gửi/lỗi; không thêm dashboard kỹ thuật.
+6. Hai frontend chia phần theo sở hữu component/luồng, thống nhất styles và shared types; tránh cùng sửa một component lớn khi chưa phối hợp.
+   - Dùng bộ mockup English hiện hành; labels, trạng thái, tooltip, empty/error và nội dung mẫu đều tiếng Anh. Không code từ ảnh tiếng Việt đã lưu trữ.
+7. Ghi feedback và quyết định duyệt vào bảng review trong brief; chỉ code chi tiết theo bản đã chốt.
+
+**Đầu ra:** brief được review và bảng module có người sở hữu. Có thể bắt đầu scaffold/theme/component shell sau khi chốt, nhưng chưa tự xây thêm trang.
+
+**Điều kiện hoàn thành:** nhân viên có đường thao tác rõ cho happy path và nhánh lỗi; leader duyệt bố cục/chức năng, các con số demo được nhận diện.
+
+### Bước 5 — Dựng Supabase, Auth/RLS và dữ liệu demo
+
+**Mục tiêu:** có nền dữ liệu dùng được trước khi nối nhiều workflow. Leader thực hiện cùng AI; chỉ kết nối môi trường phát triển được cung cấp/cho phép.
+
+**Việc cần làm:**
+
+1. Chuẩn bị project dev/sandbox và biến môi trường qua kênh phù hợp; không ghi secrets vào Markdown, Git hoặc frontend.
+2. Viết migration có version ở `supabase/`, constraints/indexes/FK theo contract đã duyệt; không chạy SQL phá dữ liệu có sẵn.
+3. Tạo cơ chế Auth/ownership và RLS deny by default, rồi cấp đúng quyền cần thiết. Dùng publishable key + user session ở browser.
+4. Tạo server/RPC cho approval và enqueue trong transaction; nội dung chỉnh sau duyệt phải tạo revision mới.
+5. Seed một hồ sơ fictional hoàn chỉnh: customer, prediction demo, context, offer eligibility, case và trạng thái ban đầu; không cần tạo sẵn chat hoặc retained outcome chưa xảy ra.
+6. Thêm một số tình huống khác khi cần: thiếu dữ liệu, không đủ điều kiện offer, opt-out, gửi lỗi. Gắn cờ nguồn synthetic/simulated.
+7. Kiểm tra đọc/ghi hợp lệ, FK khớp customer, unique/dedup, staff ngoài phạm vi bị chặn và khách demo không đọc được dữ liệu khách khác.
+8. Ghi cách thiết lập và kết quả kiểm tra trong System/evidence khi có; không dùng key đặc quyền trong browser để vượt lỗi RLS.
+
+**Đầu ra:** migration, seed an toàn, Auth/RLS và server actions dùng được trong sandbox.
+
+**Điều kiện hoàn thành:** một case có thể được đọc/ghi đúng quyền; chưa duyệt không enqueue; không có secrets lộ ra client. Nếu chưa có dịch vụ/credentials thì đánh dấu chờ đầu vào, không ghi đã triển khai.
+
+**Trạng thái thực tế 18/10 — Đang làm:**
+
+- Đã triển khai: MCP kết nối project; 14 migrations, 25 bảng/32 RPC; import 3.202 khách synthetic với 127 features, prediction và SHAP context, tạo 260 case October. Chỉ 5 hồ sơ có consent liên hệ mô phỏng; chưa seed offer/eligibility chưa được duyệt.
+- Đã kiểm tra: 25/25 bảng bật RLS; anonymous không có quyền bảng/RPC; authenticated và worker không ghi trực tiếp; bucket private. Reimport 5 hồ sơ giữ nguyên số lượng; hash nguồn khớp local. Người chưa mapping không thấy case/portal và bị chặn sửa settings. Bằng chứng: [cloud](evidence/supabase_cloud.json), [35 checks local](../supabase/tests/results.json).
+- Hosted password login/PostgREST đã kiểm cho 3 accounts, gồm note isolation. n8n/LLM/mock delivery/reply đã kiểm bằng hosted API; xem evidence/n8n_workflows.json. 18 cảnh báo SECURITY DEFINER là các RPC được cấp quyền có chủ đích; hosted role checks đã bổ sung; tiếp tục giữ regression khi đổi RPC. Chưa kiểm browser toàn luồng hoặc đồng thời nhiều connection.
+- Làm tiếp: diễn tập web theo luồng đã kiểm ở bước 6, rồi hoàn thiện bước 8. Không chạy lại setup/upgrade/source migrations trên project đã cài.
+
+### Bước 6 — Dựng một luồng xuyên suốt cho một khách
+
+**Mục tiêu:** phát hiện lỗi tích hợp sớm. Leader dựng khung mẫu, hai frontend và hai người n8n nối vào cùng contract.
+
+**Việc cần làm:**
+
+1. Dùng prediction fixture có nhãn simulated nếu model chưa sẵn sàng; nhập theo contract, tạo case idempotent bằng workflow 1.
+2. Dựng web shell tối thiểu, đăng nhập, hàng chờ và trang chi tiết đọc đúng dữ liệu từ Supabase.
+3. Workflow 2 lấy context/offer và tạo group explanation/action/draft đúng schema; có mock generator hoặc fixture để test khi chưa có LLM, ghi rõ chế độ đó.
+4. Render top nhóm/facts theo dữ liệu nguồn; simulated ranks phải có nhãn, không coi là SHAP thật.
+5. Nhân viên sửa và duyệt bản nháp; workflow 3 nhận quyết định qua server đã kiểm quyền, gắn đúng revision.
+6. Workflow 4 gửi đúng message đã duyệt qua portal demo và lưu receipt/status. Không nối kênh thật ở giai đoạn này.
+7. Khách ở phiên riêng nhận tin và reply; workflow 5 xác thực/dedupe, ghi inbound, cập nhật hội thoại và thông báo staff; staff bấm Request khi cần draft tiếp theo rồi duyệt.
+8. Kiểm tra cùng customer/case/message IDs đi hết luồng; refresh trang không mất trạng thái hoặc nhân đôi message.
+9. Ghi lỗi hợp đồng và sửa tại nguồn, không vá mỗi module bằng một mapping khác nhau.
+
+**Đầu ra:** một luồng thực thi hoàn chỉnh cho một khách; có thể diễn tập lại từ seed/reset sandbox có kiểm soát.
+
+**Điều kiện hoàn thành:** hành trình gửi–nhận chạy thật trong demo, chưa duyệt không gửi và reply tiếp theo vẫn cần approval. Chưa yêu cầu mọi tính năng hoặc UI polish đều hoàn thiện.
+
+### Bước 7 — Hoàn thiện ML và giải thích nhóm rủi ro
+
+**Mục tiêu:** thay đầu vào simulated bằng output model demo có thể tái lập, hoặc dùng adapter model doanh nghiệp nếu được cấp dữ liệu/quyền phù hợp. Leader/AI phụ trách.
+
+**Việc cần làm:**
+
+1. Giữ temporal split dataset v4/127: snapshots Jan–Jun train (targets Feb–Jul), Jul validation/calibration với khách riêng (target Aug), Aug audit test (target Sep, một tháng, exploratory), Sep inference (target Oct Unknown). Calibration/audit IDs không vào fit/tuning/selection. Không dùng ID làm feature; không thay frozen data.
+2. Pipeline hiện hành đã so sánh baseline/tuned LightGBM và CatBoost native categorical, 30 Optuna trials/họ trên ba rolling folds; CatBoost tuned đã được leader duyệt. Không chạy lại tuning hoặc đổi winner theo test khi nhận phần hoàn thiện sản phẩm.
+3. Chọn model, calibration và ngưỡng/capacity policy bằng train/CV/validation; khóa trước khi đánh giá test cuối.
+4. Đánh giá PR-AUC, Recall@K/Precision@K, calibration và confusion matrix theo dữ liệu/nhãn thật; nêu cỡ mẫu và giới hạn.
+5. Lưu preprocessing/model/metadata và environment; infer phải dùng lại artifact, không fit lại encoder.
+6. Tạo driver/SHAP hợp lệ với output space rõ. Map feature về nhóm nghiệp vụ, tổng hợp đóng góp đúng dấu và xếp nhóm có bằng chứng; không để LLM tự xếp hạng.
+7. AI diễn giải facts bằng ngôn ngữ DVKH: tình trạng hiện tại, vì sao cần xác minh và câu hỏi/hành động gợi ý. Không suy từ feature thành động cơ chắc chắn hoặc bịa ticket.
+   - Trong sản phẩm, ngôn ngữ dễ hiểu cho DVKH là **plain English**; giữ nguyên facts và mức độ chắc chắn. Không suy diễn thêm khi dịch.
+8. Context synthetic phục vụ chăm sóc phải tách khỏi feature đã ảnh hưởng model; không trộn synthetic vào test để báo hiệu quả trên dữ liệu thật.
+9. Thay fixture ở bước 6 bằng output pipeline; validate payload và kiểm tra UI/AI diễn giải vẫn đúng.
+10. Lưu run metadata, metrics/plots và giới hạn vào evidence; không nhận là model nội bộ FPT Telecom.
+
+**Đầu ra:** pipeline/adapter, artifacts, evaluation và risk-group payload có nguồn.
+
+**Điều kiện hoàn thành:** có thể tái tạo một run và truy vết từng giải thích về dữ liệu/model; không có leakage hoặc benchmark giả. Nếu chỉ có score nội bộ thì phần giải thích model cần thêm input, không giả vờ đã có top 3 thật.
+
+### Bước 8 — Mở rộng workflow và hoàn thiện UI/UX
+
+**Mục tiêu:** từ một case chạy được thành MVP dùng được với nhiều tình huống. Frontend/n8n sở hữu phần mình làm, leader review thay đổi contract.
+
+**Việc cần làm:**
+
+1. Mở rộng seed/demo cohort, hàng chờ, bộ lọc, sorting, pagination và phân công; ưu tiên không chỉ dựa một ngưỡng vượt điểm.
+2. Hoàn thiện group explanation thiếu dữ liệu, tạo lại AI draft, lựa chọn action/offer đủ điều kiện, call script và internal note.
+3. Hoàn thiện approval/rejection/revision, gửi lỗi/retry, inbound reply, opt-out và lịch sử đúng visibility.
+4. Chuyển kỹ thuật: form + ghi nhận/gửi yêu cầu + chống trùng + receipt/lỗi; chưa tích hợp thật thì mô phỏng có nhãn. Không phát triển công cụ của kỹ thuật.
+5. Workflow 6 theo dõi lịch nhắc của DVKH, case chưa tiếp cận và quá thời lượng cấu hình chưa reply; recheck điều kiện để không tạo task thừa hoặc tự gọi.
+6. Workflow 7 ghi outcome đúng cohort/kỳ, chi phí và aggregate; chưa có kết quả phải unknown. Không suy ROI hoặc causal uplift từ việc khách reply/đóng case.
+7. Hoàn thiện responsive portal, accessibility cơ bản, disabled/pending states, thông báo lỗi và thao tác xác nhận; không thêm animation làm chậm nghiệp vụ.
+   - Kiểm tra toàn bộ text người dùng nhìn thấy và output LLM bằng tiếng Anh, kể cả message/call script, lỗi và follow-up. MVP không cần xây bộ chuyển ngôn ngữ.
+8. Pin dependencies/lockfile, chuẩn hóa cấu hình và export các workflow thực thi không có secrets (hiện 5 worker cho 7 chức năng logic) theo n8n README.
+
+**Đầu ra:** MVP đủ phạm vi, UI và workflow dùng chung dữ liệu/trạng thái.
+
+**Điều kiện hoàn thành:** các chức năng cốt lõi trong brief có đường thao tác và hành vi thực, không chỉ là nút trang trí; không mở rộng sang kênh thật/production khi chưa có yêu cầu.
+
+### Bước 9 — Kiểm thử xuyên suốt, sửa lỗi và thu bằng chứng
+
+**Mục tiêu:** kiểm chứng các rủi ro nghiệp vụ quan trọng, không chỉ build thành công. Người QA điều phối; owner module sửa lỗi; leader review tích hợp.
+
+**Việc cần làm:**
+
+1. Data/ML: kiểm tra temporal split/censoring, không có ID feature, leakage, synthetic flags, artifact/schema và explanation/output; snapshot A nếu làm benchmark có group/ID split riêng.
+2. Quyền: khách A không xem khách B; staff ngoài phạm vi không duyệt; không lộ internal note, nhãn test hoặc server secrets.
+3. Approval: chưa duyệt không gửi; sửa nội dung mất hiệu lực approval cũ; double click/concurrent approval không gửi hai lần.
+4. Workflow: batch và webhook lặp, retry/timeout, LLM lỗi, context thiếu, offer hết hạn, opt-out, reply đến trước/cùng follow-up.
+5. Handoff kỹ thuật: yêu cầu đúng khách, đúng nội dung, không trùng; receipt không bị trình bày là đã khắc phục hoặc đã xác nhận lịch.
+6. Outcome: đúng kỳ và nguồn; unknown không biến thành retained; không đếm chi phí trùng hoặc dùng model probability như hiệu quả can thiệp.
+7. Kiểm tra usability: một người chưa quen dự án thử tìm khách, đọc giải thích, sửa/duyệt tin và theo dõi; ghi vướng mắc thực.
+8. Chạy build/check phù hợp cho code đã có; ghi lệnh, kết quả, lỗi chưa sửa và giới hạn môi trường. Chỉ bổ sung test có ý nghĩa với hành vi/rủi ro.
+9. Lưu screenshot/video và run references an toàn; không đưa PII/secrets vào báo cáo. Chuẩn bị seed/reset để diễn tập lại.
+
+**Đầu ra:** kết quả kiểm tra, bug còn mở, bản demo ổn định và evidence có nguồn.
+
+**Điều kiện hoàn thành:** không còn lỗi cản luồng cốt lõi hoặc lỗi quyền/gửi trùng chưa xử lý; giới hạn được công bố. Demo không đồng nghĩa đã đạt hiệu quả retention thực tế.
+
+### Bước 10 — Chốt báo cáo, xuất file nộp và diễn tập
+
+**Mục tiêu:** một câu chuyện kinh doanh nhất quán với sản phẩm và bằng chứng. Người báo cáo dẫn nội dung; QA/presentation dẫn demo/slide; cả nhóm review.
+
+**Việc cần làm:**
+
+1. Hoàn thiện Problem, tham chiếu ngành/thế giới, PDMT, data plan, analytical design và lý do chọn tools theo đề môn học.
+2. Phân biệt bối cảnh toàn quốc với số liệu case Bình Dương; giữ cùng kỳ/mẫu số và nguồn, không diễn giải tăng số churn thành tăng churn rate.
+3. Chèn kết quả ML và vận hành thật đã kiểm tra; để rõ thông tin nội bộ, giả định, simulated và measured.
+4. Business case dùng contribution margin, chi phí và sensitivity; 512,5 triệu đồng/tháng là doanh thu tham chiếu liên quan, không phải số tiền đã cứu được hoặc lợi nhuận.
+5. Giải thích giới hạn dữ liệu/horizon, SHAP không causal, model demo không phải model nội bộ và pilot có đối chứng là bước đo tác động tương lai.
+6. Review tính nhất quán giữa Report, System, Data/ML và app; sửa nội dung lỗi thời thay vì bổ sung kết luận mâu thuẫn.
+7. Sau review mới xuất executive summary Word, pitch PowerPoint/PDF và gói data/code vào `deliverables/`; kiểm tra layout và nội dung của file xuất.
+   - Biên tập và review bản **tiếng Anh** trước khi xuất; kiểm tra English trên headings, bảng, biểu đồ, captions, screenshots và nội dung demo. Docs tiếng Việt chỉ là nguồn làm việc, chưa phải bản final.
+8. Chuẩn bị hướng dẫn chạy, nguồn tải dữ liệu đúng license, dependency/config, seed và các bước demo; không đóng gói secrets.
+9. Diễn tập có người bấm demo và người thuyết trình; chuẩn bị video/screenshot fallback được ghi rõ là bản ghi nếu dịch vụ lỗi.
+
+**Đầu ra:** slide, executive summary, data/code tái lập, demo script và fallback.
+
+**Điều kiện hoàn thành:** đáp ứng checklist môn học trong Report; file xuất được kiểm tra; mọi lời khẳng định có nguồn hoặc nhãn giả định; nhóm diễn tập được toàn bộ pitch.
+
+## 4. Phân công và phối hợp trong nhóm 7 người
+
+### Đánh giá hiện tại — rà soát 18/10/2026
+
+**Kết luận: đủ nền để nhóm dùng, hoàn thiện và diễn tập demo có giám sát; chưa đủ bằng chứng để tuyên bố MVP đã tổng nghiệm thu hoặc triển khai cho khách thật.** Đánh giá cho nhóm nhỏ thao tác trên 260 case synthetic, transport mock, web local. Không quy đổi 10 bước thành phần trăm hoàn thành vì khối lượng các bước khác nhau.
+
+- Nền lõi khá chắc: schema/RLS, import 127 features, approval theo revision, outbox/receipt, opt-out, context SHAP, ba loại AI output và portal đã có code cùng evidence. Không cần xây lại hoặc đổi model.
+- Phiên này chạy lại: `npm test` ở website/app đạt **7/7**; `npm run build` đạt; `node --test n8n/tests/validator.test.mjs` đạt **5/5**; `npm test` ở supabase/tests đạt **39 checks**, exit 0. DB chạy trong PGlite với Auth/JWT/Storage stub, không chứng minh concurrency Postgres cloud.
+- Evidence đã có từ các lượt trước: hosted login/quyền, AI Agent/FAQ trong khoảng 12 giây ở một lượt, mock send/reply, ảnh send spinner/timestamps. Đây không phải SLA hay xác nhận live services vẫn khỏe tại thời điểm rà soát.
+- Rà cấu trúc tất cả module chính, entry points UI, tests, migration quyền/AI/portal, contract SQL, workflow exports/validator và ML artifacts/approval. Không đọc từng dòng CSV lịch sử lớn, dependency/vendor, binary model hoặc tmp/secrets. Không rerun tuning/generator/ML tests đã xác minh vì không đổi ML. Không gọi LLM/gửi tin/reset consent hay chạy cloud mới trong phiên này.
+
+### Những việc cần ưu tiên trước demo cuối
+
+| Ưu tiên | Phát hiện / bằng chứng cụ thể | Việc nhỏ nhất cần làm | Owner |
+|---|---|---|---|
+| P1 | `website/app/tests/hosted-smoke.mjs` bắt buộc portal có đúng 1 thread, trong khi `evidence/n8n_agents.json` ghi 2 thread. Script còn cố định 260/1 case theo role | Sửa fixture để kiểm quyền và các thread dự kiến bằng ID/config của lượt test; dùng test khách bình thường để chứng minh isolation, tách reserved demo selector. Không giảm kiểm quyền thành chỉ kiểm HTTP 200 | QA + leader |
+| P1 | Chưa có evidence một người mới tự thao tác toàn luồng trên browser; kiểm API và ảnh từng đoạn đã có | Chạy ma trận bên dưới trên hai browser profiles; ghi elapsed time, IDs, kết quả, ảnh/video và lỗi thực | QA, cả hai n8n owners |
+| P1 | Không có cost form/chart cuối ở UI dù đã có `retention_record_cost`/`retention_metrics` và DB regression | Dùng RPC sẵn có; form amount/currency/type/source/simulated và summary cùng kỳ, không dựng backend mới. Không ghép khác currency hoặc gọi care completed là retained | Frontend 1 + report |
+| P1 nếu demo offer | Catalog/eligibility chưa duyệt, dropdown hiện No offer | Chuẩn bị catalog demo nhỏ có điều kiện/hạn/cost/reviewer; leader duyệt rồi mới seed. Có thể trình diễn No offer nếu chưa duyệt, phải nói rõ giới hạn | n8n 1 + leader |
+| P1 trước nộp | URL/license nguồn thiếu; deliverables hiện chỉ có `.gitkeep`; REPORT có khung/TODO | Bổ sung nguồn chính xác từ người cung cấp, hoàn thiện narrative English và xuất bản nộp sau review. Chưa rõ license thì không phân phối lại raw | Report + leader |
+| P2 | Queue chỉ sort risk giảm dần; search/filter client-side, chưa pagination. Với nhiều case mới, case đến hạn rủi ro thấp hơn có thể nằm dưới | Thêm ưu tiên due/overdue rồi risk và phân trang đơn giản cho table; kiểm số tổng không bị tính theo riêng trang. 260 case chưa phải bằng chứng chịu tải lớn | Frontend 1 |
+| P2 | Notifications chỉ fetch khi bấm nút, chưa unread badge/live notification; khác delta UX mong muốn | Bổ sung badge và cập nhật dùng cơ chế refresh sẵn có; read notification không hoàn thành task; không cần framework realtime mới | Frontend 2 |
+| P2 | UI chỉ gọi review với `approved`; SQL hỗ trợ `rejected`. AI message chưa dùng vẫn nằm Unused khi không phù hợp | Thêm Reject + lý do theo RPC có sẵn; kiểm không enqueue và lịch sử đúng revision. Không biến reject thành xóa lịch sử | Frontend 1 |
+| P2 | `Details.load` tải toàn detail/jobs mỗi 3 giây, Supervisor còn tải staff directory mỗi lượt; lịch sử hiển thị dài. Queue 6 cột cần cuộn ngang ngay trên ảnh desktop hiện có | Rút gọn màn chi tiết theo tác vụ, loading/error dễ hiểu, tải directory khi cần; test màn laptop/mobile. Chỉ tối ưu thêm nếu đo thấy giật/chậm | Frontend 2 + Frontend 1 |
+
+Không xác nhận có lỗi gửi trùng/lộ dữ liệu đang xảy ra: regression hiện tại đạt. Các nhánh concurrency/timer/live browser chưa kiểm cần được đo, không chuyển thành bug đã tái hiện.
+
+### Gói việc có thể giao ngay
+
+Đây là **đề xuất phân công theo 7 người đã nêu trong plan**, chưa gán tên, chưa gửi tin cho thành viên hoặc cam kết deadline. Một buổi tập trung dưới đây tạm tính 3–4 giờ, chỉ để chia cỡ việc; phải điều chỉnh theo năng lực/thời gian thực. Mỗi owner nhận một đầu ra đầu tiên trước khi mở rộng.
+
+| Người / gói | Việc và file đầu vào | Đầu ra đầu tiên / nghiệm thu | Review / ước lượng |
+|---|---|---|---|
+| **Leader — tích hợp và khóa phạm vi** | Đọc mục này + SYSTEM/DATA_ML. Giữ CatBoost/127/6 nhóm; quản quyền, migrations và fixture; quyết catalog/delay/config | Gán tên 6 owner, duyệt catalog hoặc chốt demo No offer, phân case test còn consent, review hợp đồng và tích hợp từng thay đổi. Không cùng lúc nhận toàn bộ report/UI | QA kiểm chéo; review ngắn mỗi đợt |
+| **Frontend 1 — nghiệp vụ và chỉ số** | `Queue.jsx`, `Progress.jsx`, vùng Care actions trong `main.jsx`; RPC sẵn trong SYSTEM | Đợt đầu: cost form + metrics cùng kỳ, ghi lặp không nhân chi phí, Agent không thấy ngoài phạm vi. Đợt sau: due/risk sorting, table pagination, Reject reason; giữ exact-revision approval và Unknown | Leader review logic/quyền, QA nghiệm thu; 2–3 buổi |
+| **Frontend 2 — UI/UX và portal** | `style.css`, English BRIEF/3 mockups; header/notifications/Portal trong `main.jsx` | Đợt đầu: Queue/detail/portal rõ hierarchy, thao tác chính dễ tìm; test 1366×768 và 390×844 không tràn cả trang, có keyboard focus/labels, error/empty/loading rõ. Đợt sau unread badge, feedback tin mới, giữ editor khi refresh. Nộp ảnh trước/sau và 3 vấn đề usability đã xử lý | QA + leader; 2 buổi |
+| **n8n 1 — chất lượng AI và knowledge** | `02_ai_message.json`, `02_ai_call_script.json`, `02_ai_explanation.json`, FAQ dataset/Sheet, n8n README | Đợt đầu: review 6 tình huống (Prepaid, snapshot cũ, thiếu facts, khách reply, rewrite, không offer), mỗi tình huống một output mẫu + nhận xét ground truth. Chặn bịa nợ/lịch hẹn/ưu đãi, không lộ risk/notes; đề xuất FAQ/catalog có nguồn. Sửa prompt/schema khi có lỗi tái hiện, giữ 3 worker và claim/auth gate | Leader review facts/policy, report review English; 1–2 buổi |
+| **n8n 2 — độ ổn định và vận hành demo** | `04_mock_delivery.json`, `06_followups_support.json`, tests/demo-flow, SYSTEM state contract | Đợt đầu: kiểm production schedule với fixture riêng: approved→receipt, support receipt, reminder đến hạn. Đợt sau lỗi/retry/replay, opt-out giữa approval/send, reply trước reminder, close case. Nộp execution IDs + trạng thái trước/sau, hướng dẫn khôi phục khi timeout; không gửi kênh thật | QA + leader; 2 buổi |
+| **Business/report — câu chuyện kinh doanh** | REPORT/PROBLEM/DATA_ML, RESULTS và figures; owner UI/n8n cung cấp evidence | Đợt đầu: bản English problem + PDMT + system/workflow + data/method/results/limits, sổ claim→source ngay trong REPORT. Đợt sau executive summary nhiều trang và business case low/base/high có assumptions/horizon/currency, break-even và pilot có đối chứng. Chưa có margin/cost thật thì để giả định rõ, không bịa ROI | Leader review số/ML, QA/presentation review dễ hiểu; 2–3 buổi |
+| **QA/demo/presentation — tổng nghiệm thu và pitch** | Ma trận bên dưới, tests, evidence; REPORT và app | Đợt đầu: chạy happy path browser + ghi lỗi có bước tái hiện/expected/actual/severity/owner; sửa smoke fixture với leader. Đợt sau English slide theo narrative đã review, demo script có người bấm/người nói, video fallback, bộ source/config sạch secrets. Đo thời gian 1 người mới làm tác vụ | Leader chốt release, report review nội dung; 2–3 buổi |
+
+**Giảm xung đột:** `main.jsx` chứa cả App/Details/Portal nên FE1 và FE2 không sửa cùng lượt. FE2 bắt đầu ở CSS và portal layout; FE1 bắt đầu Queue/Progress và cost. Hẹn vùng sửa/merge trước; chỉ tách component tại ranh giới App/Details/Portal nếu hai owner thực sự cần sửa đồng thời, không refactor toàn app. n8n owner đầu tiên rà/test workflow hiện có, không dựng lại 7 workflow cho đủ số. Một người sửa graph live tại một thời điểm, export lại và QA kiểm trước publish.
+
+**Cách nhận bàn giao mỗi task:** owner nêu file/component mình sửa, input/fixture, ảnh hoặc test result, giới hạn còn lại và người review. Ghi trạng thái chung vào file này; lỗi/checks vào evidence hiện có hoặc một record chung, không tạo nhật ký/plan theo từng thành viên. Không chia sẻ credential qua report, screenshot hoặc gói nộp.
+
+### Ma trận nghiệm thu browser/n8n giao QA
+
+Các dòng sau là **việc cần kiểm**, không phải pass mới của phiên rà soát này. Backend regressions đã pass cho nhiều invariant tương ứng; nghiệm thu thêm đường thao tác và schedule thực tế. Dùng fixture riêng/idempotency key mới, không reset opt-out của 2931. Khách 7801 còn consent theo evidence trước, phải kiểm lại consent/owner trước lượt chạy. Reserved demo customer được chuyển giữa synthetic Outreach threads theo thiết kế; normal customer vẫn phải bị cô lập.
+
+| # | Kịch bản | Kết quả cần thấy / evidence |
+|---|---|---|
+| 1 | Supervisor phân case; Agent tìm/mở; customer phiên khác | Đúng scope và case IDs; customer không thấy queue nội bộ/notes, normal customer không mở thread khác |
+| 2 | Request explanation/message/call script; bấm nhanh lặp/refresh | Mỗi loại đúng output, một pending request/claim; không gọi LLM hai lần; có Working→Done/error; editor chưa lưu không mất |
+| 3 | Sửa draft, save, sửa tiếp sau save; approve revision cũ | Chưa save/approval sai revision không gửi; chỉ body/revision đã duyệt xuất hiện đúng portal, Created/Sent hợp lệ |
+| 4 | Customer reply; request draft tiếp | Không tạo auto outbound; staff thấy reply đúng thứ tự và tự Request rồi review; lời AI tiếp nối nội dung mới |
+| 5 | Re-send/replay/timeout; lỗi worker có kiểm soát ở sandbox | Không có receipt/message thứ hai; lỗi hữu ích, retry/backoff đúng; thu execution IDs. Không phá workflow live dùng chung để tiêm lỗi |
+| 6 | 2931 opt-out; fixture khác opt-out giữa approval và send | Nút bị chặn và server/worker recheck; không tự phục hồi consent khi reply/reimport |
+| 7 | Manual reminder + no-reply reminder, khách trả lời trước hạn | Reply hủy đúng no_reply, giữ manual; timer sinh notification một lần, không tự gọi/gửi; read không đồng nghĩa complete task |
+| 8 | Technical referral | Request đúng khách/nội dung, receipt mock một lần; UI không nói đã sửa xong/xác nhận lịch |
+| 9 | Close/reopen care; outcome tháng 10 chưa đủ kỳ | Unknown giữ nguyên khi close, công việc chưa gửi bị hủy đúng; outcome sớm bị chặn. Outcome đã đủ kỳ dùng fixture quá khứ ở DB test, không đổi đồng hồ cloud |
+| 10 | Ghi cost lặp và đổi role/kỳ | Không nhân chi phí; tách currency/simulated; tổng theo đúng scope/kỳ, không suy uplift/ROI từ score |
+| 11 | LLM thiếu facts/Prepaid/prompt injection/FAQ offer disabled | Không bịa nợ/giá/lịch; không lộ score/SHAP/notes; input khách không ghi đè policy. Staff review vẫn bắt buộc |
+| 12 | Người mới làm tìm khách→đọc drivers→sửa/duyệt→xem reply, laptop/mobile/keyboard | Ghi thời gian và điểm mắc; ảnh không tràn màn, focus nhìn rõ, không mất draft khi poll; yêu cầu trợ giúp phải được ghi nhận |
+
+**Thứ tự chốt:** (A) QA và n8n rà happy path/fixture trước, report và hai FE làm song song; (B) ghép UI/cost/chart và nội dung AI đã review, chạy nhánh lỗi; (C) đóng thay đổi chức năng, diễn tập từ đầu và xuất file. Không ấn định ngày khi chưa có deadline.
+
+**Cổng demo cuối:** build/tests đạt; một browser journey trọn vẹn có video; schedule delivery/reminder/support đã quan sát; không còn lỗi quyền/sai khách/gửi chưa duyệt/gửi trùng/Unknown sai; No offer hoặc catalog được duyệt; chủ demo biết thông báo lỗi và fallback. **Cổng nộp:** thêm report/slide English đã đối soát claims, nguồn/license và package chạy được trên máy thành viên thứ hai. Production còn cần kiểm định dữ liệu thật, concurrency/load thực, quản lý secrets/ops và tích hợp provider/policy riêng; chưa thuộc đợt hoàn thiện bài này.
+
+## 5. Việc cần người dùng cung cấp hoặc chốt tiếp
+
+1. **Kaggle URL/version/license** — đã có file local, cần bổ sung nguồn phân phối. Dataset v4/127 đã chốt cho demo; không sinh lại hoặc đổi nhãn theo test.
+2. **English mockup đã được duyệt baseline** — bổ sung Channel/Notifications và kỳ tháng 10 khi code; chưa yêu cầu tạo lại ảnh.
+3. **Deadline, tên và năng lực thành viên** — để giao việc/ngày công cụ thể thay vì ước lượng không có cơ sở.
+4. **Đặc tả Auth/approval đã chốt về nghiệp vụ** — chuyển thành ownership/RLS ở bước 3. Kỳ demo tháng 10; không cần hỏi lại các quyết định đã có.
+5. **Môi trường Supabase/n8n/LLM** — chỉ cần khi bắt đầu kết nối thực; không gửi API key vào tài liệu hoặc chat bàn giao.
+
+Bước 1 đã chốt; dataset v4/127 và pipeline Optuna/train/calibration/test/predict đã chạy. Model và nhóm đã duyệt, grouped SHAP đã chạy; chưa kiểm định trên FPT và đã có app local và dịch vụ Supabase/n8n demo. Đọc kết quả hiện hành trong DATA_ML và ml/README.
+
+## 6. Kết quả bước 1 — đã ghi nhận câu trả lời leader
+
+Ngày chốt: 17/10/2026. Đây là quyết định phạm vi/nghiệp vụ, không phải kết quả kiểm thử triển khai. Chi tiết thực thi và ví dụ outcome nằm ở [System](SYSTEM.md), mục Quyết định bước 1.
+
+| # | Kết luận | Trạng thái |
+|---|---|---|
+| 1 | Đầu tháng dự báo cùng tháng; kịch bản demo batch 01/10/2026 cho tháng 10/2026. Giữ số liệu tháng 9 ở Problem | Đã chốt |
+| 2 | Agent sở hữu case được giao; Supervisor xem toàn pilot và điều phối; portal tách đúng khách | Đã chốt |
+| 3 | Agent tự review/sửa/Approve & Send trong policy; ngoại lệ cần Supervisor; revision nào duyệt gửi đúng revision đó | Đã chốt |
+| 4 | AI soạn trước, người review mọi nội dung; mọi outbound và reply cần duyệt riêng. Lý do thiết kế: giữ quyền kiểm soát với nhóm khách rủi ro cao, không khẳng định tác động causal đã đo | Đã chốt |
+| 5 | Gợi ý phân công theo tải; quản lý được đổi; ưu tiên risk + chờ + đến hạn. Không xây phân ca | Đã chốt |
+| 6 | Chuẩn bị tài liệu catalog phương án/ưu đãi duyệt trước; AI chỉ dùng rule hợp lệ; leader/nhóm chatbot sẽ hoàn thiện sau | Kiến trúc đã chốt; nội dung catalog để bước sau |
+| 7 | Channel mặc định Zalo, có selector; mọi nhãn kênh đều dẫn đến chatbot mô phỏng đúng khách/case, có badge Simulated; không nối provider thật | Đã chốt |
+| 8 | Có thông báo tin khách mới và nhắc quá hạn. AI đề xuất chuông góc trên phải + badge/dropdown/toast; mốc default cấu hình 3 giờ, có thể chọn 24 giờ | Cơ chế đã chốt; 3 giờ và vị trí cụ thể là đề xuất UX/cấu hình, chưa coi leader đã khóa |
+| 9 | Contact result, case state và outcome theo kỳ độc lập. Đóng case chưa đồng nghĩa retained; Unknown khi chưa có bằng chứng đủ kỳ | Đã chốt; diễn giải chi tiết trong System |
+| 10 | English mockup đủ làm baseline; bổ sung Channel/Notifications, ngày demo và delay cấu hình lúc code, không thêm trang | Baseline đã duyệt; chưa phải code hoạt động |
+
+Điểm để bước sau cấu hình: nội dung catalog/ngoại lệ, khung giờ và giới hạn liên hệ, delay nhắc cuối cùng, ownership/schema cụ thể. Các mục này không còn chặn phạm vi bước 1 vì đã xác định cơ chế policy/config và không cho tự thực hiện hành động vượt quyền. Không tự áp ưu đãi khi catalog chưa được duyệt.
+
+**Bàn giao tiếp:** đã nhận/profile nguồn; đọc đề xuất dataset v1 đầu DATA_ML.md để review và chuẩn bị generator sau. Không tự đổi bộ số tháng 9 thành tháng 10, không giả score-only tạo được SHAP, không sinh history theo nhãn Kaggle để ép AUC, không dùng nhãn holdout để giả kết quả can thiệp.
+
+
+## 7. Bàn giao ML hiện hành — 127 features
+
+- Dữ liệu: `data/synthetic/final/features_127.csv`; config train `ml/config.json`. Tất cả bốn ứng viên đều đúng 127 biến; không dùng bảng nền 22 như model input.
+- Luồng và lệnh: `ml/README.md`. Kết quả: `docs/evidence/ml/RESULTS.md`, `comparison.csv/json`. Optuna đủ 30 trials/họ, tách khách calibration trước tuning; test September exploratory.
+- Đã duyệt và triển khai: CatBoost tuned 92 vòng, đủ 127 features và 6 nhóm SHAP. Không train lại hoặc đổi tham số/xác suất. Đọc DATA_ML và shap_summary.json; selection/metrics giữ trạng thái lịch sử, champion/approval.json ghi quyết định duyệt hiện hành.
+- Output tích hợp: `data/inference/final/predictions.csv` và `explanations/care_context.jsonl`; bundle champion. October Unknown; SHAP available, English drafts cần staff review. Đã kiểm LLM và gửi tin mock qua n8n; xem evidence/n8n_workflows.json. Không gửi nhãn/audit cho AI.
+- Code tạo sample/dataset/history/window giữ ở `ml/generation/`; dữ liệu/model cũ đã dọn khỏi luồng làm việc, tổng hợp lịch sử tại `docs/evidence/ml/historical_experiments.json`.
+- Đã kiểm tra 23 tests pipeline và 7 tests SHAP; probability round-trip không đổi; config/feature/model hash giữ nguyên. Đã có app local/Supabase/n8n demo; chưa có bằng chứng hiệu quả kinh doanh.
+
+## Delta hiện hành — AI Agent, live updates và portal selector
+
+Nút Request queue job rồi gọi đúng webhook bằng JWT/publishable key, không chứa service secret. Queue/Details/Portal poll mỗi 3 giây khi tab visible, giữ message editor/rewrite inputs. Hook ngăn poll chồng, cleanup khi unmount và hiện lỗi sync.
+
+Migration 20261018091216_typed_ai_queues_demo_portal đã áp. pending_jobs thêm p_output optional, lọc trước limit. Chỉ customer@retention.example đã provision và active portal mapping được chọn thêm conversation mock của khách is_synthetic=true, profile_source=synthetic_demo, stage in_progress/waiting_customer, đã có external outbound sent. Normal customer vẫn chỉ thấy mapping của mình; không lộ note/model internals. Browser Request explanation đã hoàn tất không bấm Refresh, editor chưa lưu giữ nguyên; ảnh evidence/website-live-ai.png. Hosted API thấy cả 2931-VUVJN và 7801-CEDNV; regression kiểm normal/real/inactive bị chặn.
+
+37 DB checks, 5 validator checks, 4 UI checks và build đạt. Hosted smoke n8n/tests/agent-flow.mjs chỉ tạo draft chưa duyệt; evidence/n8n_agents.json. FAQ chưa nối thật; n8n/faq-template.csv có id/topic/question/answer/source/approved, để nhóm điền và review. LLM vẫn cần staff kiểm thời gian/facts. Không reset tin đã gửi của các lần demo trước.
+
+## Delta mới nhất — Request progress, knowledge và approval feedback
+
+- AIRequestButton: spinner/Working trong lúc submitting/queued/claimed, tick Done 1,8 giây sau completed rồi trả nhãn Request; failed/cancelled cho retry. Normal/rewrite cùng loại bị khóa khi còn pending, kể cả refresh trang. Lỗi đồng bộ được báo riêng.
+- Migration 20261018093807_ai_request_progress_and_usage: claimed_at trên jobs, used_at trên recommendations; thêm retention_claim_ai_request (worker only), retention_mark_script_used (staff scoped). Request khóa case và coalesce cùng output đang queued; cùng input vừa completed có cooldown 15 giây. Claim atomic, chỉ một execution đi tiếp tới LLM; claimed treo quá 5 phút được đánh failed, không tự gọi LLM lại. Nâng từ 30 lên 32 public RPC, vẫn 25 bảng. Đây thay thế giới hạn cũ cho phép gọi LLM dư vì execution chồng.
+- Worker context mỗi lần lấy đầy đủ external sent messages + customer inbound, đúng revision đã gửi, thứ tự sent_at/created_at; thêm care_stage/contact_result. Không có draft chưa gửi hoặc internal notes. Agent được yêu cầu nối tiếp reply mới nhất, không hỏi lặp, không xem snapshot cũ là hiện tại.
+- Message Used = queued/sending/sent, Unused = chưa gửi/failed/cancelled; approve chuyển khỏi Unused và xóa editor. Script có Mark as used, RPC idempotent, không có nghĩa hệ thống đã gọi điện. Lịch sử không bị xóa.
+- FAQ Sheet: https://docs.google.com/spreadsheets/d/12Pl6SVo_tNFSVP4S4Nxh57rIlRvkFqKMksgzWzDw-Gs/edit ; 15 dòng, 14 enabled, 1 offer draft disabled. 6 mục từ nguồn FPT công khai, 8 quy tắc demo; approved=true nghĩa được bật cho demo, không phải FPT xác nhận chính sách nội bộ. Dataset local n8n/faq-dataset.csv. Ba Agent dùng Google Sheets Tool Read_company_FAQ chỉ read approved=true, có source; không có customer data trong Sheet. Workflow setup một lần 9zA8OwsBtr77RhG6 đã archive sau read-back execution 261 xác nhận 16 rows gồm header.
+- Hosted Agent smoke: duplicate request keys coalesce và duplicate wakeups bị claim chặn; cả 3 loại hoàn tất trong 12 giây, draft chưa duyệt/chưa gửi; evidence/n8n_agents.json. 39 DB checks và 5 workflow validator checks đạt. Test lỗi trước là so sánh hai Date object, đã sửa so sánh timestamp và chạy lại.
+- Approve & Send vẫn gọi transaction approval/outbox, receipt sent mới xác nhận gửi. 2931-VUVJN case waiting_customer, Zalo contact_allowed=false, opt_out_at 18/10/2026 16:05 Asia/Saigon, consent_basis=customer_opt_out; không tự reset. UI chỉ rõ lý do, disable nút trước RPC. 7801-CEDNV còn consent để demo.
+- Sheet trống dư 1vyrZ9yNrFh8Xt_1X0ieJODXj4-v9BE6wSvjYYdPYsh0 phát sinh trong sửa lỗi khởi tạo; automatic approval từ chối thao tác trash vì ngoài quyền tạo/nạp FAQ. Đã hỏi người dùng và chưa được chấp thuận; không thử dọn bằng đường khác. Sheet chính không ảnh hưởng.
+
+Browser đã kiểm khách 2931: chọn saved draft, nút Approve & Send vẫn disabled vì opt-out và cảnh báo rõ ngay trên editor. Evidence: evidence/website-send-permission.png. UI tests 6/6, build đạt; không đổi consent hoặc gửi thêm tin trong kiểm tra này.
+
+Message timestamp/send feedback: website/app/src/main.jsx dùng created_at và sent_at từ Supabase, format Asia/Saigon qua date(). Spinner Approve & Send theo approval request và delivery_status queued/sending; sent mới tick, failed hiện hướng dẫn quay Unused. Giữ nguyên revision approval, consent và outbox worker.
+
+Browser kiểm trên 7801: lưu một tin test mô phỏng, Approve & Send hiện Working và disabled xuyên suốt queued; delivery worker execution 336 xử lý, tin xuất hiện trong hội thoại và Used có Created 17:01 / Sent 17:02 (18/10 Asia/Saigon). Không gọi LLM trong lượt kiểm này. Evidence website-send-working.png và website-message-times.png.

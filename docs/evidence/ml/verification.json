@@ -1,0 +1,12 @@
+{
+  "feature_count": 127,
+  "completed_trials": {
+    "lightgbm": 30,
+    "catboost": 30
+  },
+  "post_cleanup_prediction_roundtrip": true,
+  "frozen_dataset_hashes_match": true,
+  "all_four_bundles_127": true,
+  "tests_passed": 23,
+  "shap_computed": false
+}

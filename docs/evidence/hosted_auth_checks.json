@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-18T07:57:30.164Z",
+  "checks": [
+    "supervisor password login passed",
+    "agent password login passed",
+    "customer password login passed",
+    "PostgREST role-scoped queues passed",
+    "Staff note saved idempotently and visible in detail",
+    "Customer portal excludes internal staff note",
+    "Customer cannot read internal detail"
+  ],
+  "limits": [
+    "No n8n or LLM execution",
+    "No outbound message sent",
+    "No phone call placed"
+  ],
+  "fixture": "One idempotent internal demo test note is retained."
+}

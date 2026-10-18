@@ -1,0 +1,5 @@
+import React from 'react';
+import AIRequestButton from './AIRequestButton';
+export default function RewriteRequest({type,value,onChange,source,busy,closed,request,act,jobs}){
+ return <div className="rewrite-request"><label>Rewrite instructions<textarea rows="3" maxLength="2000" value={value} onChange={e=>onChange(e.target.value)} placeholder={type==='message'?'For example: Make it shorter, warmer, and ask one question at a time.':'For example: Use a 60-second opening, include two discovery questions, and avoid sales pressure.'}/></label><p className="muted">{source?'Uses the current '+(type==='message'?'message editor':'call script')+' as the starting point.':'No existing content selected. These instructions will guide the first draft.'} Keep verified facts unchanged. New content still requires staff review.</p><AIRequestButton type={type} jobs={jobs} request={request} act={act} instructions={value} source={source||null} disabled={busy||closed||!value.trim()}>Request AI rewrite</AIRequestButton></div>
+}

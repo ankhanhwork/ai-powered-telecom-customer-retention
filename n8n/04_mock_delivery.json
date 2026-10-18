@@ -1,0 +1,246 @@
+{
+  "name": "Retention · 04 Mock delivery",
+  "nodes": [
+    {
+      "id": "026b7942-0e93-484d-8140-7d218717bb11",
+      "name": "Test manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "61daa1a3-c3c2-4f06-91c0-aa9ea7713a31",
+      "name": "Claim approved delivery",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        272,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/retention_claim_delivery",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "{}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "credentials": {
+        "supabaseApi": {
+          "id": "5yv1CNx8OTowthsp",
+          "name": "Retention Supabase"
+        }
+      }
+    },
+    {
+      "id": "a6205af7-70d0-4d1c-bc1e-45607b922c45",
+      "name": "Only claimed deliveries",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        224
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ !!$json.outbox_id && !!$json.lease_token }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "6f6f8be9-50a6-487c-8360-0b01dc47a23c",
+      "name": "Deliver to mock portal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        720,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/retention_deliver_mock",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ {p_outbox_id: $json.outbox_id, p_lease_token: $json.lease_token} }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "supabaseApi": {
+          "id": "5yv1CNx8OTowthsp",
+          "name": "Retention Supabase"
+        }
+      }
+    },
+    {
+      "id": "edb413fe-e116-4190-8771-df8e1e70cd02",
+      "name": "Every 1 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "60141d2c-9f14-43c5-be09-7592210fc115",
+      "name": "Record delivery failure",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        944,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/retention_fail_delivery",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ {p_outbox_id: $('Claim approved delivery').first().json.outbox_id,p_lease_token: $('Claim approved delivery').first().json.lease_token,p_error_code:'mock_delivery_failed',p_retryable:true} }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "credentials": {
+        "supabaseApi": {
+          "id": "5yv1CNx8OTowthsp",
+          "name": "Retention Supabase"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Test manually": {
+      "main": [
+        [
+          {
+            "node": "Claim approved delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim approved delivery": {
+      "main": [
+        [
+          {
+            "node": "Only claimed deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only claimed deliveries": {
+      "main": [
+        [
+          {
+            "node": "Deliver to mock portal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deliver to mock portal": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Record delivery failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every 1 minutes": {
+      "main": [
+        [
+          {
+            "node": "Claim approved delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Asia/Ho_Chi_Minh",
+    "executionTimeout": 90,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "nodeGroups": [
+    {
+      "id": "b23fce08-599d-4ae6-93d9-31ce30cec0db",
+      "name": "Approved mock send",
+      "nodeNames": [
+        "Claim approved delivery",
+        "Only claimed deliveries",
+        "Deliver to mock portal",
+        "Record delivery failure"
+      ],
+      "description": "Claims approved revisions; server rechecks consent and records an idempotent mock receipt."
+    }
+  ],
+  "active": false,
+  "id": "BtozaQeAwIhpQu4m",
+  "versionId": "88c99de3-c0b2-42f8-aa99-92babc8cbb54"
+}

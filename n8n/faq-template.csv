@@ -1,0 +1,5 @@
+id,topic,question,answer,source,approved
+FAQ-001,service,What should I do when my Internet is unstable?,,Company-approved support guide,false
+FAQ-002,billing,How do prepaid renewal and overdue bills differ?,,Company-approved billing policy,false
+FAQ-003,retention,Which retention offers may staff propose?,,Company-approved offer catalog,false
+FAQ-004,support,How is a technical support request handled?,,Company-approved support process,false

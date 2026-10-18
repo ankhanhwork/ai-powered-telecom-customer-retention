@@ -1,0 +1,9 @@
+{
+  "mode": "verify-ai-delivery",
+  "checked_at": "2026-10-18T08:36:42.454Z",
+  "checks": [
+    "Real-LLM draft reached portal exactly once after staff approval",
+    "Customer reply returned to Agent and deduplicated"
+  ],
+  "message_id": "51ace040-8514-4b4e-86c3-c9d7a11a1d7f"
+}

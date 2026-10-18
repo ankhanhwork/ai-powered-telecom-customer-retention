@@ -1,0 +1,9 @@
+{
+  "mode": "prepare",
+  "checked_at": "2026-10-18T08:31:54.949Z",
+  "checks": [
+    "Unapproved draft absent from portal",
+    "Agent approved exact revision and queued mock delivery"
+  ],
+  "message_id": "4356df5a-b95a-4573-89ad-bc0940ee96d5"
+}

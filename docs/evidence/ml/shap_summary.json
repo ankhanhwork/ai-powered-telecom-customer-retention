@@ -1,0 +1,33 @@
+{
+  "rows": 3202,
+  "feature_count": 127,
+  "group_count": 6,
+  "raw_margin_max_abs_error": 7.105427357601002e-15,
+  "deployed_probability_max_abs_error": 8.881784197001252e-16,
+  "calibrator_method": "identity",
+  "calibration_adopted": false,
+  "mapping_complete_unique": true,
+  "group_rule": "signed sum; top up to three strictly positive groups",
+  "zero_positive_group_rows": 32,
+  "prepaid_payment_cards_marked_not_applicable": 1491,
+  "no_labels_or_audit_used": true,
+  "no_training_performed": true,
+  "no_llm_invoked": true,
+  "model_sha256": "4052373e189fb6280081d028cf400b76f205aea27517606eb422820d0b12020a",
+  "mapping_sha256": "69be755ed2503016d18c395c751258d11e275d72921e3a162a457316f5323c62",
+  "schema_sha256": "d390dfbc806c5867a7d436abfa56cfe074fd03cfcf65e79e4355bfc15841d41e",
+  "calibrator_sha256": "5658acdd3dc1201420e0131b33fc9c495494cb3eae6e493fac0331c9574c8fde",
+  "input_sha256": "e35b10fd8ce96f10fcbef5fad8151246ff1df5a9c50c225cdc60d3275852ecc6",
+  "explanation_version": "catboost_tuned_127_groups_v1",
+  "output_sha256": {
+    "feature_shap_raw.csv": "59010e01be32e8d5107b21e74397fb3254394e615da006861c302f9305c169d2",
+    "group_shap.csv": "2fbdd979f0e7b6fb35a3f8591e13eca00d27fbf4d5d73fd825ee5b9e84489ac0",
+    "care_context.jsonl": "08f716482d51bf07403811bebe4f888b569ec8a95bbfbb0a65c55913c340e5f2",
+    "predictions.csv": "7b398dd6b44bebaaf91046d58af99d08c943f05feb94d2c2b1aaa5045fcab756",
+    "group_importance.csv": "2b385a7647c2e0bd93d411df2ea094692dc9ee43aba0b897197b90f78787af79"
+  },
+  "explanation_tests_passed": 7,
+  "original_pipeline_tests_passed": 23,
+  "operational_probabilities_unchanged": true,
+  "all_care_payloads_validated": true
+}

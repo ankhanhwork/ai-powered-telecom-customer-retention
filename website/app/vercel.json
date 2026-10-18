@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/api/retention-ai-message",
+      "destination": "https://group-2.app.n8n.cloud/webhook/retention-ai-message"
+    },
+    {
+      "source": "/api/retention-ai-call_script",
+      "destination": "https://group-2.app.n8n.cloud/webhook/retention-ai-call_script"
+    },
+    {
+      "source": "/api/retention-ai-explanation",
+      "destination": "https://group-2.app.n8n.cloud/webhook/retention-ai-explanation"
+    }
+  ]
+}

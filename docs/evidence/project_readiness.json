@@ -1,0 +1,42 @@
+{
+  "review_date": "2026-10-18",
+  "timezone": "Asia/Saigon",
+  "scope": "Repository readiness review for a small supervised synthetic demo; no live service revalidation",
+  "verdict": "Core demo implemented; steps 8 and 9 remain open; final submission incomplete",
+  "checks_run_this_review": [
+    {"cwd": "website/app", "command": "npm test", "passed": 7, "failed": 0, "exit_code": 0},
+    {"cwd": "website/app", "command": "npm run build", "result": "passed", "exit_code": 0},
+    {"cwd": ".", "command": "node --test n8n/tests/validator.test.mjs", "passed": 5, "failed": 0, "exit_code": 0},
+    {"cwd": "supabase/tests", "command": "npm test", "passed": 39, "failed": 0, "exit_code": 0, "limit": "PGlite with Auth/JWT/Storage stubs; not multi-connection cloud testing"}
+  ],
+  "prior_evidence_reviewed": [
+    "docs/evidence/website_checks.json",
+    "docs/evidence/website-pipeline.png",
+    "docs/evidence/hosted_auth_checks.json",
+    "docs/evidence/supabase_cloud.json",
+    "docs/evidence/n8n_workflows.json",
+    "docs/evidence/n8n_agents.json",
+    "docs/evidence/ml/RESULTS.md",
+    "docs/evidence/ml/verification.json",
+    "ml/models/final/champion/approval.json"
+  ],
+  "concrete_followups": [
+    "Hosted smoke asserts exactly one portal thread; newer agent evidence records two demo threads. Update fixture assumptions while preserving access isolation checks.",
+    "Cost RPC and scoped metrics exist; UI cost entry and final operational charts are absent.",
+    "UI review calls approve only; rejected decision exists in database but has no UI path.",
+    "Notifications load on click; unread badge and live notification feedback are absent.",
+    "Queue orders by risk only, without due-first sorting or pagination.",
+    "Catalog/eligibility requires approval; No offer remains a valid demo scope.",
+    "Full browser journey, schedule observation, novice usability and cloud concurrency are not newly verified.",
+    "English report/slide exports and shareable reproducibility package are incomplete; source URL/license remains unresolved."
+  ],
+  "handoff": "docs/IMPLEMENTATION.md section 4 contains proposed owners, deliverables, acceptance criteria and 12 QA scenarios",
+  "not_done": [
+    "No application, ML, SQL or workflow source changes",
+    "No retraining, regeneration or new ML test run",
+    "No live cloud, browser, LLM, outbound send or consent mutation",
+    "No load/concurrency test or independent production security certification",
+    "No exhaustive row-by-row CSV, vendor, binary model or temporary secret-file review",
+    "No team messages, named assignments or deadline commitments"
+  ]
+}

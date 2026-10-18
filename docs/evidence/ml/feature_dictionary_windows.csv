@@ -1,0 +1,103 @@
+feature,group,window_days,definition,postpaid_only
+disconnect_count_7d,Connection Quality,7,Count of disconnections,False
+outage_minutes_7d,Connection Quality,7,Total outage minutes,False
+evening_speed_ratio_7d,Connection Quality,7,Mean evening measured speed / plan speed,False
+service_issue_days_7d,Connection Quality,7,Days with a service issue,False
+inactive_days_7d,Usage & Engagement,7,Observed zero-usage days,False
+support_contacts_7d,Support Experience,7,Support contact count,False
+repeat_contacts_7d,Support Experience,7,Repeat contact count,False
+opened_tickets_7d,Support Experience,7,Newly opened ticket count,False
+unresolved_tickets_7d,Support Experience,7,Tickets opened in window and still open at cutoff,False
+avg_resolution_hours_7d,Support Experience,7,Mean duration of tickets resolved in window,False
+plan_change_requests_7d,Customer Relationship & Plan,7,Count of plan-change requests,False
+disconnect_count_14d,Connection Quality,14,Count of disconnections,False
+outage_minutes_14d,Connection Quality,14,Total outage minutes,False
+evening_speed_ratio_14d,Connection Quality,14,Mean evening measured speed / plan speed,False
+service_issue_days_14d,Connection Quality,14,Days with a service issue,False
+usage_gb_14d,Usage & Engagement,14,Total measured usage in GB,False
+support_contacts_14d,Support Experience,14,Support contact count,False
+repeat_contacts_14d,Support Experience,14,Repeat contact count,False
+opened_tickets_14d,Support Experience,14,Newly opened ticket count,False
+unresolved_tickets_14d,Support Experience,14,Tickets opened in window and still open at cutoff,False
+avg_resolution_hours_14d,Support Experience,14,Mean duration of tickets resolved in window,False
+plan_change_requests_14d,Customer Relationship & Plan,14,Count of plan-change requests,False
+inactive_days_30d,Usage & Engagement,30,Observed zero-usage days,False
+opened_tickets_30d,Support Experience,30,Newly opened ticket count,False
+avg_resolution_hours_30d,Support Experience,30,Mean duration of tickets resolved in window,False
+disconnect_count_60d,Connection Quality,60,Count of disconnections,False
+outage_minutes_60d,Connection Quality,60,Total outage minutes,False
+evening_speed_ratio_60d,Connection Quality,60,Mean evening measured speed / plan speed,False
+service_issue_days_60d,Connection Quality,60,Days with a service issue,False
+usage_gb_60d,Usage & Engagement,60,Total measured usage in GB,False
+inactive_days_60d,Usage & Engagement,60,Observed zero-usage days,False
+support_contacts_60d,Support Experience,60,Support contact count,False
+repeat_contacts_60d,Support Experience,60,Repeat contact count,False
+opened_tickets_60d,Support Experience,60,Newly opened ticket count,False
+unresolved_tickets_60d,Support Experience,60,Tickets opened in window and still open at cutoff,False
+avg_resolution_hours_60d,Support Experience,60,Mean duration of tickets resolved in window,False
+plan_change_requests_60d,Customer Relationship & Plan,60,Count of plan-change requests,False
+disconnect_count_90d,Connection Quality,90,Count of disconnections,False
+outage_minutes_90d,Connection Quality,90,Total outage minutes,False
+evening_speed_ratio_90d,Connection Quality,90,Mean evening measured speed / plan speed,False
+service_issue_days_90d,Connection Quality,90,Days with a service issue,False
+usage_gb_90d,Usage & Engagement,90,Total measured usage in GB,False
+inactive_days_90d,Usage & Engagement,90,Observed zero-usage days,False
+support_contacts_90d,Support Experience,90,Support contact count,False
+repeat_contacts_90d,Support Experience,90,Repeat contact count,False
+opened_tickets_90d,Support Experience,90,Newly opened ticket count,False
+unresolved_tickets_90d,Support Experience,90,Tickets opened in window and still open at cutoff,False
+plan_change_requests_90d,Customer Relationship & Plan,90,Count of plan-change requests,False
+usage_change_pct_14d,Usage & Engagement,28,"Percent change of last 14 days versus preceding 14; all days measured, positive denominator",False
+usage_change_pct_60d,Usage & Engagement,120,"Percent change of last 60 days versus preceding 60; all days measured, positive denominator",False
+usage_change_pct_90d,Usage & Engagement,180,"Percent change of last 90 days versus preceding 90; all days measured, positive denominator",False
+fee_change_pct_60d,Billing & Payment,61,Percent fee change from snapshot minus 60 days,False
+fee_change_pct_90d,Billing & Payment,91,Percent fee change from snapshot minus 90 days,False
+due_invoice_count_30d,Billing & Payment,30,Invoices due in window,True
+late_invoice_count_30d,Billing & Payment,30,Due-cohort invoices paid late or currently past due,True
+late_invoice_rate_30d,Billing & Payment,30,Late invoice count / due invoice count,True
+observed_delay_mean_days_30d,Billing & Payment,30,Mean nonnegative payment delay over due-cohort; unpaid measured only through snapshot,True
+observed_delay_max_days_30d,Billing & Payment,30,Maximum observed payment delay over due-cohort,True
+late_paid_invoice_count_30d,Billing & Payment,30,Due-cohort invoices already paid after due date,True
+on_time_paid_invoice_rate_30d,Billing & Payment,30,Due-cohort invoices already paid on/before due date / due count,True
+unpaid_overdue_invoice_count_30d,Billing & Payment,30,Due-cohort invoices still unpaid and past due,True
+unpaid_overdue_amount_vnd_30d,Billing & Payment,30,Outstanding due-cohort amount past due,True
+due_cohort_paid_ratio_30d,Billing & Payment,30,Paid amount of due-cohort / total due-cohort amount,True
+payment_count_30d,Billing & Payment,30,"Payments observed in window, irrespective of invoice due window",True
+paid_amount_vnd_30d,Billing & Payment,30,Total invoice amounts paid in window,True
+due_invoice_count_60d,Billing & Payment,60,Invoices due in window,True
+late_invoice_count_60d,Billing & Payment,60,Due-cohort invoices paid late or currently past due,True
+late_invoice_rate_60d,Billing & Payment,60,Late invoice count / due invoice count,True
+observed_delay_mean_days_60d,Billing & Payment,60,Mean nonnegative payment delay over due-cohort; unpaid measured only through snapshot,True
+observed_delay_max_days_60d,Billing & Payment,60,Maximum observed payment delay over due-cohort,True
+late_paid_invoice_count_60d,Billing & Payment,60,Due-cohort invoices already paid after due date,True
+on_time_paid_invoice_rate_60d,Billing & Payment,60,Due-cohort invoices already paid on/before due date / due count,True
+unpaid_overdue_invoice_count_60d,Billing & Payment,60,Due-cohort invoices still unpaid and past due,True
+unpaid_overdue_amount_vnd_60d,Billing & Payment,60,Outstanding due-cohort amount past due,True
+due_cohort_paid_ratio_60d,Billing & Payment,60,Paid amount of due-cohort / total due-cohort amount,True
+payment_count_60d,Billing & Payment,60,"Payments observed in window, irrespective of invoice due window",True
+paid_amount_vnd_60d,Billing & Payment,60,Total invoice amounts paid in window,True
+due_invoice_count_90d,Billing & Payment,90,Invoices due in window,True
+late_invoice_count_90d,Billing & Payment,90,Due-cohort invoices paid late or currently past due,True
+late_invoice_rate_90d,Billing & Payment,90,Late invoice count / due invoice count,True
+observed_delay_mean_days_90d,Billing & Payment,90,Mean nonnegative payment delay over due-cohort; unpaid measured only through snapshot,True
+observed_delay_max_days_90d,Billing & Payment,90,Maximum observed payment delay over due-cohort,True
+late_paid_invoice_count_90d,Billing & Payment,90,Due-cohort invoices already paid after due date,True
+on_time_paid_invoice_rate_90d,Billing & Payment,90,Due-cohort invoices already paid on/before due date / due count,True
+unpaid_overdue_invoice_count_90d,Billing & Payment,90,Due-cohort invoices still unpaid and past due,True
+unpaid_overdue_amount_vnd_90d,Billing & Payment,90,Outstanding due-cohort amount past due,True
+due_cohort_paid_ratio_90d,Billing & Payment,90,Paid amount of due-cohort / total due-cohort amount,True
+payment_count_90d,Billing & Payment,90,"Payments observed in window, irrespective of invoice due window",True
+paid_amount_vnd_90d,Billing & Payment,90,Total invoice amounts paid in window,True
+current_overdue_invoice_count,Billing & Payment,0,All currently unpaid invoices with at least one day past due,True
+current_overdue_days_mean,Billing & Payment,0,Mean age past due of all currently unpaid overdue invoices; zero if none,True
+current_overdue_amount_to_fee,Billing & Payment,0,Current unpaid overdue amount / current monthly fee,True
+days_since_last_payment,Billing & Payment,0,Days since latest observed payment; NaN if none,True
+last_payment_delay_days,Billing & Payment,0,Nonnegative delay of latest observed payment; NaN if none,True
+consecutive_late_invoice_count,Billing & Payment,0,Backward streak of late invoices in due-date order,True
+delay_change_recent3_vs_previous3_days,Billing & Payment,0,Mean observed delay of last 3 due invoices minus preceding 3; requires 6,True
+late_rate_change_recent3_vs_previous3,Billing & Payment,0,Late rate of last 3 due invoices minus preceding 3; requires 6,True
+current_overdue_count_ge_7d,Billing & Payment,0,Currently unpaid invoices at least 7 days past due,True
+current_overdue_count_ge_30d,Billing & Payment,0,Currently unpaid invoices at least 30 days past due,True
+current_overdue_count_ge_60d,Billing & Payment,0,Currently unpaid invoices at least 60 days past due,True
+current_overdue_amount_ge_30d_vnd,Billing & Payment,0,Currently unpaid amount at least 30 days past due,True
+current_overdue_amount_ge_60d_vnd,Billing & Payment,0,Currently unpaid amount at least 60 days past due,True

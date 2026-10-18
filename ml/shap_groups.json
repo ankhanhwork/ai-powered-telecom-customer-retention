@@ -1,0 +1,947 @@
+{
+  "version": "catboost_tuned_127_groups_v1",
+  "approved": true,
+  "approved_on": "2026-10-17",
+  "model_sha256": "4052373e189fb6280081d028cf400b76f205aea27517606eb422820d0b12020a",
+  "positive_epsilon": 1e-10,
+  "groups": [
+    {
+      "id": "connection_quality",
+      "name": "Connection Quality",
+      "action": "Confirm whether connection issues persist and submit a technical support request if needed.",
+      "features": [
+        "disconnect_count_30d",
+        "outage_minutes_30d",
+        "evening_speed_ratio_30d",
+        "service_issue_days_30d",
+        "consecutive_issue_months",
+        "disconnect_count_7d",
+        "outage_minutes_7d",
+        "evening_speed_ratio_7d",
+        "service_issue_days_7d",
+        "disconnect_count_14d",
+        "outage_minutes_14d",
+        "evening_speed_ratio_14d",
+        "service_issue_days_14d",
+        "disconnect_count_60d",
+        "outage_minutes_60d",
+        "evening_speed_ratio_60d",
+        "service_issue_days_60d",
+        "disconnect_count_90d",
+        "outage_minutes_90d",
+        "evening_speed_ratio_90d",
+        "service_issue_days_90d"
+      ]
+    },
+    {
+      "id": "support_experience",
+      "name": "Support Experience",
+      "action": "Review unresolved requests and previous contacts, then agree a follow-up with the customer.",
+      "features": [
+        "support_contacts_30d",
+        "unresolved_tickets_30d",
+        "repeat_contacts_30d",
+        "avg_resolution_hours_90d",
+        "oldest_open_ticket_days",
+        "support_contacts_7d",
+        "repeat_contacts_7d",
+        "opened_tickets_7d",
+        "unresolved_tickets_7d",
+        "avg_resolution_hours_7d",
+        "support_contacts_14d",
+        "repeat_contacts_14d",
+        "opened_tickets_14d",
+        "unresolved_tickets_14d",
+        "avg_resolution_hours_14d",
+        "opened_tickets_30d",
+        "avg_resolution_hours_30d",
+        "support_contacts_60d",
+        "repeat_contacts_60d",
+        "opened_tickets_60d",
+        "unresolved_tickets_60d",
+        "avg_resolution_hours_60d",
+        "support_contacts_90d",
+        "repeat_contacts_90d",
+        "opened_tickets_90d",
+        "unresolved_tickets_90d"
+      ]
+    },
+    {
+      "id": "payment_overdue",
+      "name": "Payment & Overdue Bills",
+      "action": "Verify the invoice and payment situation with the customer and explain approved payment support options.",
+      "features": [
+        "overdue_days",
+        "overdue_amount_vnd",
+        "due_invoice_count_30d",
+        "late_invoice_count_30d",
+        "late_invoice_rate_30d",
+        "observed_delay_mean_days_30d",
+        "observed_delay_max_days_30d",
+        "late_paid_invoice_count_30d",
+        "on_time_paid_invoice_rate_30d",
+        "unpaid_overdue_invoice_count_30d",
+        "unpaid_overdue_amount_vnd_30d",
+        "due_cohort_paid_ratio_30d",
+        "payment_count_30d",
+        "paid_amount_vnd_30d",
+        "due_invoice_count_60d",
+        "late_invoice_count_60d",
+        "late_invoice_rate_60d",
+        "observed_delay_mean_days_60d",
+        "observed_delay_max_days_60d",
+        "late_paid_invoice_count_60d",
+        "on_time_paid_invoice_rate_60d",
+        "unpaid_overdue_invoice_count_60d",
+        "unpaid_overdue_amount_vnd_60d",
+        "due_cohort_paid_ratio_60d",
+        "payment_count_60d",
+        "paid_amount_vnd_60d",
+        "due_invoice_count_90d",
+        "late_invoice_count_90d",
+        "late_invoice_rate_90d",
+        "observed_delay_mean_days_90d",
+        "observed_delay_max_days_90d",
+        "late_paid_invoice_count_90d",
+        "on_time_paid_invoice_rate_90d",
+        "unpaid_overdue_invoice_count_90d",
+        "unpaid_overdue_amount_vnd_90d",
+        "due_cohort_paid_ratio_90d",
+        "payment_count_90d",
+        "paid_amount_vnd_90d",
+        "current_overdue_invoice_count",
+        "current_overdue_days_mean",
+        "current_overdue_amount_to_fee",
+        "days_since_last_payment",
+        "last_payment_delay_days",
+        "consecutive_late_invoice_count",
+        "delay_change_recent3_vs_previous3_days",
+        "late_rate_change_recent3_vs_previous3",
+        "current_overdue_count_ge_7d",
+        "current_overdue_count_ge_30d",
+        "current_overdue_count_ge_60d",
+        "current_overdue_amount_ge_30d_vnd",
+        "current_overdue_amount_ge_60d_vnd"
+      ]
+    },
+    {
+      "id": "usage_engagement",
+      "name": "Usage & Engagement",
+      "action": "Ask whether Internet usage needs have changed or access problems are preventing use.",
+      "features": [
+        "usage_gb_7d",
+        "usage_gb_30d",
+        "usage_change_pct_30d",
+        "inactive_days_14d",
+        "usage_change_pct_7d",
+        "inactive_days_7d",
+        "usage_gb_14d",
+        "inactive_days_30d",
+        "usage_gb_60d",
+        "inactive_days_60d",
+        "usage_gb_90d",
+        "inactive_days_90d",
+        "usage_change_pct_14d",
+        "usage_change_pct_60d",
+        "usage_change_pct_90d"
+      ]
+    },
+    {
+      "id": "renewal_promotion",
+      "name": "Renewal & Promotion Status",
+      "action": "Check the relevant renewal or promotion date and discuss only approved, eligible options.",
+      "features": [
+        "billing_mode",
+        "prepaid_days_remaining",
+        "promo_days_remaining"
+      ]
+    },
+    {
+      "id": "plan_pricing_relationship",
+      "name": "Plan, Pricing & Relationship",
+      "action": "Confirm whether the current plan fits the customer’s needs and clarify any fee or plan-change requests.",
+      "features": [
+        "monthly_fee_vnd",
+        "fee_change_pct_30d",
+        "tenure_months",
+        "plan_speed_mbps",
+        "plan_change_requests_30d",
+        "plan_change_requests_7d",
+        "plan_change_requests_14d",
+        "plan_change_requests_60d",
+        "plan_change_requests_90d",
+        "fee_change_pct_60d",
+        "fee_change_pct_90d"
+      ]
+    }
+  ],
+  "feature_metadata": {
+    "disconnect_count_30d": {
+      "label": "Disconnections over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "disconnect_count"
+    },
+    "outage_minutes_30d": {
+      "label": "Total connection downtime over the past 30 days",
+      "unit": "minutes",
+      "window_days": 30,
+      "family": "outage_minutes"
+    },
+    "evening_speed_ratio_30d": {
+      "label": "Average evening speed relative to plan speed over the past 30 days",
+      "unit": "fraction",
+      "window_days": 30,
+      "family": "evening_speed_ratio"
+    },
+    "service_issue_days_30d": {
+      "label": "Days with connection issues over the past 30 days",
+      "unit": "days",
+      "window_days": 30,
+      "family": "service_issue_days"
+    },
+    "usage_gb_7d": {
+      "label": "Measured Internet usage over the past 7 days",
+      "unit": "GB",
+      "window_days": 7,
+      "family": "usage_gb"
+    },
+    "usage_gb_30d": {
+      "label": "Measured Internet usage over the past 30 days",
+      "unit": "GB",
+      "window_days": 30,
+      "family": "usage_gb"
+    },
+    "usage_change_pct_30d": {
+      "label": "Internet usage change: past 30 days versus the preceding 30 days",
+      "unit": "%",
+      "window_days": 30,
+      "family": "usage_change_pct"
+    },
+    "inactive_days_14d": {
+      "label": "Observed days without Internet usage over the past 14 days",
+      "unit": "days",
+      "window_days": 14,
+      "family": "inactive_days"
+    },
+    "monthly_fee_vnd": {
+      "label": "Current monthly Internet fee",
+      "unit": "VND",
+      "window_days": null,
+      "family": "monthly_fee_vnd"
+    },
+    "fee_change_pct_30d": {
+      "label": "Monthly fee change compared with 30 days earlier",
+      "unit": "%",
+      "window_days": 30,
+      "family": "fee_change_pct"
+    },
+    "overdue_days": {
+      "label": "Longest delay among currently overdue invoices",
+      "unit": "days",
+      "window_days": null,
+      "family": "overdue_days"
+    },
+    "overdue_amount_vnd": {
+      "label": "Current unpaid overdue amount",
+      "unit": "VND",
+      "window_days": null,
+      "family": "overdue_amount_vnd"
+    },
+    "billing_mode": {
+      "label": "Billing arrangement",
+      "unit": "",
+      "window_days": null,
+      "family": "billing_mode"
+    },
+    "prepaid_days_remaining": {
+      "label": "Days until the prepaid period ends",
+      "unit": "days",
+      "window_days": null,
+      "family": "prepaid_days_remaining"
+    },
+    "promo_days_remaining": {
+      "label": "Days until the current promotion ends",
+      "unit": "days",
+      "window_days": null,
+      "family": "promo_days_remaining"
+    },
+    "support_contacts_30d": {
+      "label": "Support contacts over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "support_contacts"
+    },
+    "unresolved_tickets_30d": {
+      "label": "Requests opened in this period and still unresolved over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "unresolved_tickets"
+    },
+    "repeat_contacts_30d": {
+      "label": "Repeat support contacts over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "repeat_contacts"
+    },
+    "avg_resolution_hours_90d": {
+      "label": "Average time to resolve requests completed in this period over the past 90 days",
+      "unit": "hours",
+      "window_days": 90,
+      "family": "avg_resolution_hours"
+    },
+    "tenure_months": {
+      "label": "Time with the provider",
+      "unit": "months",
+      "window_days": null,
+      "family": "tenure_months"
+    },
+    "plan_speed_mbps": {
+      "label": "Contracted Internet speed",
+      "unit": "Mbps",
+      "window_days": null,
+      "family": "plan_speed_mbps"
+    },
+    "plan_change_requests_30d": {
+      "label": "Requests to change the Internet plan over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "plan_change_requests"
+    },
+    "oldest_open_ticket_days": {
+      "label": "Age of the oldest unresolved support request",
+      "unit": "days",
+      "window_days": null,
+      "family": "oldest_open_ticket_days"
+    },
+    "consecutive_issue_months": {
+      "label": "Consecutive observed months with recurring connection issues",
+      "unit": "months",
+      "window_days": null,
+      "family": "consecutive_issue_months"
+    },
+    "usage_change_pct_7d": {
+      "label": "Internet usage change: past 7 days versus the preceding 7 days",
+      "unit": "%",
+      "window_days": 7,
+      "family": "usage_change_pct"
+    },
+    "disconnect_count_7d": {
+      "label": "Disconnections over the past 7 days",
+      "unit": "",
+      "window_days": 7,
+      "family": "disconnect_count"
+    },
+    "outage_minutes_7d": {
+      "label": "Total connection downtime over the past 7 days",
+      "unit": "minutes",
+      "window_days": 7,
+      "family": "outage_minutes"
+    },
+    "evening_speed_ratio_7d": {
+      "label": "Average evening speed relative to plan speed over the past 7 days",
+      "unit": "fraction",
+      "window_days": 7,
+      "family": "evening_speed_ratio"
+    },
+    "service_issue_days_7d": {
+      "label": "Days with connection issues over the past 7 days",
+      "unit": "days",
+      "window_days": 7,
+      "family": "service_issue_days"
+    },
+    "inactive_days_7d": {
+      "label": "Observed days without Internet usage over the past 7 days",
+      "unit": "days",
+      "window_days": 7,
+      "family": "inactive_days"
+    },
+    "support_contacts_7d": {
+      "label": "Support contacts over the past 7 days",
+      "unit": "",
+      "window_days": 7,
+      "family": "support_contacts"
+    },
+    "repeat_contacts_7d": {
+      "label": "Repeat support contacts over the past 7 days",
+      "unit": "",
+      "window_days": 7,
+      "family": "repeat_contacts"
+    },
+    "opened_tickets_7d": {
+      "label": "New support requests over the past 7 days",
+      "unit": "",
+      "window_days": 7,
+      "family": "opened_tickets"
+    },
+    "unresolved_tickets_7d": {
+      "label": "Requests opened in this period and still unresolved over the past 7 days",
+      "unit": "",
+      "window_days": 7,
+      "family": "unresolved_tickets"
+    },
+    "avg_resolution_hours_7d": {
+      "label": "Average time to resolve requests completed in this period over the past 7 days",
+      "unit": "hours",
+      "window_days": 7,
+      "family": "avg_resolution_hours"
+    },
+    "plan_change_requests_7d": {
+      "label": "Requests to change the Internet plan over the past 7 days",
+      "unit": "",
+      "window_days": 7,
+      "family": "plan_change_requests"
+    },
+    "disconnect_count_14d": {
+      "label": "Disconnections over the past 14 days",
+      "unit": "",
+      "window_days": 14,
+      "family": "disconnect_count"
+    },
+    "outage_minutes_14d": {
+      "label": "Total connection downtime over the past 14 days",
+      "unit": "minutes",
+      "window_days": 14,
+      "family": "outage_minutes"
+    },
+    "evening_speed_ratio_14d": {
+      "label": "Average evening speed relative to plan speed over the past 14 days",
+      "unit": "fraction",
+      "window_days": 14,
+      "family": "evening_speed_ratio"
+    },
+    "service_issue_days_14d": {
+      "label": "Days with connection issues over the past 14 days",
+      "unit": "days",
+      "window_days": 14,
+      "family": "service_issue_days"
+    },
+    "usage_gb_14d": {
+      "label": "Measured Internet usage over the past 14 days",
+      "unit": "GB",
+      "window_days": 14,
+      "family": "usage_gb"
+    },
+    "support_contacts_14d": {
+      "label": "Support contacts over the past 14 days",
+      "unit": "",
+      "window_days": 14,
+      "family": "support_contacts"
+    },
+    "repeat_contacts_14d": {
+      "label": "Repeat support contacts over the past 14 days",
+      "unit": "",
+      "window_days": 14,
+      "family": "repeat_contacts"
+    },
+    "opened_tickets_14d": {
+      "label": "New support requests over the past 14 days",
+      "unit": "",
+      "window_days": 14,
+      "family": "opened_tickets"
+    },
+    "unresolved_tickets_14d": {
+      "label": "Requests opened in this period and still unresolved over the past 14 days",
+      "unit": "",
+      "window_days": 14,
+      "family": "unresolved_tickets"
+    },
+    "avg_resolution_hours_14d": {
+      "label": "Average time to resolve requests completed in this period over the past 14 days",
+      "unit": "hours",
+      "window_days": 14,
+      "family": "avg_resolution_hours"
+    },
+    "plan_change_requests_14d": {
+      "label": "Requests to change the Internet plan over the past 14 days",
+      "unit": "",
+      "window_days": 14,
+      "family": "plan_change_requests"
+    },
+    "inactive_days_30d": {
+      "label": "Observed days without Internet usage over the past 30 days",
+      "unit": "days",
+      "window_days": 30,
+      "family": "inactive_days"
+    },
+    "opened_tickets_30d": {
+      "label": "New support requests over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "opened_tickets"
+    },
+    "avg_resolution_hours_30d": {
+      "label": "Average time to resolve requests completed in this period over the past 30 days",
+      "unit": "hours",
+      "window_days": 30,
+      "family": "avg_resolution_hours"
+    },
+    "disconnect_count_60d": {
+      "label": "Disconnections over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "disconnect_count"
+    },
+    "outage_minutes_60d": {
+      "label": "Total connection downtime over the past 60 days",
+      "unit": "minutes",
+      "window_days": 60,
+      "family": "outage_minutes"
+    },
+    "evening_speed_ratio_60d": {
+      "label": "Average evening speed relative to plan speed over the past 60 days",
+      "unit": "fraction",
+      "window_days": 60,
+      "family": "evening_speed_ratio"
+    },
+    "service_issue_days_60d": {
+      "label": "Days with connection issues over the past 60 days",
+      "unit": "days",
+      "window_days": 60,
+      "family": "service_issue_days"
+    },
+    "usage_gb_60d": {
+      "label": "Measured Internet usage over the past 60 days",
+      "unit": "GB",
+      "window_days": 60,
+      "family": "usage_gb"
+    },
+    "inactive_days_60d": {
+      "label": "Observed days without Internet usage over the past 60 days",
+      "unit": "days",
+      "window_days": 60,
+      "family": "inactive_days"
+    },
+    "support_contacts_60d": {
+      "label": "Support contacts over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "support_contacts"
+    },
+    "repeat_contacts_60d": {
+      "label": "Repeat support contacts over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "repeat_contacts"
+    },
+    "opened_tickets_60d": {
+      "label": "New support requests over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "opened_tickets"
+    },
+    "unresolved_tickets_60d": {
+      "label": "Requests opened in this period and still unresolved over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "unresolved_tickets"
+    },
+    "avg_resolution_hours_60d": {
+      "label": "Average time to resolve requests completed in this period over the past 60 days",
+      "unit": "hours",
+      "window_days": 60,
+      "family": "avg_resolution_hours"
+    },
+    "plan_change_requests_60d": {
+      "label": "Requests to change the Internet plan over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "plan_change_requests"
+    },
+    "disconnect_count_90d": {
+      "label": "Disconnections over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "disconnect_count"
+    },
+    "outage_minutes_90d": {
+      "label": "Total connection downtime over the past 90 days",
+      "unit": "minutes",
+      "window_days": 90,
+      "family": "outage_minutes"
+    },
+    "evening_speed_ratio_90d": {
+      "label": "Average evening speed relative to plan speed over the past 90 days",
+      "unit": "fraction",
+      "window_days": 90,
+      "family": "evening_speed_ratio"
+    },
+    "service_issue_days_90d": {
+      "label": "Days with connection issues over the past 90 days",
+      "unit": "days",
+      "window_days": 90,
+      "family": "service_issue_days"
+    },
+    "usage_gb_90d": {
+      "label": "Measured Internet usage over the past 90 days",
+      "unit": "GB",
+      "window_days": 90,
+      "family": "usage_gb"
+    },
+    "inactive_days_90d": {
+      "label": "Observed days without Internet usage over the past 90 days",
+      "unit": "days",
+      "window_days": 90,
+      "family": "inactive_days"
+    },
+    "support_contacts_90d": {
+      "label": "Support contacts over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "support_contacts"
+    },
+    "repeat_contacts_90d": {
+      "label": "Repeat support contacts over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "repeat_contacts"
+    },
+    "opened_tickets_90d": {
+      "label": "New support requests over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "opened_tickets"
+    },
+    "unresolved_tickets_90d": {
+      "label": "Requests opened in this period and still unresolved over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "unresolved_tickets"
+    },
+    "plan_change_requests_90d": {
+      "label": "Requests to change the Internet plan over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "plan_change_requests"
+    },
+    "usage_change_pct_14d": {
+      "label": "Internet usage change: past 14 days versus the preceding 14 days",
+      "unit": "%",
+      "window_days": 14,
+      "family": "usage_change_pct"
+    },
+    "usage_change_pct_60d": {
+      "label": "Internet usage change: past 60 days versus the preceding 60 days",
+      "unit": "%",
+      "window_days": 60,
+      "family": "usage_change_pct"
+    },
+    "usage_change_pct_90d": {
+      "label": "Internet usage change: past 90 days versus the preceding 90 days",
+      "unit": "%",
+      "window_days": 90,
+      "family": "usage_change_pct"
+    },
+    "fee_change_pct_60d": {
+      "label": "Monthly fee change compared with 60 days earlier",
+      "unit": "%",
+      "window_days": 60,
+      "family": "fee_change_pct"
+    },
+    "fee_change_pct_90d": {
+      "label": "Monthly fee change compared with 90 days earlier",
+      "unit": "%",
+      "window_days": 90,
+      "family": "fee_change_pct"
+    },
+    "due_invoice_count_30d": {
+      "label": "Invoices due in this period over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "due_invoice_count"
+    },
+    "late_invoice_count_30d": {
+      "label": "Invoices paid late or currently overdue over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "late_invoice_count"
+    },
+    "late_invoice_rate_30d": {
+      "label": "Share of due invoices paid late or currently overdue over the past 30 days",
+      "unit": "fraction",
+      "window_days": 30,
+      "family": "late_invoice_rate"
+    },
+    "observed_delay_mean_days_30d": {
+      "label": "Average observed payment delay across due invoices over the past 30 days",
+      "unit": "days",
+      "window_days": 30,
+      "family": "observed_delay_mean_days"
+    },
+    "observed_delay_max_days_30d": {
+      "label": "Longest observed payment delay across due invoices over the past 30 days",
+      "unit": "days",
+      "window_days": 30,
+      "family": "observed_delay_max_days"
+    },
+    "late_paid_invoice_count_30d": {
+      "label": "Due invoices already paid after their deadline over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "late_paid_invoice_count"
+    },
+    "on_time_paid_invoice_rate_30d": {
+      "label": "Share of due invoices already paid on time over the past 30 days",
+      "unit": "fraction",
+      "window_days": 30,
+      "family": "on_time_paid_invoice_rate"
+    },
+    "unpaid_overdue_invoice_count_30d": {
+      "label": "Due invoices still unpaid and overdue over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "unpaid_overdue_invoice_count"
+    },
+    "unpaid_overdue_amount_vnd_30d": {
+      "label": "Unpaid overdue amount from invoices due in this period over the past 30 days",
+      "unit": "VND",
+      "window_days": 30,
+      "family": "unpaid_overdue_amount_vnd"
+    },
+    "due_cohort_paid_ratio_30d": {
+      "label": "Share of the amount due in this period already paid over the past 30 days",
+      "unit": "fraction",
+      "window_days": 30,
+      "family": "due_cohort_paid_ratio"
+    },
+    "payment_count_30d": {
+      "label": "Payments received in this period over the past 30 days",
+      "unit": "",
+      "window_days": 30,
+      "family": "payment_count"
+    },
+    "paid_amount_vnd_30d": {
+      "label": "Amount paid in this period over the past 30 days",
+      "unit": "VND",
+      "window_days": 30,
+      "family": "paid_amount_vnd"
+    },
+    "due_invoice_count_60d": {
+      "label": "Invoices due in this period over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "due_invoice_count"
+    },
+    "late_invoice_count_60d": {
+      "label": "Invoices paid late or currently overdue over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "late_invoice_count"
+    },
+    "late_invoice_rate_60d": {
+      "label": "Share of due invoices paid late or currently overdue over the past 60 days",
+      "unit": "fraction",
+      "window_days": 60,
+      "family": "late_invoice_rate"
+    },
+    "observed_delay_mean_days_60d": {
+      "label": "Average observed payment delay across due invoices over the past 60 days",
+      "unit": "days",
+      "window_days": 60,
+      "family": "observed_delay_mean_days"
+    },
+    "observed_delay_max_days_60d": {
+      "label": "Longest observed payment delay across due invoices over the past 60 days",
+      "unit": "days",
+      "window_days": 60,
+      "family": "observed_delay_max_days"
+    },
+    "late_paid_invoice_count_60d": {
+      "label": "Due invoices already paid after their deadline over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "late_paid_invoice_count"
+    },
+    "on_time_paid_invoice_rate_60d": {
+      "label": "Share of due invoices already paid on time over the past 60 days",
+      "unit": "fraction",
+      "window_days": 60,
+      "family": "on_time_paid_invoice_rate"
+    },
+    "unpaid_overdue_invoice_count_60d": {
+      "label": "Due invoices still unpaid and overdue over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "unpaid_overdue_invoice_count"
+    },
+    "unpaid_overdue_amount_vnd_60d": {
+      "label": "Unpaid overdue amount from invoices due in this period over the past 60 days",
+      "unit": "VND",
+      "window_days": 60,
+      "family": "unpaid_overdue_amount_vnd"
+    },
+    "due_cohort_paid_ratio_60d": {
+      "label": "Share of the amount due in this period already paid over the past 60 days",
+      "unit": "fraction",
+      "window_days": 60,
+      "family": "due_cohort_paid_ratio"
+    },
+    "payment_count_60d": {
+      "label": "Payments received in this period over the past 60 days",
+      "unit": "",
+      "window_days": 60,
+      "family": "payment_count"
+    },
+    "paid_amount_vnd_60d": {
+      "label": "Amount paid in this period over the past 60 days",
+      "unit": "VND",
+      "window_days": 60,
+      "family": "paid_amount_vnd"
+    },
+    "due_invoice_count_90d": {
+      "label": "Invoices due in this period over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "due_invoice_count"
+    },
+    "late_invoice_count_90d": {
+      "label": "Invoices paid late or currently overdue over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "late_invoice_count"
+    },
+    "late_invoice_rate_90d": {
+      "label": "Share of due invoices paid late or currently overdue over the past 90 days",
+      "unit": "fraction",
+      "window_days": 90,
+      "family": "late_invoice_rate"
+    },
+    "observed_delay_mean_days_90d": {
+      "label": "Average observed payment delay across due invoices over the past 90 days",
+      "unit": "days",
+      "window_days": 90,
+      "family": "observed_delay_mean_days"
+    },
+    "observed_delay_max_days_90d": {
+      "label": "Longest observed payment delay across due invoices over the past 90 days",
+      "unit": "days",
+      "window_days": 90,
+      "family": "observed_delay_max_days"
+    },
+    "late_paid_invoice_count_90d": {
+      "label": "Due invoices already paid after their deadline over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "late_paid_invoice_count"
+    },
+    "on_time_paid_invoice_rate_90d": {
+      "label": "Share of due invoices already paid on time over the past 90 days",
+      "unit": "fraction",
+      "window_days": 90,
+      "family": "on_time_paid_invoice_rate"
+    },
+    "unpaid_overdue_invoice_count_90d": {
+      "label": "Due invoices still unpaid and overdue over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "unpaid_overdue_invoice_count"
+    },
+    "unpaid_overdue_amount_vnd_90d": {
+      "label": "Unpaid overdue amount from invoices due in this period over the past 90 days",
+      "unit": "VND",
+      "window_days": 90,
+      "family": "unpaid_overdue_amount_vnd"
+    },
+    "due_cohort_paid_ratio_90d": {
+      "label": "Share of the amount due in this period already paid over the past 90 days",
+      "unit": "fraction",
+      "window_days": 90,
+      "family": "due_cohort_paid_ratio"
+    },
+    "payment_count_90d": {
+      "label": "Payments received in this period over the past 90 days",
+      "unit": "",
+      "window_days": 90,
+      "family": "payment_count"
+    },
+    "paid_amount_vnd_90d": {
+      "label": "Amount paid in this period over the past 90 days",
+      "unit": "VND",
+      "window_days": 90,
+      "family": "paid_amount_vnd"
+    },
+    "current_overdue_invoice_count": {
+      "label": "Currently overdue unpaid invoices",
+      "unit": "",
+      "window_days": null,
+      "family": "current_overdue_invoice_count"
+    },
+    "current_overdue_days_mean": {
+      "label": "Average current delay across unpaid overdue invoices",
+      "unit": "days",
+      "window_days": null,
+      "family": "current_overdue_days_mean"
+    },
+    "current_overdue_amount_to_fee": {
+      "label": "Current overdue balance relative to the monthly fee",
+      "unit": "times monthly fee",
+      "window_days": null,
+      "family": "current_overdue_amount_to_fee"
+    },
+    "days_since_last_payment": {
+      "label": "Time since the last observed payment",
+      "unit": "days",
+      "window_days": null,
+      "family": "days_since_last_payment"
+    },
+    "last_payment_delay_days": {
+      "label": "Delay of the most recent observed payment",
+      "unit": "days",
+      "window_days": null,
+      "family": "last_payment_delay_days"
+    },
+    "consecutive_late_invoice_count": {
+      "label": "Consecutive late invoices",
+      "unit": "",
+      "window_days": null,
+      "family": "consecutive_late_invoice_count"
+    },
+    "delay_change_recent3_vs_previous3_days": {
+      "label": "Change in average payment delay: latest 3 versus preceding 3 due invoices",
+      "unit": "days",
+      "window_days": null,
+      "family": "delay_change_recent3_vs_previous3_days"
+    },
+    "late_rate_change_recent3_vs_previous3": {
+      "label": "Change in late-payment rate: latest 3 versus preceding 3 due invoices",
+      "unit": "fraction",
+      "window_days": null,
+      "family": "late_rate_change_recent3_vs_previous3"
+    },
+    "current_overdue_count_ge_7d": {
+      "label": "Unpaid invoices at least 7 days overdue",
+      "unit": "",
+      "window_days": null,
+      "family": "overdue_invoice_aging"
+    },
+    "current_overdue_count_ge_30d": {
+      "label": "Unpaid invoices at least 30 days overdue",
+      "unit": "",
+      "window_days": null,
+      "family": "overdue_invoice_aging"
+    },
+    "current_overdue_count_ge_60d": {
+      "label": "Unpaid invoices at least 60 days overdue",
+      "unit": "",
+      "window_days": null,
+      "family": "overdue_invoice_aging"
+    },
+    "current_overdue_amount_ge_30d_vnd": {
+      "label": "Unpaid amount at least 30 days overdue",
+      "unit": "VND",
+      "window_days": null,
+      "family": "overdue_amount_aging"
+    },
+    "current_overdue_amount_ge_60d_vnd": {
+      "label": "Unpaid amount at least 60 days overdue",
+      "unit": "VND",
+      "window_days": null,
+      "family": "overdue_amount_aging"
+    }
+  },
+  "notes": [
+    "Each feature belongs to exactly one group. Signed sums, not absolute sums.",
+    "Grouped feature attributions are not direct group-coalition Shapley values.",
+    "English drafts are internal, synthetic and require staff review. No automatic outbound."
+  ]
+}
