@@ -2,7 +2,7 @@
   "name": "Retention · 04 Mock delivery",
   "nodes": [
     {
-      "id": "026b7942-0e93-484d-8140-7d218717bb11",
+      "id": "bdafdc94-7a1c-4b0d-9fd1-aee584bb4b55",
       "name": "Test manually",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -13,7 +13,7 @@
       "parameters": {}
     },
     {
-      "id": "61daa1a3-c3c2-4f06-91c0-aa9ea7713a31",
+      "id": "02bd0363-0c65-4c12-897e-35f3368288f3",
       "name": "Claim approved delivery",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
@@ -39,13 +39,13 @@
       "waitBetweenTries": 1500,
       "credentials": {
         "supabaseApi": {
-          "id": "5yv1CNx8OTowthsp",
-          "name": "Retention Supabase"
+          "id": "3cEOE5EyZbpadodY",
+          "name": "Supabase account"
         }
       }
     },
     {
-      "id": "a6205af7-70d0-4d1c-bc1e-45607b922c45",
+      "id": "3805be37-92b4-49b2-980a-6bc1d145d676",
       "name": "Only claimed deliveries",
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.3,
@@ -76,7 +76,7 @@
       }
     },
     {
-      "id": "6f6f8be9-50a6-487c-8360-0b01dc47a23c",
+      "id": "dac483f9-649c-47c9-93ca-7910bb605d21",
       "name": "Deliver to mock portal",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
@@ -103,13 +103,13 @@
       "onError": "continueErrorOutput",
       "credentials": {
         "supabaseApi": {
-          "id": "5yv1CNx8OTowthsp",
-          "name": "Retention Supabase"
+          "id": "3cEOE5EyZbpadodY",
+          "name": "Supabase account"
         }
       }
     },
     {
-      "id": "edb413fe-e116-4190-8771-df8e1e70cd02",
+      "id": "b9715bf0-73a6-4740-8c67-bad14052bbb1",
       "name": "Every 1 minutes",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
@@ -126,10 +126,11 @@
             }
           ]
         }
-      }
+      },
+      "disabled": true
     },
     {
-      "id": "60141d2c-9f14-43c5-be09-7592210fc115",
+      "id": "70e704de-a83d-466f-bc73-62ce918c8456",
       "name": "Record delivery failure",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
@@ -155,8 +156,8 @@
       "waitBetweenTries": 1500,
       "credentials": {
         "supabaseApi": {
-          "id": "5yv1CNx8OTowthsp",
-          "name": "Retention Supabase"
+          "id": "3cEOE5EyZbpadodY",
+          "name": "Supabase account"
         }
       }
     }
@@ -220,27 +221,14 @@
     }
   },
   "settings": {
-    "timezone": "Asia/Ho_Chi_Minh",
-    "executionTimeout": 90,
-    "saveDataSuccessExecution": "none",
-    "saveDataErrorExecution": "all",
     "executionOrder": "v1",
-    "availableInMCP": true
+    "availableInMCP": true,
+    "timezone": "Asia/Ho_Chi_Minh",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 90
   },
-  "nodeGroups": [
-    {
-      "id": "b23fce08-599d-4ae6-93d9-31ce30cec0db",
-      "name": "Approved mock send",
-      "nodeNames": [
-        "Claim approved delivery",
-        "Only claimed deliveries",
-        "Deliver to mock portal",
-        "Record delivery failure"
-      ],
-      "description": "Claims approved revisions; server rechecks consent and records an idempotent mock receipt."
-    }
-  ],
-  "active": false,
-  "id": "BtozaQeAwIhpQu4m",
-  "versionId": "88c99de3-c0b2-42f8-aa99-92babc8cbb54"
+  "nodeGroups": [],
+  "id": "DXzQNDZgoYA5HbuG",
+  "active": false
 }

@@ -1,20 +1,24 @@
 # Workflow n8n hiện hành
 
-Đã tạo và publish 5 worker trên n8n Cloud ngày 18/10/2026. Bảy mục dưới đây là trách nhiệm logic; ingestion dùng Python/RPC, approval/inbound/outcome dùng Auth RPC của website nên không tạo workflow rỗng cho đủ số.
+**Migration hoàn tất ở trạng thái draft — 18/10/2026:** đã chuyển đủ 5 workflow sang `group-2-new` qua MCP đúng instance, gắn Supabase/Google Sheets credentials mới và Gateway credits. Đọc lại đủ 52 node, connections/parameters khớp bản nguồn; tất cả chưa publish và timer disabled. Local validator 6/6 đạt; không chạy workflow/LLM/gửi tin để kiểm migration. Evidence: `../docs/evidence/n8n_migration.json`. Supabase runtime chưa được kiểm; Sheets credential mới lookup được tab FAQ. Website/Vercel và hosted smoke scripts vẫn trỏ host cũ cho đến khi chốt activation/cutover. Các kết quả execution phía dưới là lịch sử account cũ, không phải test trên account mới.
+
+**Giữ quota:** 3 AI fallback mỗi phút + delivery mỗi phút + follow-up mỗi 2 phút có thể tạo khoảng 6.480 executions/ngày khi để chạy liên tục, vượt nhanh ngân sách 1.000. Không bật lại lịch đó trên account mới. Import/read/validate local không cần execution live; không chạy workflow để kiểm credential/import. Trước test live phải nêu ngân sách executions tối đa; dùng một mẫu tối thiểu khi cần. Quy tắc lâu dài ở `../AGENTS.md`. Khi tắt schedules, AI không còn fallback tự chạy, delivery/support/reminder cũng không tự tick; phải hoàn thiện trigger theo sự kiện hoặc quy trình demo có kiểm soát trước khi gọi hệ thống đã hoạt động trở lại.
+
+Bản hiện hành có 5 worker đã chuyển sang tài khoản n8n Cloud mới ngày 18/10/2026, tất cả unpublished. Bảy mục dưới đây là trách nhiệm logic; ingestion dùng Python/RPC, approval/inbound/outcome dùng Auth RPC của website nên không tạo workflow rỗng cho đủ số.
 
 | Worker | Trigger | Export |
 |---|---|---|
-| [AI message](https://group-2.app.n8n.cloud/workflow/6vz0G2kEFy1v0f6V) | Request/rewrite message + fallback mỗi phút | [02_ai_message.json](02_ai_message.json) |
-| [AI call script](https://group-2.app.n8n.cloud/workflow/Ead0Qlw8LGkl0Ncv) | Request/rewrite call script + fallback mỗi phút | [02_ai_call_script.json](02_ai_call_script.json) |
-| [AI explanation](https://group-2.app.n8n.cloud/workflow/MBnCQdjOKV2XX0GU) | Request explanation + fallback mỗi phút | [02_ai_explanation.json](02_ai_explanation.json) |
-| [04 Mock delivery](https://group-2.app.n8n.cloud/workflow/BtozaQeAwIhpQu4m) | Mỗi phút | [04_mock_delivery.json](04_mock_delivery.json) |
-| [06 Follow-ups and support](https://group-2.app.n8n.cloud/workflow/DCKhogHvYb4cIEVs) | Mỗi 2 phút | [06_followups_support.json](06_followups_support.json) |
+| [AI message](https://group-2-new.app.n8n.cloud/workflow/nNbDkr6XkXbbNOjl) | Request/rewrite message; fallback timer disabled | [02_ai_message.json](02_ai_message.json) |
+| [AI call script](https://group-2-new.app.n8n.cloud/workflow/0rCQHXSgtE7LKuhC) | Request/rewrite call script; fallback timer disabled | [02_ai_call_script.json](02_ai_call_script.json) |
+| [AI explanation](https://group-2-new.app.n8n.cloud/workflow/5Kt2SpYMSKcnxJ2s) | Request explanation; fallback timer disabled | [02_ai_explanation.json](02_ai_explanation.json) |
+| [04 Mock delivery](https://group-2-new.app.n8n.cloud/workflow/DXzQNDZgoYA5HbuG) | Manual; timer disabled | [04_mock_delivery.json](04_mock_delivery.json) |
+| [06 Follow-ups and support](https://group-2-new.app.n8n.cloud/workflow/YM3alB7plp9igVJq) | Manual; timer disabled | [06_followups_support.json](06_followups_support.json) |
 
 AI worker gộp iFQqWykiGRtAmrLI đã unpublish; export cũ thay bằng ba JSON riêng. Mỗi workflow có AI Agent + OpenAI Chat Model + Google Sheets tool Read_company_FAQ. Rewrites dùng workflow cùng loại; không dùng shared chat memory giữa khách.
 
 Request tạo job bằng Auth RPC rồi POST job_id đến `/webhook/retention-ai-message|call_script|explanation`, kèm JWT phiên và publishable key. Authorize requested job đọc đúng job queued qua RLS trước khi dùng worker credential. Webhook trả 200 là đã nhận, chưa phải đã sinh xong. CORS cho hai URL local 5173. Bản Vercel production dùng ba proxy routes cùng domain `/api/retention-ai-*` trong website/app/vercel.json; local dev vẫn gọi trực tiếp. Không cần mở wildcard CORS; xem ../docs/DEPLOYMENT.md. Không lưu production execution data cả success/error để tránh giữ bearer token; debug bằng manual trigger không chứa token. Fallback mỗi phút lọc requested_output trước limit. UI tự cập nhật mỗi 3 giây khi visible, giữ nguyên nội dung editor.
 
-Credentials: **Retention Supabase** và **Gateway credits**; không chứa secret trong JSON. AI dùng gpt-5.4-mini, kết quả kiểm ghi model gpt-5.4-mini-2026-03-17. Export lấy graph thật từ n8n, active=false để import an toàn; bản live active=true. Khi import sang instance khác cần chọn lại credential rồi publish.
+Credentials account mới: **Supabase account**, **Google Sheets account** và **Gateway credits**; không chứa secret trong JSON. AI dùng gpt-5.4-mini, kết quả kiểm ghi model gpt-5.4-mini-2026-03-17. Export lấy graph thật từ account mới: active=false và schedule disabled; chưa có bản live active trên account mới. Khi import sang instance khác cần chọn lại credential rồi publish.
 
 Đã kiểm bằng hosted Auth API + n8n executions 21–25: message rewrite, call script, explanation, duyệt đúng revision → portal mock → customer reply; nhắc đến hạn và support receipt mock. [Evidence](../docs/evidence/n8n_workflows.json). Chưa kiểm toàn luồng bằng thao tác browser hoặc quan sát riêng production timer. Workflow không lưu successful production execution data.
 
@@ -84,7 +88,7 @@ Giữ năm JSON thực thi trong thư mục này; không tạo thêm export rỗ
 
 ## Contract request thủ công 18/10 — hiện hành
 
-Ba workflow AI đã active, credential Supabase/Gateway đã chạy thử. Nút Request gọi RPC authenticated để tạo job; worker chỉ xử lý job do staff yêu cầu. Import/reply không tự gọi AI. Queue vẫn là nguồn trạng thái; webhook đánh thức xử lý ngay, browser không có service secret.
+Lịch sử trước migration: ba workflow AI từng active, credential Supabase/Gateway cũ đã chạy thử. Bản mới hiện unpublished và chưa chạy live. Nút Request gọi RPC authenticated để tạo job; worker chỉ xử lý job do staff yêu cầu. Import/reply không tự gọi AI. Queue vẫn là nguồn trạng thái; webhook đánh thức xử lý ngay, browser không có service secret.
 
 UI dùng request_key `manual:<output>:<uuid>` với output `message`, `explanation`, `call_script`. pending_jobs trả job.id; worker_context trả requested_output + dữ kiện đã lọc. Ba workflow xử lý theo output; polling không có nghĩa tự sinh nội dung khi không ai request.
 

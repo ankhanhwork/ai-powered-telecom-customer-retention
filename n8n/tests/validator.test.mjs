@@ -47,6 +47,16 @@ test('exports contain credential references and scoped worker RPCs, not secrets 
  for(const file of ['02_ai_message.json','02_ai_call_script.json','02_ai_explanation.json','04_mock_delivery.json','06_followups_support.json']){
   const raw=await readFile(new URL('../'+file,import.meta.url),'utf8'),w=JSON.parse(raw);
   assert(!raw.includes('sb_secret_'));assert(!/eyJ[A-Za-z0-9_-]{20,}/.test(raw));assert(!raw.includes('retention_review_message'));
-  for(const n of w.nodes.filter(n=>n.type==='n8n-nodes-base.httpRequest'&&n.name!=='Authorize requested job')){assert.equal(n.parameters.authentication,'predefinedCredentialType');assert.equal(n.credentials.supabaseApi.name,'Retention Supabase');assert(n.parameters.url.startsWith('https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/'));}
+  for(const n of w.nodes.filter(n=>n.type==='n8n-nodes-base.httpRequest'&&n.name!=='Authorize requested job')){assert.equal(n.parameters.authentication,'predefinedCredentialType');assert.equal(n.credentials.supabaseApi.name,'Supabase account');assert(n.parameters.url.startsWith('https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/'));}
+ }
+});
+
+test('migrated workflows stay unpublished with all quota-consuming timers disabled',async()=>{
+ for(const file of ['02_ai_message.json','02_ai_call_script.json','02_ai_explanation.json','04_mock_delivery.json','06_followups_support.json']){
+  const w=JSON.parse(await readFile(new URL('../'+file,import.meta.url),'utf8'));
+  assert.equal(w.active,false);
+  const timers=w.nodes.filter(n=>n.type==='n8n-nodes-base.scheduleTrigger');
+  assert.equal(timers.length,1);
+  for(const n of timers)assert.equal(n.disabled,true);
  }
 });

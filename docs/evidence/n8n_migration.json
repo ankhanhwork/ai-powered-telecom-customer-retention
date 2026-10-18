@@ -1,0 +1,68 @@
+{
+  "date": "2026-10-18",
+  "instance": "https://group-2-new.app.n8n.cloud",
+  "status": "Five unpublished workflows migrated; all schedule triggers disabled",
+  "live_executions_triggered": 0,
+  "published": false,
+  "website_cutover": false,
+  "checks": [
+    {
+      "file": "02_ai_call_script.json",
+      "id": "0rCQHXSgtE7LKuhC",
+      "active": false,
+      "node_count": 14,
+      "connections_match": true,
+      "parameters_match": true,
+      "new_supabase_credential_bound": true,
+      "all_timers_disabled": true
+    },
+    {
+      "file": "02_ai_explanation.json",
+      "id": "5Kt2SpYMSKcnxJ2s",
+      "active": false,
+      "node_count": 14,
+      "connections_match": true,
+      "parameters_match": true,
+      "new_supabase_credential_bound": true,
+      "all_timers_disabled": true
+    },
+    {
+      "file": "02_ai_message.json",
+      "id": "nNbDkr6XkXbbNOjl",
+      "active": false,
+      "node_count": 14,
+      "connections_match": true,
+      "parameters_match": true,
+      "new_supabase_credential_bound": true,
+      "all_timers_disabled": true
+    },
+    {
+      "file": "04_mock_delivery.json",
+      "id": "DXzQNDZgoYA5HbuG",
+      "active": false,
+      "node_count": 6,
+      "connections_match": true,
+      "parameters_match": true,
+      "new_supabase_credential_bound": true,
+      "all_timers_disabled": true
+    },
+    {
+      "file": "06_followups_support.json",
+      "id": "YM3alB7plp9igVJq",
+      "active": false,
+      "node_count": 4,
+      "connections_match": true,
+      "parameters_match": true,
+      "new_supabase_credential_bound": true,
+      "all_timers_disabled": true
+    }
+  ],
+  "notes": [
+    "Google Sheets FAQ tab lookup with the new credential returned the expected tab; no workflow run used.",
+    "Gateway credits assigned to model nodes by n8n during creation.",
+    "Removed empty builtInTools from explanation model because responsesApiEnabled was absent; no model/prompt change.",
+    "Supabase credential binding checked by ID only; runtime connection was not tested.",
+    "App/Vercel and hosted smoke scripts still target old host until event-driven activation/cutover."
+  ],
+  "local_validator_checks_passed": 6
+}

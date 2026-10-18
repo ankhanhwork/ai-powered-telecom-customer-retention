@@ -2,7 +2,7 @@
   "name": "Retention · AI message",
   "nodes": [
     {
-      "id": "0f98fd33-1406-42a3-b594-b0fba1cb1af5",
+      "id": "c533bbd0-87f0-48e0-a360-4c10cc726727",
       "name": "Test manually",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -13,7 +13,7 @@
       "parameters": {}
     },
     {
-      "id": "4963b012-6824-4cdd-9f01-14b1aef29edb",
+      "id": "619dbc97-57a6-4543-bd8f-c92ba9be47a7",
       "name": "Read pending requests",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -35,13 +35,13 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "5yv1CNx8OTowthsp",
-          "name": "Retention Supabase"
+          "id": "3cEOE5EyZbpadodY",
+          "name": "Supabase account"
         }
       }
     },
     {
-      "id": "5ced7c37-09b0-4d94-a413-8e03c2820984",
+      "id": "54bd21d4-5737-46c1-b975-d7d32928b179",
       "name": "Selected request",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -55,7 +55,7 @@
       }
     },
     {
-      "id": "8ff7ffd8-8689-4097-ad44-6ecc0f3a5afb",
+      "id": "a1946ec4-87bc-468d-9636-8987cf42f1ea",
       "name": "Read care context",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -75,19 +75,19 @@
           "timeout": 15000
         }
       },
-      "onError": "continueErrorOutput",
       "retryOnFail": true,
       "maxTries": 2,
       "waitBetweenTries": 1000,
+      "onError": "continueErrorOutput",
       "credentials": {
         "supabaseApi": {
-          "id": "5yv1CNx8OTowthsp",
-          "name": "Retention Supabase"
+          "id": "3cEOE5EyZbpadodY",
+          "name": "Supabase account"
         }
       }
     },
     {
-      "id": "62223cdd-b69d-4af6-9c4c-ca28ca926157",
+      "id": "17f6bc1c-4219-4dc6-ab0b-138b6efaf594",
       "name": "AI Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
@@ -107,13 +107,12 @@
           "enableStreaming": false
         }
       },
-      "onError": "continueErrorOutput",
-      "retryOnFail": false,
       "maxTries": 2,
-      "waitBetweenTries": 1000
+      "waitBetweenTries": 1000,
+      "onError": "continueErrorOutput"
     },
     {
-      "id": "1d91415b-7168-45af-9255-38590b98963f",
+      "id": "78ce19c5-48c4-4adb-8b70-0c785d3bc045",
       "name": "OpenAI Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
@@ -137,189 +136,7 @@
       }
     },
     {
-      "id": "91a08412-365d-40d5-af28-e4a3a3c42f4f",
-      "name": "Validate AI output",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1296,
-        320
-      ],
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "jsCode": "const agent=$input.first().json;\nconst response={status:'completed',model:'gpt-5.4-mini (configured)',output:[{type:'message',content:[{type:'output_text',text:agent.output}]}]};\nconst context=$('Read care context').first().json;\nconst job=$('Selected request').first().json;\nif (response.status && response.status!=='completed') throw new Error('LLM response incomplete');\nconst content=(response.output||[]).filter(x=>x.type==='message').flatMap(x=>x.content||[]);\nif (content.some(x=>x.type==='refusal')) throw new Error('LLM refused the request');\nconst blocks=content.filter(x=>x.type==='output_text');\nif (blocks.length!==1) throw new Error('Expected one structured output block');\nconst out=typeof blocks[0].text==='string'?JSON.parse(blocks[0].text):blocks[0].text;\nif (!out || typeof out!=='object' || Array.isArray(out)) throw new Error('Expected JSON object');\nconst keys=['action','rationale','message_body','call_script','missing_fields'];\nif (Object.keys(out).some(k=>!keys.includes(k)) || keys.some(k=>!(k in out))) throw new Error('Unexpected output schema');\nfor (const field of ['action','rationale']) if (typeof out[field]!=='string'||!out[field].trim()||out[field].length>10000) throw new Error('Invalid '+field);\nfor (const field of ['message_body','call_script']) if (out[field]!==null&&(typeof out[field]!=='string'||!out[field].trim()||out[field].length>10000)) throw new Error('Invalid '+field);\nif (!Array.isArray(out.missing_fields)||out.missing_fields.some(x=>typeof x!=='string'||x.length>500)||out.missing_fields.length>30) throw new Error('Invalid missing_fields');\nconst type=context.requested_output;\nif (!['message','call_script','explanation','care_pack'].includes(type)) throw new Error('Unknown request type');\nif (type==='explanation'&&(out.message_body!==null||out.call_script!==null)) throw new Error('Explanation must not produce outbound content');\nif (type==='call_script'&&(!out.call_script||out.message_body!==null)) throw new Error('Call script must not produce a message');\nif (['message','care_pack'].includes(type)&&!out.message_body) throw new Error('Message body required');\nif (type==='message'&&out.call_script!==null) throw new Error('Unexpected call script');\nreturn [{json:{p_job_id:job.id,p_action:out.action,p_rationale:out.rationale,p_message_body:out.message_body,p_call_script:out.call_script,p_missing_fields:out.missing_fields,p_generation_mode:'llm',p_model_version:response.model||'gpt-5.4-mini',p_prompt_version:'retention-agent-v3',p_offer_id:null},pairedItem:{item:0}}];"
-      },
-      "onError": "continueErrorOutput",
-      "retryOnFail": false,
-      "maxTries": 2,
-      "waitBetweenTries": 1000
-    },
-    {
-      "id": "58dfcb7b-ea6d-42e7-8768-9cd9353bc39c",
-      "name": "Save AI draft result",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        1520,
-        320
-      ],
-      "parameters": {
-        "method": "POST",
-        "url": "https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/retention_complete_job",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "supabaseApi",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ $json }}",
-        "options": {
-          "timeout": 15000
-        }
-      },
-      "onError": "continueErrorOutput",
-      "retryOnFail": true,
-      "maxTries": 2,
-      "waitBetweenTries": 1000,
-      "credentials": {
-        "supabaseApi": {
-          "id": "5yv1CNx8OTowthsp",
-          "name": "Retention Supabase"
-        }
-      }
-    },
-    {
-      "id": "5fdec8d2-de5b-4236-b547-51b0387440ec",
-      "name": "Retry queued requests",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.4,
-      "position": [
-        0,
-        192
-      ],
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "minutes",
-              "minutesInterval": 1
-            }
-          ]
-        }
-      }
-    },
-    {
-      "id": "1a446e1b-679b-4eeb-addf-975619c9ef7e",
-      "name": "Request AI",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.2,
-      "position": [
-        0,
-        384
-      ],
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "retention-ai-message",
-        "authentication": "none",
-        "responseMode": "onReceived",
-        "options": {
-          "allowedOrigins": "http://127.0.0.1:5173,http://localhost:5173",
-          "responseCode": {
-            "values": {
-              "responseCode": 200
-            }
-          }
-        }
-      },
-      "webhookId": "68b3e03c-f209-4ffd-a918-21a702326079"
-    },
-    {
-      "id": "e2f98fd3-0595-4078-9084-408bebf9f719",
-      "name": "Authorize requested job",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        224,
-        384
-      ],
-      "parameters": {
-        "method": "GET",
-        "url": "={{ 'https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/automation_jobs?select=id,request_key&status=eq.queued&id=eq.'+encodeURIComponent($json.body.job_id||'invalid') }}",
-        "authentication": "none",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "={{ $json.headers.apikey || 'invalid' }}"
-            },
-            {
-              "name": "Authorization",
-              "value": "={{ $json.headers.authorization || 'Bearer invalid' }}"
-            }
-          ]
-        },
-        "options": {
-          "timeout": 10000
-        }
-      }
-    },
-    {
-      "id": "c0f61948-77a7-49de-a013-acf082bdb2d3",
-      "name": "Mark failed AI request",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        1800,
-        550
-      ],
-      "parameters": {
-        "method": "POST",
-        "url": "https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/retention_fail_job",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "supabaseApi",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ {p_job_id:$('Selected request').first().json.id} }}",
-        "options": {
-          "timeout": 15000
-        }
-      },
-      "credentials": {
-        "supabaseApi": {
-          "id": "5yv1CNx8OTowthsp",
-          "name": "Retention Supabase"
-        }
-      }
-    },
-    {
-      "id": "e08a9d8d-620f-415a-ab9d-a83cc9eac96e",
-      "name": "Claim AI request",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        760,
-        200
-      ],
-      "parameters": {
-        "method": "POST",
-        "url": "https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/retention_claim_ai_request",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "supabaseApi",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ {p_job_id:$json.id} }}",
-        "options": {
-          "timeout": 15000
-        }
-      },
-      "credentials": {
-        "supabaseApi": {
-          "id": "5yv1CNx8OTowthsp",
-          "name": "Retention Supabase"
-        }
-      }
-    },
-    {
-      "id": "c1f13ff2-1682-451f-9ba1-01005245fe57",
+      "id": "5ea3319d-2321-488c-a0be-a755c5aa72fd",
       "name": "Read_company_FAQ",
       "type": "n8n-nodes-base.googleSheetsTool",
       "typeVersion": 4.7,
@@ -356,8 +173,190 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "ORW2zRDp1v5mlq1e",
+          "id": "hXFeqRN25tK5k5Tm",
           "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "2f8dee67-ec84-49d3-b7f6-1a3f26312472",
+      "name": "Validate AI output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        320
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const agent=$input.first().json;\nconst response={status:'completed',model:'gpt-5.4-mini (configured)',output:[{type:'message',content:[{type:'output_text',text:agent.output}]}]};\nconst context=$('Read care context').first().json;\nconst job=$('Selected request').first().json;\nif (response.status && response.status!=='completed') throw new Error('LLM response incomplete');\nconst content=(response.output||[]).filter(x=>x.type==='message').flatMap(x=>x.content||[]);\nif (content.some(x=>x.type==='refusal')) throw new Error('LLM refused the request');\nconst blocks=content.filter(x=>x.type==='output_text');\nif (blocks.length!==1) throw new Error('Expected one structured output block');\nconst out=typeof blocks[0].text==='string'?JSON.parse(blocks[0].text):blocks[0].text;\nif (!out || typeof out!=='object' || Array.isArray(out)) throw new Error('Expected JSON object');\nconst keys=['action','rationale','message_body','call_script','missing_fields'];\nif (Object.keys(out).some(k=>!keys.includes(k)) || keys.some(k=>!(k in out))) throw new Error('Unexpected output schema');\nfor (const field of ['action','rationale']) if (typeof out[field]!=='string'||!out[field].trim()||out[field].length>10000) throw new Error('Invalid '+field);\nfor (const field of ['message_body','call_script']) if (out[field]!==null&&(typeof out[field]!=='string'||!out[field].trim()||out[field].length>10000)) throw new Error('Invalid '+field);\nif (!Array.isArray(out.missing_fields)||out.missing_fields.some(x=>typeof x!=='string'||x.length>500)||out.missing_fields.length>30) throw new Error('Invalid missing_fields');\nconst type=context.requested_output;\nif (!['message','call_script','explanation','care_pack'].includes(type)) throw new Error('Unknown request type');\nif (type==='explanation'&&(out.message_body!==null||out.call_script!==null)) throw new Error('Explanation must not produce outbound content');\nif (type==='call_script'&&(!out.call_script||out.message_body!==null)) throw new Error('Call script must not produce a message');\nif (['message','care_pack'].includes(type)&&!out.message_body) throw new Error('Message body required');\nif (type==='message'&&out.call_script!==null) throw new Error('Unexpected call script');\nreturn [{json:{p_job_id:job.id,p_action:out.action,p_rationale:out.rationale,p_message_body:out.message_body,p_call_script:out.call_script,p_missing_fields:out.missing_fields,p_generation_mode:'llm',p_model_version:response.model||'gpt-5.4-mini',p_prompt_version:'retention-agent-v3',p_offer_id:null},pairedItem:{item:0}}];"
+      },
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "436cfdee-6b22-4e7a-ae40-805a3f8b62d4",
+      "name": "Save AI draft result",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1520,
+        320
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/retention_complete_job",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3cEOE5EyZbpadodY",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "id": "16e23f73-c9c3-4746-afab-796131c6c967",
+      "name": "Retry queued requests",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "disabled": true
+    },
+    {
+      "id": "c2d94994-d0df-4d1a-b14e-a4be7d901ec1",
+      "name": "Request AI",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        384
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "retention-ai-message",
+        "authentication": "none",
+        "responseMode": "onReceived",
+        "options": {
+          "allowedOrigins": "http://127.0.0.1:5173,http://localhost:5173",
+          "responseCode": {
+            "values": {
+              "responseCode": 200
+            }
+          }
+        }
+      },
+      "webhookId": "a2b9e92c-c312-4c95-b64c-979f869f6114"
+    },
+    {
+      "id": "482e4ce4-3947-45be-97ee-472ae8c4fd3c",
+      "name": "Authorize requested job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        384
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/automation_jobs?select=id,request_key&status=eq.queued&id=eq.'+encodeURIComponent($json.body.job_id||'invalid') }}",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.headers.apikey || 'invalid' }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.headers.authorization || 'Bearer invalid' }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      }
+    },
+    {
+      "id": "a72321f8-1940-4faf-b6eb-72fd18ae4a12",
+      "name": "Mark failed AI request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1800,
+        550
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/retention_fail_job",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {p_job_id:$('Selected request').first().json.id} }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "3cEOE5EyZbpadodY",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "id": "5ce68b31-9cfd-473f-a944-89f7a2788845",
+      "name": "Claim AI request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        760,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/retention_claim_ai_request",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {p_job_id:$json.id} }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "3cEOE5EyZbpadodY",
+          "name": "Supabase account"
         }
       }
     }
@@ -379,6 +378,17 @@
         [
           {
             "node": "Selected request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Selected request": {
+      "main": [
+        [
+          {
+            "node": "Claim AI request",
             "type": "main",
             "index": 0
           }
@@ -432,6 +442,17 @@
         ]
       ]
     },
+    "Read_company_FAQ": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Validate AI output": {
       "main": [
         [
@@ -441,6 +462,18 @@
             "index": 0
           }
         ],
+        [
+          {
+            "node": "Mark failed AI request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save AI draft result": {
+      "main": [
+        [],
         [
           {
             "node": "Mark failed AI request",
@@ -483,46 +516,12 @@
         ]
       ]
     },
-    "Save AI draft result": {
-      "main": [
-        null,
-        [
-          {
-            "node": "Mark failed AI request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Selected request": {
-      "main": [
-        [
-          {
-            "node": "Claim AI request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Claim AI request": {
       "main": [
         [
           {
             "node": "Read care context",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Read_company_FAQ": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
             "index": 0
           }
         ]
@@ -540,8 +539,8 @@
   },
   "nodeGroups": [
     {
-      "id": "ae931cf3-6961-4df7-b222-4f5e8158e43d",
-      "name": "Generate with conversation and FAQ",
+      "id": "244fe47d-feaa-4d4b-89ea-7c9a503950f2",
+      "name": "Prepare and save AI draft",
       "nodeNames": [
         "Selected request",
         "Claim AI request",
@@ -553,10 +552,9 @@
         "Save AI draft result",
         "Mark failed AI request"
       ],
-      "description": "Claim once, read sent conversation, consult the approved FAQ rows and save an unapproved artifact."
+      "description": "Claim one authorized request, read scoped facts, generate a draft and save or record a failure. Staff approval stays separate."
     }
   ],
-  "active": false,
-  "id": "6vz0G2kEFy1v0f6V",
-  "versionId": "18d1b0d0-eb59-455e-9230-258637121114"
+  "id": "nNbDkr6XkXbbNOjl",
+  "active": false
 }
