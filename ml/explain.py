@@ -1,4 +1,4 @@
-"""Native CatBoost SHAP, approved signed groups, and grounded English care facts.
+"""Native tree SHAP, approved signed groups, and grounded English care facts.
 
 No fitting, labels, LLM calls or automatic customer messages. Group totals are
 sums of feature attributions, not coalition-level Shapley values or percentages.
@@ -109,8 +109,9 @@ def care_drivers(row, contributions, group_values, schema, mapping):
 
 def explain_frame(bundle, frame, mapping, threads=4, batch_size=256):
     model,metadata,schema,calibrator = bundle
-    if metadata['candidate']!='catboost_tuned' or metadata['algorithm']!='catboost':
-        raise ValueError('Only the approved CatBoost tuned model can be explained')
+    algorithm = metadata['algorithm']
+    if algorithm not in ('catboost','lightgbm'):
+        raise ValueError('Only native CatBoost or LightGBM SHAP is supported')
     if metadata['model_sha256']!=mapping['model_sha256']:
         raise ValueError('Mapping is bound to a different approved model')
     validate_mapping(mapping,schema)
@@ -121,18 +122,23 @@ def explain_frame(bundle, frame, mapping, threads=4, batch_size=256):
         raise ValueError('Nonempty unique customer snapshots required')
     if batch_size<1:
         raise ValueError('Positive batch size required')
-    x = matrix(frame,schema,'catboost')
-    if list(model.feature_names_)!=schema['features']:
+    x = matrix(frame,schema,algorithm)
+    names = list(model.feature_names_) if algorithm=='catboost' else model.feature_name()
+    if names!=schema['features']:
         raise ValueError('Model feature order differs from saved schema')
     parts = []
     for start in range(0,len(x),batch_size):
-        pool = Pool(x.iloc[start:start+batch_size],cat_features=schema['categorical_features'])
-        parts.append(np.asarray(model.get_feature_importance(pool,type='ShapValues',thread_count=threads)))
+        batch = x.iloc[start:start+batch_size]
+        if algorithm=='catboost':
+            pool = Pool(batch,cat_features=schema['categorical_features'])
+            parts.append(np.asarray(model.get_feature_importance(pool,type='ShapValues',thread_count=threads)))
+        else:
+            parts.append(np.asarray(model.predict(batch,pred_contrib=True,num_threads=threads)))
         print(f'SHAP: {min(start+batch_size,len(x))}/{len(x)} snapshots',flush=True)
     shap = np.concatenate(parts)
     if shap.shape!=(len(frame),128) or not np.isfinite(shap).all():
         raise ValueError('Expected finite native SHAP matrix with 127 features plus baseline')
-    raw = raw_predict(model,'catboost',x,schema)
+    raw = raw_predict(model,algorithm,x,schema)
     raw_error = float(np.max(np.abs(shap.sum(axis=1)-raw)))
     if raw_error>1e-7:
         raise ValueError('Native SHAP does not reconstruct RawFormulaVal')
@@ -155,8 +161,9 @@ def explain_frame(bundle, frame, mapping, threads=4, batch_size=256):
     for position,(_,row) in enumerate(frame.iterrows()):
         records.append({'customer_id':str(row['customer_id']),'snapshot_date':str(row['snapshot_date']),
             'target_period_start':str(row['target_period_start']),'model_version':metadata['candidate'],
+            **({'target_period_end_exclusive':str(row['target_period_end_exclusive'])} if 'target_period_end_exclusive' in row else {}),
             'model_sha256':metadata['model_sha256'],'explanation_version':mapping['version'],
-            'shap_method':'CatBoost native TreeSHAP; no reference_data; summed feature groups',
+            'shap_method':f'{algorithm} native TreeSHAP; summed feature groups',
             'shap_output_space':'deployed_log_odds','base_value':float(base[position]),
             'churn_probability':float(expected_probability[position]),'calibrator_method':calibrator['method'],
             'is_synthetic':True,'label_status':'Unknown','title':'Top risk drivers',
@@ -248,8 +255,8 @@ def publish_summary(output_dir, bundle_dir, prediction_file):
     prediction_file.parent.mkdir(parents=True,exist_ok=True)
     shutil.copyfile(output_dir/'predictions.csv',prediction_file)
     # Keep run-time selection/metrics immutable; store current approval separately.
-    write_json(bundle_dir/'approval.json',{'model':'catboost_tuned','model_approved':True,'groups_approved':True,
-        'approved_on':'2026-10-17','model_sha256':checks['model_sha256'],
+    write_json(bundle_dir/'approval.json',{'model':read_json(bundle_dir/'metadata.json')['candidate'],'model_approved':True,'groups_approved':True,
+        'approved_on':read_json(ROOT/'ml/shap_groups.json')['approved_on'],'model_sha256':checks['model_sha256'],
         'explanation_version':checks['explanation_version'],'mapping_sha256':checks['mapping_sha256']})
 
 

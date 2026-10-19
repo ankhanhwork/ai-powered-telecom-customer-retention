@@ -1,0 +1,30 @@
+{
+  "dataset_version": "synthetic_rolling_month_v5",
+  "purpose": "Rolling month synthetic demo with persistent observed episodes and one causal churn event per customer.",
+  "seed": 20261019,
+  "as_of": "2026-10-19",
+  "holdout_hash_salt": "rolling-v5-audit-before-training",
+  "holdout_modulus": 4,
+  "holdout_remainder": 0,
+  "monthly_episode_probability": 0.06,
+  "episode_choices": [
+    "Connection",
+    "Payment",
+    "Support",
+    "Usage",
+    "Renewal",
+    "Price"
+  ],
+  "hazard_intercept": -7.0,
+  "hazard_max_severity_weight": 9.0,
+  "hazard_secondary_weight": 0.3,
+  "hazard_logit_noise_sd": 0.25,
+  "simulator_changes": [
+    "Persistent adverse episodes evolve independently of labels.",
+    "Observed snapshot severity determines a daily hazard until the next scheduled snapshot; a single churn event defines all overlapping labels.",
+    "One fixed initial seed/config; any later test-informed simulator change must be recorded as exploratory."
+  ],
+  "evaluation": "Purged chronological fit/CV; July-start validation/calibration; September 1/11 starts audit test; latest incomplete windows unknown.",
+  "snapshot_schedule": "three_per_month",
+  "episode_persistence": 0.97
+}

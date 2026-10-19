@@ -28,6 +28,8 @@ def predict_frame(bundle,frame):
     raw = raw_predict(model,metadata['algorithm'],frame,cfg)
     probability = apply_map(raw,calibrator)
     columns = ['customer_id','snapshot_date','target_period_start']
+    if 'target_period_end_exclusive' in frame:
+        columns.append('target_period_end_exclusive')
     output = frame[columns].copy()
     output['raw_probability'] = expit(raw)
     output['churn_probability'] = probability

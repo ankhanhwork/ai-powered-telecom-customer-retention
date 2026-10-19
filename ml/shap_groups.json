@@ -1,8 +1,8 @@
 {
-  "version": "catboost_tuned_127_groups_v1",
+  "version": "lightgbm_tuned_127_groups_v5",
   "approved": true,
-  "approved_on": "2026-10-17",
-  "model_sha256": "4052373e189fb6280081d028cf400b76f205aea27517606eb422820d0b12020a",
+  "approved_on": "2026-10-19",
+  "model_sha256": "881dc8ed7252389256e2c2fd20fb3c558c74e0fdbc43165f02946059ee6217a4",
   "positive_epsilon": 1e-10,
   "groups": [
     {
@@ -159,7 +159,7 @@
     {
       "id": "plan_pricing_relationship",
       "name": "Plan, Pricing & Relationship",
-      "action": "Confirm whether the current plan fits the customer’s needs and clarify any fee or plan-change requests.",
+      "action": "Confirm whether the current plan fits the customer\u00e2\u20ac\u2122s needs and clarify any fee or plan-change requests.",
       "features": [
         "monthly_fee_vnd",
         "fee_change_pct_30d",

@@ -42,3 +42,20 @@ test('SHAP share uses full net increase, preserves offsets and rejects invalid c
  assert.equal(shapShare(context,{contribution_log_odds:5}),'125.0%');
  for(const change of [{churn_probability:1},{base_value:null},{shap_output_space:'raw'},{churn_probability:0.1}])assert.equal(shapShare({...context,...change},{contribution_log_odds:2}),'Unavailable');
 });
+
+
+test('rolling period label uses exclusive end and local dates',async()=>{
+ const {periodLabel}=await import('../src/data.js');
+ assert.equal(periodLabel('2026-10-11','2026-11-11'),'11 Oct 2026 – 10 Nov 2026');
+ assert.equal(periodLabel('2026-09-01','2026-10-01'),'01 Sept 2026 – 30 Sept 2026');
+ assert.equal(periodLabel(null,null),'Unknown period');
+});
+
+
+test('queue switches to valid latest period after replacing a batch',async()=>{
+ const {queuePeriod}=await import('../src/data.js');
+ const rows=[{target_period_start:'2026-10-11'},{target_period_start:'2026-10-21'}];
+ assert.equal(queuePeriod(rows,'2026-10-01'),'2026-10-21');
+ assert.equal(queuePeriod(rows,'2026-10-11'),'2026-10-11');
+ assert.equal(queuePeriod([],null),'');
+});

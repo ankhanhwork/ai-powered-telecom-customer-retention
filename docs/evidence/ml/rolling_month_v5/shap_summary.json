@@ -1,0 +1,29 @@
+{
+  "rows": 5533,
+  "feature_count": 127,
+  "group_count": 6,
+  "raw_margin_max_abs_error": 7.41073868937292e-15,
+  "deployed_probability_max_abs_error": 2.1094237467877974e-15,
+  "calibrator_method": "platt",
+  "calibration_adopted": true,
+  "mapping_complete_unique": true,
+  "group_rule": "signed sum; top up to three strictly positive groups",
+  "zero_positive_group_rows": 926,
+  "prepaid_payment_cards_marked_not_applicable": 2320,
+  "no_labels_or_audit_used": true,
+  "no_training_performed": true,
+  "no_llm_invoked": true,
+  "model_sha256": "881dc8ed7252389256e2c2fd20fb3c558c74e0fdbc43165f02946059ee6217a4",
+  "mapping_sha256": "567ef994fda7314f1d647642b861ca8d7441a753b2bb2ebb91c4a4111bfd18c9",
+  "schema_sha256": "a914623d975e77bd5094e9b886b13671fd51ae3ae3b9fae3590f3f45caada70f",
+  "calibrator_sha256": "167ff94f9e4003982c33e57ce0e4ac740f177a6d53bbc6bbd7d5ff457db26f7b",
+  "input_sha256": "befc1530611f21d4e0384c0b06a7ec292333c210dc6862a16935788b74a64a11",
+  "explanation_version": "lightgbm_tuned_127_groups_v5",
+  "output_sha256": {
+    "feature_shap_raw.csv": "14e684c0724133d546159181fbf1b776e74acdb9ee3f3b0ee14fbaf4e8209f0c",
+    "group_shap.csv": "97653c177682045a7705b72f83e0da643500db19accd4715ff16e3936943f9ad",
+    "care_context.jsonl": "be06d7b2786267eb5e1c1425fad172859ff3728409bb27c58546b621eb695de6",
+    "predictions.csv": "b8239b25dbd6ad514b0c151e98da9e5f56b5d21fd92872b5f7de6bd9712d3691",
+    "group_importance.csv": "ab81e416df53af75f5c93a02b2719d7d89cc426f280e7d71d4af69049af4b118"
+  }
+}

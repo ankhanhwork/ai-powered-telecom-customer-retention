@@ -1,5 +1,43 @@
 # Dữ liệu và ML
 
+## Phạm vi hiện hành đã chốt 19/10/2026 — rolling month v5
+
+**Mục này thay thế contract snapshot/nhãn/split v4 ở phần lịch sử bên dưới.** Giữ đủ 127 features; chạy ngày 1/11/21 từ snapshot cuối tháng/10/20 và dự báo một tháng lịch từ ngày chạy. 30/09 → [01/10,01/11), 10/10 → [11/10,11/11), 20/10 → [21/10,21/11). Ngày snapshot là hết ngày Asia/Ho_Chi_Minh; không dùng sự kiện sau cutoff.
+
+Dữ liệu v5 được sinh mới ở `data/synthetic/final/rolling_month_v5`; processed/model/inference tương ứng dùng cùng suffix. `ml/config.json` là contract train v5; `ml/config_monthend_v4.json` giữ lịch sử. Generator/config/code được giữ tại `ml/generation/`; không xóa hoặc ghi đè dữ liệu v4.
+
+**Nhãn:** tên cột vẫn `churn_next_month`, nghĩa là churn trong [target_period_start,target_period_end_exclusive). Một ngày churn duy nhất/khách đảm bảo nhãn nhất quán trên các cửa sổ chồng nhau. Chỉ gán 0/1 sau khi hết toàn bộ kỳ; chưa đủ kỳ là Unknown. Chỉ dự báo khách còn hoạt động tại snapshot. As-of v5 là 19/10/2026; snapshot 20/10 chưa tồn tại. Synthetic daily hazard được xác định từ facts as-of tại snapshot và giữ tới snapshot kế tiếp; adverse episodes có persistence. Đây là DGP khác v4, không phải cải thiện trên cùng dataset.
+
+**127 features:** giữ tên/kiểu/null contract, tính lại theo snapshot. `consecutive_issue_months` dựa trạng thái hiện tại và các snapshot cuối tháng trước, không tăng theo số snapshot. Prepaid payment null vẫn không áp dụng. Không thêm horizon/ID/churn date/episode/generation probability vào feature whitelist.
+
+| Partition | Cửa sổ và nguyên tắc |
+|---|---|
+| Train | Development IDs, target end ≤01/07/2026; snapshot Jan–May, purge các nhãn chưa đủ trước validation |
+| Inner CV | Target starts trong April/May/June; fit chỉ các nhãn đã hoàn tất tại ngày bắt đầu validation fold |
+| Validation | Development IDs, target starts 01/07, 11/07, 21/07 |
+| Calibration | Nhóm khách riêng tại cùng ba kỳ July; 5-fold customer-grouped OOF |
+| Test | Audit IDs, target starts 01/09 và 11/09, kết thúc 01/10 và 11/10; kỳ 21/09 chưa đủ tại as-of |
+| Inference | Các kỳ bắt đầu October chưa hoàn tất, snapshot 30/09 và 10/10; Unknown |
+
+**Đầu ra dữ liệu đã kiểm tra:** 5.517 khách, 113.937 snapshot, 1.182.087 dòng service history; 105.521 nhãn hoàn tất và 8.416 Unknown. Sau partition: train 42.936 dòng/3.166 positive; validation 6.253/465; calibration 1.552/138; test 1.485/134; inference 5.533 dòng tại snapshot 30/09 và 10/10. Các partition history/purged/incomplete khác không dùng fit/selection. Đây là số dòng snapshot, không phải số khách độc lập. Evidence: `evidence/ml/rolling_month_v5/generation_quality.json`, `split_summary.csv`.
+
+Tune LightGBM/CatBoost **30 trials/họ**, cùng 127 cột, objective mean purged CV ROC AUC. Chọn giữa hai bản tuned bằng validation ROC AUC (tie-break log loss/tên), khóa selection trước score test; baseline chỉ đối chiếu. Calibrator riêng từng model chỉ được áp nếu cả OOF Brier/log loss giảm. Các snapshot của cùng khách không được tách giữa fold calibration.
+
+Mục tiêu synthetic AUC người dùng xác nhận khoảng **0,89**. Test là benchmark exploratory, không dùng chọn model; nếu phải đổi DGP sau test phải ghi lịch sử rõ. Kết quả đã cập nhật tại `evidence/ml/rolling_month_v5/RESULTS.md`. Evidence v4 bên dưới giữ nguyên như lịch sử.
+
+**Kết quả hoàn tất 19/10/2026:** đã tạo 5.517 khách / 113.937 snapshot, đủ 127 features; 30 Optuna trials mỗi họ. Chọn **LightGBM tuned** theo validation AUC **0,9483**; test exploratory AUC **0,9467**, AP **0,7138**, đạt mốc demo khoảng 0,89. CatBoost tuned: validation AUC **0,9356**, test AUC **0,9348**. Selection khóa trước test; một full-cohort generation, không sửa simulator theo test. 36 ML tests và kiểm hash/save-reload/grouped calibration đạt.
+
+Calibrator LightGBM tuned được áp dụng vì cả grouped OOF Brier và log loss giảm; identity của v4 không được tái dùng. Full baseline/tuned metrics và tham số có ở RESULTS/comparison; không thay winner dù baseline LightGBM test AUC 0,9473 hơi cao hơn tuned. Chênh lệch nhỏ không chứng minh ưu thế tổng quát.
+
+**SHAP và Supabase đã hoàn tất 19/10/2026:** native LightGBM SHAP cho 5.533 snapshots, giữ nguyên model/xác suất; 127 features/6 nhóm, signed sums và Platt a=1,2400316422/b=0,3482248508. Raw additivity error 7,41e-15, probability error 2,11e-15. Supabase đã thay v4 bằng latest batch 11/10: **2.705 khách/predictions/contexts, 207 cases >500**, kỳ [11/10,11/11), outcome Unknown. Xóa v4 khỏi bảng vận hành; backup 25 bảng ở `app_private.v4_demo_backup`, không có quyền browser/worker; `supabase/restore_demo_v4.sql` đã kiểm round-trip local. Giữ Auth 3 users/staff 2; portal remap vào case mới, consent/opt-out được giữ theo customer_ref khi khớp. Không tự cấp consent mới hoặc gửi tin.
+
+**Biểu đồ English cho slide:** `docs/evidence/ml/rolling_month_v5/figures/slides/` có 7 biểu đồ × PNG/SVG, `README.md` hướng dẫn dùng và `chart_data.json` lưu số liệu/hashes. Dùng latest 2.705 khách một lần/người cho SHAP global; test ROC/PR là 1.485 dòng/758 khách với cửa sổ chồng nhau. SHAP là model risk drivers, không phải nguyên nhân xác nhận, không phải % xác suất.
+
+**Tích hợp hiện hành:** migration `20261019033021_rolling_month_v5_shap` đã áp cloud, constraints cho ngày phát hành 1/11/21, end-exclusive một tháng lịch và context/queue/outcome cùng kỳ. Import dùng snapshot mới nhất theo `(customer_id,snapshot_date)`, không gộp nhầm hai dòng/khách. Supabase chỉ nhận features/prediction/SHAP/context không nhãn; train/test/audit offline. Đây là controlled reset theo yêu cầu leader, chưa phải tự động refresh case lịch sử ở mọi batch tương lai.
+
+## Lịch sử v4 và nguồn dữ liệu
+
+
 Cập nhật 17/10/2026. **Phiên bản hiện hành: dataset v4 strong-signal, đúng 127 features.** Cả LightGBM và CatBoost đều dùng cùng bộ này. Không dùng bộ 22 của các thử nghiệm cũ. Model là nguồn prediction demo; giá trị chính của dự án vẫn là hệ thống DVKH phối hợp sau cảnh báo.
 
 ## Nguồn và phạm vi

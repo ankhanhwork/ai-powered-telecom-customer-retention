@@ -119,7 +119,7 @@ def generate_v4(source,size,config):
     start = date(2026,1,1)
     for number,source_row in enumerate(public.to_dict('records'),1):
         if number==1 or number%500==0:
-            print(f'Generating v4 customer {number}/{size}',flush=True)
+            print(f"Generating {config['dataset_version']} customer {number}/{size}",flush=True)
         cid = source_row['Customer ID']
         role = cohort_role(cid,config)
         profile_rng = rng_for(seed,cid,'profile')
@@ -134,6 +134,9 @@ def generate_v4(source,size,config):
                              is_synthetic=True,dataset_version=config['dataset_version'],source_role='id_and_tenure_seed_only'))
         days,bills,tickets,contacts = [],[],[],[]
         churn_on = None
+        rolling = config.get('snapshot_schedule')=='three_per_month'
+        episode = 'None'
+        own_snapshots = []
         month = start
         while month<asof:
             if churn_on is not None and churn_on<=month:
@@ -141,7 +144,8 @@ def generate_v4(source,size,config):
             month_end = date(2026,month.month,calendar.monthrange(2026,month.month)[1])
             n = month_end.day
             rng = rng_for(seed,cid,f'events:{month:%Y%m}')
-            episode = str(rng.choice(config['episode_choices'])) if rng.random()<config['monthly_episode_probability'] else 'None'
+            if not rolling or episode=='None' or rng.random()>=config['episode_persistence']:
+                episode = str(rng.choice(config['episode_choices'])) if rng.random()<config['monthly_episode_probability'] else 'None'
             if episode=='Payment' and mode=='Prepaid':
                 episode = 'Renewal'
             if episode=='Price':
@@ -196,7 +200,26 @@ def generate_v4(source,size,config):
                     service_issue=int(disconnects[i]>0 or (telemetry[i] and ratios[i]<.65)),
                     monthly_fee_vnd=fee,plan_speed_mbps=speed,prepaid_expiry_date=expiry,promo_expiry_date=promo,
                     plan_change_request=int(changes[i])))
-            if days and days[-1]['service_date']==month_end:
+                if rolling and (day in (10,20) or current==month_end):
+                    cutoff = current+timedelta(days=1)
+                    target_end = (pd.Timestamp(cutoff)+pd.DateOffset(months=1)).date()
+                    f = canonical_features(days,bills,tickets,contacts,current,tenure,mode)
+                    own_snapshots.append(dict(customer_id=cid,snapshot_date=str(current),cutoff_at=utc_at(cutoff),
+                        target_period_start=str(cutoff),target_period_end_exclusive=str(target_end),
+                        split='unassigned',cohort_role=role,is_synthetic=True,dataset_version=config['dataset_version'],
+                        history_days_available=len(days),observed_days_30d=min(30,len(days)),
+                        telemetry_days_30d=sum(d['telemetry_observed'] for d in days[-30:]),**f))
+                    label_rng = rng_for(seed,cid,f'hazard:{current.isoformat()}')
+                    probability,components = outcome_probability(f,days,bills,tickets,current,config,label_rng)
+                    daily_probability = -math.expm1(math.log1p(-min(probability,1-1e-12))/30)
+                    wait = int(label_rng.geometric(max(daily_probability,1e-12)))-1
+                    next_cutoff = date(current.year,current.month,21) if day==10 else (month_end+timedelta(days=1) if day==20 else date(cutoff.year,cutoff.month,11))
+                    candidate = cutoff+timedelta(days=wait) if wait<400 else None
+                    if candidate is not None and candidate<min(next_cutoff,asof):
+                        churn_on = candidate
+                    audit.append(dict(customer_id=cid,snapshot_date=str(current),episode=episode,
+                        generation_probability=probability,daily_hazard=daily_probability,**components))
+            if not rolling and days and days[-1]['service_date']==month_end:
                 f = canonical_features(days,bills,tickets,contacts,month_end,tenure,mode)
                 cutoff = month_end+timedelta(days=1)
                 target_end = next_month(cutoff)
@@ -220,6 +243,19 @@ def generate_v4(source,size,config):
                 audit.append(dict(customer_id=cid,snapshot_date=str(month_end),episode=episode,generation_probability=probability,
                                   max_severity=max(components.values()) if components else None,**components))
             month = next_month(month)
+        if rolling:
+            snapshots.extend(own_snapshots)
+            for row in own_snapshots:
+                target_start = date.fromisoformat(row['target_period_start'])
+                target_end = date.fromisoformat(row['target_period_end_exclusive'])
+                known = target_end<=asof
+                y = int(churn_on is not None and target_start<=churn_on<target_end) if known else None
+                labels.append(dict(customer_id=cid,snapshot_date=row['snapshot_date'],target_period_start=str(target_start),
+                    target_period_end_exclusive=str(target_end),churn_next_month=y,
+                    label_status='Simulated complete rolling month' if known else 'Unknown',
+                    label_observed_at=utc_at(target_end) if known else None,churn_date=str(churn_on) if y else None,
+                    is_synthetic=True,dataset_version=config['dataset_version']))
+            bills = [b for b in bills if churn_on is None or b['issued_date']<churn_on]
         service.extend(days)
         invoices.extend([{**b,'paid_date':b['paid_date'] if b['paid_date']<asof else None} for b in bills])
         all_tickets.extend([{**t,'resolved_date':t['resolved_date'] if t['resolved_date']<asof else None} for t in tickets])
@@ -230,7 +266,8 @@ def generate_v4(source,size,config):
         support_contacts=frame(all_contacts,['customer_id','contact_date','ticket_id','is_repeat']),
         customer_features=pd.DataFrame(snapshots),churn_labels=pd.DataFrame(labels))
     tables['churn_labels']['churn_next_month'] = tables['churn_labels']['churn_next_month'].astype('Int64')
-    tables['inference_latest'] = tables['customer_features'].loc[tables['customer_features']['snapshot_date'].eq('2026-09-30')].copy()
+    latest = tables['customer_features']['snapshot_date'].max() if config.get('snapshot_schedule')=='three_per_month' else '2026-09-30'
+    tables['inference_latest'] = tables['customer_features'].loc[tables['customer_features']['snapshot_date'].eq(latest)].copy()
     return tables,pd.DataFrame(audit)
 
 
@@ -246,19 +283,24 @@ def main():
         raise ValueError('Choose a new output directory; no overwrite')
     config = json.loads(a.config.read_text(encoding='utf-8'))
     tables,audit = generate_v4(a.source,a.sample_size,config)
-    print('Validating v4 histories and snapshots',flush=True)
-    quality = validate(tables,date.fromisoformat(config['as_of']))
+    print(f"Validating {config['dataset_version']} histories and snapshots",flush=True)
+    if config.get('snapshot_schedule')=='three_per_month':
+        from rolling_quality import validate_rolling
+        quality = validate_rolling(tables,date.fromisoformat(config['as_of']))
+    else:
+        quality = validate(tables,date.fromisoformat(config['as_of']))
     x = tables['customer_features']
     train_ids = set(x.loc[x['split'].eq('train'),'customer_id'])
     test_ids = set(x.loc[x['split'].eq('test'),'customer_id'])
     assert train_ids.isdisjoint(test_ids)
-    assert set(x.loc[x['split'].eq('test'),'snapshot_date'])=={'2026-08-31'}
-    quality['customer_disjoint_test'] = True
+    if config.get('snapshot_schedule')!='three_per_month':
+        assert set(x.loc[x['split'].eq('test'),'snapshot_date'])=={'2026-08-31'}
+    quality['customer_disjoint_test'] = True if config.get('snapshot_schedule')!='three_per_month' else 'Verified later by ml/data.py after partition assignment'
     quality['source_fields_read'] = ['Customer ID','Tenure in Months','Internet Service']
     quality['cohort_counts'] = tables['customers']['cohort_role'].value_counts().to_dict()
     quality['limitations'] = ['Deliberately easier strong-signal synthetic task; no real FPT evidence.',
                               'One locked config/seed; generated probabilities and episode labels are audit-only, never features.',
-                              'One September test month, held-out customer IDs; October labels Unknown.']
+                              ('Rolling month windows overlap; incomplete windows Unknown, no real FPT evidence.' if config.get('snapshot_schedule')=='three_per_month' else 'One September test month, held-out customer IDs; October labels Unknown.')]
     a.output.mkdir(parents=True)
     for name,table in tables.items():
         table.to_csv(a.output/f'{name}.csv',index=False)

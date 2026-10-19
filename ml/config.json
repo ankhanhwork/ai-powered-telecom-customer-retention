@@ -1,29 +1,25 @@
 {
-  "protocol_version": "final_v4_127_optuna_v1",
-  "dataset_version": "synthetic_monthend_v4_strong_signal",
-  "dataset_dir": "data/synthetic/final",
-  "processed_dir": "data/processed/final",
-  "models_dir": "ml/models/final",
-  "evidence_dir": "docs/evidence/ml",
-  "inference_dir": "data/inference/final",
+  "protocol_version": "rolling_month_v5_127_optuna_v1",
+  "dataset_version": "synthetic_rolling_month_v5",
+  "dataset_dir": "data/synthetic/final/rolling_month_v5",
+  "processed_dir": "data/processed/final/rolling_month_v5",
+  "models_dir": "ml/models/final/rolling_month_v5",
+  "evidence_dir": "docs/evidence/ml/rolling_month_v5",
+  "inference_dir": "data/inference/final/rolling_month_v5",
   "seed": 42,
   "trials_per_model": 30,
   "threads": 4,
   "max_iterations": 1000,
   "early_stopping_rounds": 50,
   "early_stopping_metric": "Logloss",
-  "objective": "mean rolling-fold average precision",
-  "cv_validation_snapshot_months": [
-    4,
-    5,
-    6
-  ],
+  "objective": "mean rolling-fold ROC AUC",
   "calibration_hash_salt": "final-v4-calibration-20pct-before-tuning",
   "calibration_modulus": 5,
   "calibration_remainder": 0,
   "model_selection": {
-    "ap_tolerance": 0.005,
-    "logloss_tolerance": 0.001
+    "metric": "roc_auc",
+    "candidates": "tuned_only",
+    "tie_break": "validation log_loss then candidate name"
   },
   "threshold_probability_gt": 0.5,
   "shap_enabled": false,
@@ -160,10 +156,19 @@
     "billing_mode"
   ],
   "limitations": [
-    "The v4 generator deliberately makes the synthetic task easier; not real FPT accuracy.",
-    "Dataset v4 and its September audit test have already been inspected; final test comparisons remain exploratory.",
-    "New calibration IDs are excluded from every training/CV/selection row in this protocol, but data were used in historical experiments.",
-    "SHAP and reason-group configuration are deferred until the user approves the model and parameters."
+    "New synthetic DGP and overlapping rolling calendar-month labels; not comparable to v4 AUC or real FPT accuracy.",
+    "AUC around 0.89 is the user-confirmed synthetic demo target, not a production guarantee.",
+    "Overlapping labels require purged temporal splits and customer-grouped calibration.",
+    "Cloud app and existing SHAP mapping remain pinned to v4 until a separate integration change."
   ],
-  "feature_file": "features_127.csv"
+  "feature_file": "features_127.csv",
+  "snapshot_schedule": "three_per_month",
+  "as_of": "2026-10-19",
+  "cv_validation_start_months": [
+    4,
+    5,
+    6
+  ],
+  "test_status": "Exploratory synthetic benchmark; AUC target requested before generation; no test-based model selection",
+  "demo_auc_target": 0.89
 }

@@ -1,0 +1,83 @@
+{
+  "charts": 7,
+  "formats": [
+    "PNG 220 dpi",
+    "SVG editable text"
+  ],
+  "language": "English",
+  "snapshot": "2026-10-10",
+  "customers": 2705,
+  "visual_review": "Inspected all seven PNG charts; fixed feature-label and legend overlap.",
+  "files": {
+    "01_model_comparison.png": {
+      "sha256": "61577c46f40653eebfbff08c0f5af3bda14210d45f47c44986214f6a4034cbdf",
+      "pixels": [
+        2816,
+        1584
+      ]
+    },
+    "02_test_roc_pr.png": {
+      "sha256": "904a0860b27529f103be34ea9ebd079ae8e182b737fba72d175240cd4ee4349a",
+      "pixels": [
+        2816,
+        1584
+      ]
+    },
+    "03_prediction_distribution.png": {
+      "sha256": "867644080437a299d8fc79c7c9631526944efe28256611645608f10e9328b560",
+      "pixels": [
+        2816,
+        1584
+      ]
+    },
+    "04_shap_group_importance.png": {
+      "sha256": "e64786af19c93771e74b01823ef954f440741786e117a8a179c4dd4caa62b90e",
+      "pixels": [
+        2816,
+        1584
+      ]
+    },
+    "05_shap_top_features.png": {
+      "sha256": "1d5abdf05da25dbd87c68f9f705a5c7fbc4e08aa67a0f5e09f7633ae08d11917",
+      "pixels": [
+        2816,
+        1980
+      ]
+    },
+    "06_shap_group_distribution.png": {
+      "sha256": "d9eb6396811c739732c8908be3091534f90c664767c067dda8b835ea3b1edef3",
+      "pixels": [
+        2816,
+        1584
+      ]
+    },
+    "07_shap_example_waterfall.png": {
+      "sha256": "4c7e295631a031f73c0ece4dc9760641ab70881f8f1fc13776dfdbf0ab0c4ecd",
+      "pixels": [
+        2816,
+        1584
+      ]
+    },
+    "01_model_comparison.svg": {
+      "sha256": "f69372547b28edb0ba687072c3caffbce945f2a3a48c456342c462f8d1d1490d"
+    },
+    "02_test_roc_pr.svg": {
+      "sha256": "aaf4df61f982f4865cbacc68f0f1cd4375c75965a0cabe90da15363cc328bae4"
+    },
+    "03_prediction_distribution.svg": {
+      "sha256": "cdd0e30cd155f8ea0523382656b042eb99dc8498aa1ac1d96af6d231f9db255c"
+    },
+    "04_shap_group_importance.svg": {
+      "sha256": "bc93b578ae5ed075bf24a71972178526475b850e63fb355024979af91b515618"
+    },
+    "05_shap_top_features.svg": {
+      "sha256": "8b58e69be4351557f1c16a9e8bde6dace9addb83e5a1f9806b541994e30e79ad"
+    },
+    "06_shap_group_distribution.svg": {
+      "sha256": "311c296b1c8d34f489cc3325e897559f82112358701e0d8124c8ee84da8e167b"
+    },
+    "07_shap_example_waterfall.svg": {
+      "sha256": "d352d0b8f66899fe46e2601d609136680a0b2ec3b7ff70f6ab978118be728ecd"
+    }
+  }
+}

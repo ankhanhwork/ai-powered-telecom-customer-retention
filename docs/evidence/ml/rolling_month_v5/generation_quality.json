@@ -1,0 +1,36 @@
+{
+  "checks_passed": true,
+  "snapshot_rows": 113937,
+  "customers": 5517,
+  "known_labels": 105521,
+  "positive_labels": 8093,
+  "unknown_labels": 8416,
+  "single_event_consistency": true,
+  "calendar_month_windows": true,
+  "rows_by_table": {
+    "customers": 5517,
+    "daily_service_history": 1182087,
+    "billing_history": 21847,
+    "support_tickets": 5122,
+    "support_contacts": 7048,
+    "customer_features": 113937,
+    "churn_labels": 113937,
+    "inference_latest": 2705
+  },
+  "customer_disjoint_test": "Verified by ml/data.py after partition assignment",
+  "source_fields_read": [
+    "Customer ID",
+    "Tenure in Months",
+    "Internet Service"
+  ],
+  "cohort_counts": {
+    "development": 4117,
+    "audit_holdout": 1400
+  },
+  "limitations": [
+    "Synthetic rolling calendar-month task; not real FPT evidence.",
+    "One locked initial simulator config/seed; audit-only probabilities and episodes never features.",
+    "Incomplete windows remain Unknown; overlapping rows are not independent customers."
+  ],
+  "latest_snapshot": "2026-10-10"
+}

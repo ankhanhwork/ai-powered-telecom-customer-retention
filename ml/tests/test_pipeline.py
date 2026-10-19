@@ -27,7 +27,7 @@ class PipelineChecks(unittest.TestCase):
             matrix(pd.DataFrame(),bad,'lightgbm')
 
     def test_customer_role_and_snapshot_partition(self):
-        cfg = config()
+        cfg = config(ROOT/'ml/config_monthend_v4.json')
         self.assertEqual(customer_role('A','audit_holdout',cfg),'audit')
         for role in ['audit','calibration','development']:
             self.assertEqual(partition('2026-09-30',role),'inference')
@@ -44,7 +44,7 @@ class PipelineChecks(unittest.TestCase):
             rows.append({'snapshot_date':snapshot.strftime('%Y-%m-%d'),'partition':'train' if month<=6 else 'validation',
                          'target_period_start':(snapshot+pd.Timedelta(days=1)).strftime('%Y-%m-%d'),
                          'target_period_end_exclusive':(snapshot+pd.offsets.MonthBegin(2)).strftime('%Y-%m-%d')})
-        folds = list(rolling_folds(pd.DataFrame(rows),config()))
+        folds = list(rolling_folds(pd.DataFrame(rows),config(ROOT/'ml/config_monthend_v4.json')))
         self.assertEqual(len(folds),3)
         self.assertEqual([len(t) for t,v in folds],[3,4,5])
         self.assertEqual([v.snapshot_date.str[5:7].iloc[0] for t,v in folds],['04','05','06'])
@@ -72,6 +72,7 @@ class PipelineChecks(unittest.TestCase):
         frame = pd.DataFrame(columns)
         frame['customer_id'] = [f'TOY-{i}' for i in range(n)]
         frame['snapshot_date'],frame['target_period_start'] = '2026-09-30','2026-10-01'
+        frame['target_period_end_exclusive'] = '2026-11-01'
         frame['churn_next_month'] = (frame[cfg['features'][0]]>0).astype(int)
         temp_root = (ROOT/'tmp').resolve()
         temp_root.mkdir(exist_ok=True)
@@ -90,6 +91,7 @@ class PipelineChecks(unittest.TestCase):
                 bundle = (saved,metadata,cfg,{'slope':1.,'intercept':0.})
                 output = predict_frame(bundle,x)
                 self.assertEqual(len(output),n)
+                self.assertTrue(output['target_period_end_exclusive'].eq('2026-11-01').all())
                 self.assertNotIn('churn_next_month',output)
                 self.assertTrue(output['label_status'].eq('Unknown').all())
                 self.assertTrue(output['explanations_status'].str.contains('SHAP not generated').all())

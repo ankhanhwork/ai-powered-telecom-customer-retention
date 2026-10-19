@@ -1,0 +1,161 @@
+{
+  "customer_id": "SYNTHETIC-EXAMPLE",
+  "snapshot_date": "2026-09-30",
+  "target_period_start": "2026-10-01",
+  "model_version": "lightgbm_tuned",
+  "target_period_end_exclusive": "2026-11-01",
+  "model_sha256": "881dc8ed7252389256e2c2fd20fb3c558c74e0fdbc43165f02946059ee6217a4",
+  "explanation_version": "lightgbm_tuned_127_groups_v5",
+  "shap_method": "lightgbm native TreeSHAP; summed feature groups",
+  "shap_output_space": "deployed_log_odds",
+  "base_value": -4.236930172594861,
+  "churn_probability": 0.9708574064920918,
+  "calibrator_method": "platt",
+  "is_synthetic": true,
+  "label_status": "Unknown",
+  "title": "Top risk drivers",
+  "drivers": [
+    {
+      "rank": 1,
+      "group_id": "plan_pricing_relationship",
+      "group_name": "Plan, Pricing & Relationship",
+      "contribution_log_odds": 7.440980939173627,
+      "facts": [
+        {
+          "feature": "fee_change_pct_60d",
+          "label": "Monthly fee change compared with 60 days earlier",
+          "value": 40.06968641114983,
+          "unit": "%",
+          "window_days": 60,
+          "family": "fee_change_pct",
+          "missing": false,
+          "model_contribution_log_odds": 3.775590654412024,
+          "observation": "Monthly fee change compared with 60 days earlier: 40.07 %."
+        },
+        {
+          "feature": "plan_change_requests_30d",
+          "label": "Requests to change the Internet plan over the past 30 days",
+          "value": 5.0,
+          "unit": "",
+          "window_days": 30,
+          "family": "plan_change_requests",
+          "missing": false,
+          "model_contribution_log_odds": 0.7185524198222084,
+          "observation": "Requests to change the Internet plan over the past 30 days: 5."
+        },
+        {
+          "feature": "monthly_fee_vnd",
+          "label": "Current monthly Internet fee",
+          "value": 402000.0,
+          "unit": "VND",
+          "window_days": null,
+          "family": "monthly_fee_vnd",
+          "missing": false,
+          "model_contribution_log_odds": 0.39883290917486336,
+          "observation": "Current monthly Internet fee: 402,000 VND."
+        }
+      ],
+      "evidence_status": "Observed synthetic facts",
+      "supports_customer_situation_claim": true,
+      "explanation_draft": "Monthly fee change compared with 60 days earlier: 40.07 %. Requests to change the Internet plan over the past 30 days: 5. Current monthly Internet fee: 402,000 VND. This group ranks #1 among signals increasing the model's risk assessment. Confirm whether the current plan fits the customerâ€™s needs and clarify any fee or plan-change requests.",
+      "suggested_action": "Confirm whether the current plan fits the customerâ€™s needs and clarify any fee or plan-change requests.",
+      "requires_staff_review": true
+    },
+    {
+      "rank": 2,
+      "group_id": "payment_overdue",
+      "group_name": "Payment & Overdue Bills",
+      "contribution_log_odds": 0.3711372247429078,
+      "facts": [
+        {
+          "feature": "days_since_last_payment",
+          "label": "Time since the last observed payment",
+          "value": 20.0,
+          "unit": "days",
+          "window_days": null,
+          "family": "days_since_last_payment",
+          "missing": false,
+          "model_contribution_log_odds": 0.4450423117516219,
+          "observation": "Time since the last observed payment: 20 days."
+        },
+        {
+          "feature": "observed_delay_max_days_60d",
+          "label": "Longest observed payment delay across due invoices over the past 60 days",
+          "value": 0.0,
+          "unit": "days",
+          "window_days": 60,
+          "family": "observed_delay_max_days",
+          "missing": false,
+          "model_contribution_log_odds": 0.004815194699292994,
+          "observation": "Longest observed payment delay across due invoices over the past 60 days: 0 days."
+        },
+        {
+          "feature": "late_paid_invoice_count_60d",
+          "label": "Due invoices already paid after their deadline over the past 60 days",
+          "value": 0.0,
+          "unit": "",
+          "window_days": 60,
+          "family": "late_paid_invoice_count",
+          "missing": false,
+          "model_contribution_log_odds": 0.002434272660870254,
+          "observation": "Due invoices already paid after their deadline over the past 60 days: 0."
+        }
+      ],
+      "evidence_status": "Observed synthetic facts",
+      "supports_customer_situation_claim": true,
+      "explanation_draft": "Time since the last observed payment: 20 days. Longest observed payment delay across due invoices over the past 60 days: 0 days. Due invoices already paid after their deadline over the past 60 days: 0. This group ranks #2 among signals increasing the model's risk assessment. Verify the invoice and payment situation with the customer and explain approved payment support options.",
+      "suggested_action": "Verify the invoice and payment situation with the customer and explain approved payment support options.",
+      "requires_staff_review": true
+    },
+    {
+      "rank": 3,
+      "group_id": "connection_quality",
+      "group_name": "Connection Quality",
+      "contribution_log_odds": 0.05430138087339298,
+      "facts": [
+        {
+          "feature": "outage_minutes_30d",
+          "label": "Total connection downtime over the past 30 days",
+          "value": 15.51,
+          "unit": "minutes",
+          "window_days": 30,
+          "family": "outage_minutes",
+          "missing": false,
+          "model_contribution_log_odds": 0.03943293253691105,
+          "observation": "Total connection downtime over the past 30 days: 15.51 minutes."
+        },
+        {
+          "feature": "disconnect_count_30d",
+          "label": "Disconnections over the past 30 days",
+          "value": 1.0,
+          "unit": "",
+          "window_days": 30,
+          "family": "disconnect_count",
+          "missing": false,
+          "model_contribution_log_odds": 0.009298596957440978,
+          "observation": "Disconnections over the past 30 days: 1."
+        },
+        {
+          "feature": "evening_speed_ratio_7d",
+          "label": "Average evening speed relative to plan speed over the past 7 days",
+          "value": 0.9853142857142814,
+          "unit": "fraction",
+          "window_days": 7,
+          "family": "evening_speed_ratio",
+          "missing": false,
+          "model_contribution_log_odds": 0.009142996216837397,
+          "observation": "Average evening speed relative to plan speed over the past 7 days: 98.53 %."
+        }
+      ],
+      "evidence_status": "Observed synthetic facts",
+      "supports_customer_situation_claim": true,
+      "explanation_draft": "Total connection downtime over the past 30 days: 15.51 minutes. Disconnections over the past 30 days: 1. Average evening speed relative to plan speed over the past 7 days: 98.53 %. This group ranks #3 among signals increasing the model's risk assessment. Confirm whether connection issues persist and submit a technical support request if needed.",
+      "suggested_action": "Confirm whether connection issues persist and submit a technical support request if needed.",
+      "requires_staff_review": true
+    }
+  ],
+  "explanation_source": "Deterministic grounded English draft; no LLM invoked",
+  "requires_staff_review": true,
+  "customer_outbound_allowed": false,
+  "sample_note": "Highest scoring synthetic inference profile; descriptive example, not typical or real FPT evidence."
+}

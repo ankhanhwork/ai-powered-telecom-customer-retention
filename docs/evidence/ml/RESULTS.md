@@ -1,5 +1,7 @@
 # Model comparison — 127 features
 
+> Historical v4 results. The current rolling-month v5 run is documented in [rolling_month_v5/RESULTS.md](rolling_month_v5/RESULTS.md). Model selection and test comparisons below belong to the previous month-end task.
+
 All four candidates use the same frozen 127-feature synthetic dataset. No SHAP was computed during model selection.
 
 Selection uses August-outcome validation, after 30 Optuna trials per algorithm on three earlier rolling folds. The September test was exposed in earlier work; its metrics are exploratory.

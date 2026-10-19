@@ -1,4 +1,4 @@
-"""Freeze v4 inputs and assign customer-disjoint calibration before tuning."""
+"""Freeze versioned inputs and assign customer-disjoint calibration before tuning."""
 import hashlib
 
 import pandas as pd
@@ -13,7 +13,18 @@ def customer_role(customer_id,source_role,cfg):
     return 'calibration' if value%cfg['calibration_modulus']==cfg['calibration_remainder'] else 'development'
 
 
-def partition(snapshot,role):
+def partition(snapshot,role,cfg=None,target_end=None):
+    if cfg and cfg.get('snapshot_schedule')=='three_per_month':
+        start = (pd.Timestamp(snapshot)+pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+        if target_end>cfg['as_of']:
+            return 'inference' if start>='2026-10-01' else 'incomplete_history'
+        if role=='audit':
+            return 'test' if '2026-09-01'<=start<'2026-10-01' else 'audit_history'
+        if role=='calibration':
+            return 'calibration' if '2026-07-01'<=start<'2026-08-01' else 'calibration_history'
+        if target_end<='2026-07-01':
+            return 'train'
+        return 'validation' if '2026-07-01'<=start<'2026-08-01' else 'purged_or_unused'
     month = int(snapshot[5:7])
     if month==9:
         return 'inference'
@@ -42,7 +53,7 @@ def prepare(cfg):
     y = pd.read_csv(source/'churn_labels.csv')
     assert not x.duplicated(['customer_id','snapshot_date']).any()
     x['evaluation_role'] = [customer_role(cid,role,cfg) for cid,role in zip(x['customer_id'],x['source_cohort'])]
-    x['partition'] = [partition(snapshot,role) for snapshot,role in zip(x['snapshot_date'],x['evaluation_role'])]
+    x['partition'] = [partition(snapshot,role,cfg,end) for snapshot,role,end in zip(x['snapshot_date'],x['evaluation_role'],x['target_period_end_exclusive'])]
     combined = x.merge(y[['customer_id','snapshot_date','churn_next_month']],on=['customer_id','snapshot_date'],validate='one_to_one')
     ids = {name:set(combined.loc[combined['partition'].eq(name),'customer_id']) for name in ['train','validation','calibration','test']}
     assert ids['train'].isdisjoint(ids['calibration']|ids['test'])
@@ -52,6 +63,9 @@ def prepare(cfg):
     for name in ['train','validation','calibration','test']:
         part = combined.loc[combined['partition'].eq(name)]
         assert part['churn_next_month'].notna().all() and part['churn_next_month'].nunique()==2
+    if cfg.get('snapshot_schedule')=='three_per_month':
+        assert x.loc[x.partition.eq('train'),'target_period_end_exclusive'].max()<=x.loc[x.partition.eq('validation'),'target_period_start'].min()
+        assert x.loc[x.partition.isin(['validation','calibration']),'target_period_end_exclusive'].max()<=x.loc[x.partition.eq('test'),'target_period_start'].min()
     x.to_csv(output/'features.csv',index=False)
     y.to_csv(output/'labels.csv',index=False)
     x[['customer_id','snapshot_date','evaluation_role','partition']].to_csv(output/'split_manifest.csv',index=False)
@@ -76,6 +90,14 @@ def load(cfg):
 
 def rolling_folds(frame,cfg):
     train = frame.loc[frame['partition'].eq('train')]
+    if cfg.get('snapshot_schedule')=='three_per_month':
+        starts = pd.to_datetime(train['target_period_start'])
+        for month in cfg['cv_validation_start_months']:
+            later = train.loc[starts.dt.month.eq(month)]
+            earlier = train.loc[train['target_period_end_exclusive'].le(later['target_period_start'].min()) & starts.lt(later['target_period_start'].min())]
+            assert earlier['target_period_end_exclusive'].le(later['target_period_start'].min()).all()
+            yield earlier,later
+        return
     month = train['snapshot_date'].str[5:7].astype(int)
     for val_month in cfg['cv_validation_snapshot_months']:
         earlier,later = train.loc[month<val_month],train.loc[month.eq(val_month)]

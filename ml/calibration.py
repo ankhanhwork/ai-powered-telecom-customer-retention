@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.special import expit
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold,StratifiedGroupKFold
 
 from evaluate import score
 
@@ -28,13 +28,16 @@ def apply_map(raw,calibrator):
     return expit(calibrator['slope']*raw+calibrator['intercept'])
 
 
-def cross_fit(raw,y,seed=42):
+def cross_fit(raw,y,seed=42,groups=None):
     raw,y = np.asarray(raw),np.asarray(y,dtype=int)
     oof = np.full(len(y),np.nan)
     assignments = np.full(len(y),-1,dtype=int)
     folds = []
-    for fold,(train,held) in enumerate(StratifiedKFold(5,shuffle=True,random_state=seed).split(raw,y)):
+    splitter = StratifiedKFold(5,shuffle=True,random_state=seed) if groups is None else StratifiedGroupKFold(5,shuffle=True,random_state=seed)
+    for fold,(train,held) in enumerate(splitter.split(raw,y,groups)):
         assert not set(train)&set(held)
+        if groups is not None:
+            assert set(np.asarray(groups)[train]).isdisjoint(np.asarray(groups)[held])
         mapping = fit_map(raw[train],y[train])
         oof[held] = apply_map(raw[held],mapping)
         assignments[held] = fold

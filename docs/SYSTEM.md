@@ -1,10 +1,22 @@
 # Thiết kế hệ thống
 
+## Thay đổi phạm vi đã chốt 19/10 — rolling month prediction
+
+Contract ML mới: phát hành ngày **1, 11, 21**, dùng snapshot hết ngày **cuối tháng trước, 10, 20**; kỳ dự báo dài **một tháng lịch**, cận trên không bao gồm. Ví dụ 11/10 dùng snapshot 10/10, kỳ [11/10,11/11). Mọi prediction phải giữ cả `target_period_start` và `target_period_end_exclusive`; không suy ra kết thúc bằng cuối tháng chứa ngày bắt đầu. Outcome chỉ ghi sau hết đúng cửa sổ, case đóng không tự thành retained.
+
+**Đã cutover Supabase ngày 19/10:** phiên 19/10 đã hoàn tất dữ liệu/train offline v5; chọn LightGBM tuned (validation AUC 0,9483, test exploratory AUC 0,9467). Supabase và SHAP đã dùng v5; UI source sửa/build local, Vercel chưa deploy, n8n vẫn unpublished/timer disabled. Đã sửa month-end constraints, snapshot_basis, ingestion/model feature contract, truy vấn outcome, `Progress.jsx`, context kỳ dự báo và kiểm tra regression. Cần cập nhật prediction trên hồ sơ đang chăm sóc, giữ người phụ trách/lịch sử và tránh tạo outbound trùng khi các cửa sổ chồng nhau; schema cloud đã nhận v5 qua migration có kiểm tra. UI dự kiến ghi **One-month churn risk · Updated on days 1, 11 and 21**.
+
+Các quyết định snapshot/model cuối tháng bên dưới là **contract v4 đã triển khai**, không thay thế quyết định v5 này. Chi tiết dữ liệu/split và evidence hiện hành ở DATA_ML, ml/README và evidence/ml/rolling_month_v5/RESULTS.md; nhóm 6 SHAP vẫn được duyệt nhưng hash/giải thích model v4 không được tái dùng cho model mới.
+
 Cập nhật: 17/10/2026. Trạng thái: draft.
 
 Nguồn chuẩn về phạm vi, kiến trúc, chat/database và hợp đồng tích hợp. Chưa triển khai code hoặc database. Workflow cụ thể xem [n8n](../n8n/README.md).
 
 **Yêu cầu ngôn ngữ — 17/10/2026:** sản phẩm demo phải bằng tiếng Anh theo yêu cầu giảng viên. Áp dụng cho toàn bộ navigation, label, trạng thái, bộ lọc, form, help text, empty/loading/error, AI explanations, action recommendations, message drafts, call scripts, follow-up và portal chat. Staff-facing text phải dễ hiểu bằng tiếng Anh, không chỉ đổi tên nút. LLM workflow đặt output language là English và kiểm tra dữ liệu/thứ hạng không đổi khi diễn giải. Tên riêng, thương hiệu và giá trị dữ liệu gốc không phải nội dung cần dịch tùy tiện; tiền tệ vẫn VND, lưu giờ UTC và hiển thị giờ địa phương theo thiết kế. Tài liệu thiết kế này được phép tiếp tục tiếng Việt. Hỗ trợ đa ngôn ngữ không nằm trong MVP; kênh thật cho khách Việt sẽ cần cấu hình riêng khi được yêu cầu.
+
+**SHAP và Supabase đã hoàn tất 19/10/2026:** native LightGBM SHAP cho 5.533 snapshots, giữ nguyên model/xác suất; 127 features/6 nhóm, signed sums và Platt a=1,2400316422/b=0,3482248508. Raw additivity error 7,41e-15, probability error 2,11e-15. Supabase đã thay v4 bằng latest batch 11/10: **2.705 khách/predictions/contexts, 207 cases >500**, kỳ [11/10,11/11), outcome Unknown. Xóa v4 khỏi bảng vận hành; backup 25 bảng ở `app_private.v4_demo_backup`, không có quyền browser/worker; `supabase/restore_demo_v4.sql` đã kiểm round-trip local. Giữ Auth 3 users/staff 2; portal remap vào case mới, consent/opt-out được giữ theo customer_ref khi khớp. Không tự cấp consent mới hoặc gửi tin.
+
+**Biểu đồ English cho slide:** `docs/evidence/ml/rolling_month_v5/figures/slides/` có 7 biểu đồ × PNG/SVG, `README.md` hướng dẫn dùng và `chart_data.json` lưu số liệu/hashes. Dùng latest 2.705 khách một lần/người cho SHAP global; test ROC/PR là 1.485 dòng/758 khách với cửa sổ chồng nhau. SHAP là model risk drivers, không phải nguyên nhân xác nhận, không phải % xác suất.
 
 ## Quyết định bước 1 đã chốt ngày 17/10/2026
 

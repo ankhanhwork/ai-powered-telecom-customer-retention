@@ -15,9 +15,9 @@ from predict import load_bundle
 class ExplanationChecks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cfg = config()
+        cfg = config(ROOT/'ml/config_monthend_v4.json')
         cls.bundle = load_bundle(ROOT/cfg['models_dir']/'champion')
-        cls.mapping = read_json(ROOT/'ml/shap_groups.json')
+        cls.mapping = read_json(ROOT/'ml/shap_groups_monthend_v4.json')
         cls.frame = pd.read_csv(ROOT/cfg['inference_dir']/'features.csv').head(8)
 
     def test_complete_mapping_rejects_duplicates_missing_and_wrong_feature(self):
@@ -80,7 +80,7 @@ class ExplanationChecks(unittest.TestCase):
         features,groups,records,checks = explain_frame(self.bundle,self.frame,self.mapping,batch_size=4)
         self.assertLess(checks['raw_margin_max_abs_error'],1e-7)
         self.assertLess(checks['deployed_probability_max_abs_error'],1e-9)
-        changed = (*self.bundle[:3],{'method':'platt','slope':2.,'intercept':.3,'adopted':True})
+        changed = (*self.bundle[:3],{'method':'platt','slope':2*self.bundle[3]['slope'],'intercept':2*self.bundle[3]['intercept']+.3,'adopted':True})
         _,mapped,_,mapped_checks = explain_frame(changed,self.frame,self.mapping,batch_size=8)
         names = [group['id'] for group in self.mapping['groups']]
         np.testing.assert_allclose(mapped[names],2*groups[names])
@@ -99,6 +99,15 @@ class ExplanationChecks(unittest.TestCase):
         bad['model_sha256']='wrong-model'
         with self.assertRaises(ValueError):
             explain_frame(self.bundle,self.frame,bad)
+
+
+class LightGBMExplanationChecks(ExplanationChecks):
+    @classmethod
+    def setUpClass(cls):
+        cfg = config()
+        cls.bundle = load_bundle(ROOT/cfg['models_dir']/'champion')
+        cls.mapping = read_json(ROOT/'ml/shap_groups.json')
+        cls.frame = pd.read_csv(ROOT/cfg['inference_dir']/'features.csv').head(8)
 
 
 if __name__=='__main__':

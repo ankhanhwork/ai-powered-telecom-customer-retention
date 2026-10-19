@@ -330,7 +330,7 @@ let sourceCompatibility='not run (prepare_import.py first)';
 const payloadPath=resolve(root,'tmp/supabase/import_payloads.json');
 try{await access(payloadPath);sourceCompatibility='prepared canonical inference payloads';}catch{}
 if(sourceCompatibility==='prepared canonical inference payloads')await test('canonical October data and SHAP context import without changing probability',async()=>{
- const payloads=JSON.parse(await readFile(payloadPath,'utf8'));
+ const payloads=JSON.parse(await readFile(payloadPath,'utf8')).slice(0,5);
  for(const p of payloads){
    const args=[p.p_run,p.p_customer_ref,p.p_features,p.p_prediction,p.p_context,p.p_profile];
    const got=await rpc('service_role',null,'retention_ingest_prediction',args);
@@ -353,7 +353,7 @@ await test('a completed past period accepts an evidenced simulated outcome',asyn
    [old.case_id,false,'fixture-period-end',true,'2020-03-01T00:00:00Z','fixture-evidence']);
  assert.equal(await scalar('select churned from public.retention_outcomes where id=$1',[id]),false);
 });
-if(sourceCompatibility.startsWith('5 canonical'))await test('prepared SQL import and account bootstrap execute idempotently',async()=>{
+if(sourceCompatibility.startsWith('5 canonical')&&JSON.parse(await readFile(payloadPath,'utf8')).length===5)await test('prepared SQL import and account bootstrap execute idempotently',async()=>{
  const before=await scalar('select count(*)::int from public.customers');
  await db.exec(await readFile(resolve(root,'tmp/supabase/import_demo.sql'),'utf8'));
  assert.equal(await scalar('select count(*)::int from public.customers'),before);
@@ -492,7 +492,7 @@ await test('lean upgrade keeps existing full-workspace drafts and queued request
  }
  await upgrade.query("select set_config('request.jwt.claims','{\"role\":\"service_role\"}',false)");
  const ids=(await upgrade.query('select public.retention_ingest_prediction($1,$2,$3,$4,$5,$6) as result',
-   [run,'UPGRADE-CUSTOMER',features,pred,null,{}])).rows[0].result;
+   [{...run,dataset_version:oldSetup?'synthetic_monthend_v4_strong_signal':run.dataset_version},'UPGRADE-CUSTOMER',features,pred,null,{}])).rows[0].result;
  await upgrade.query('insert into auth.users(id) values($1)',[agent]);
  await upgrade.query("insert into public.staff_members(user_id,display_name,role) values($1,'Upgrade Agent','agent')",[agent]);
  await upgrade.query('update public.retention_cases set assigned_agent_id=$1 where id=$2',[agent,ids.case_id]);

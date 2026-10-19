@@ -1,5 +1,11 @@
 export const label = value => String(value ?? 'Unknown').replaceAll('_', ' ').replace(/^./, c => c.toUpperCase());
 export const date = value => value ? new Date(value).toLocaleString('en-GB', {timeZone:'Asia/Ho_Chi_Minh', dateStyle:'medium', timeStyle:'short'}) : 'Not set';
+export const periodLabel = (start,endExclusive) => {
+ if(!start||!endExclusive)return 'Unknown period';
+ const end=new Date(endExclusive+'T00:00:00+07:00');end.setUTCDate(end.getUTCDate()-1);
+ const fmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'short',year:'numeric'});
+ return `${fmt.format(new Date(start+'T00:00:00+07:00'))} – ${fmt.format(end)}`;
+};
 export const money = (value, currency='VND') => value == null ? 'Unavailable' : new Intl.NumberFormat('en', {style:'currency',currency,maximumFractionDigits:0}).format(value);
 export const factValue = fact => fact.missing ? 'Unavailable' : fact.value == null ? 'Not applicable' : typeof fact.value==='number' ? new Intl.NumberFormat('en',{maximumFractionDigits:2}).format(fact.value) : String(fact.value);
 export function shapShare(context, driver) {
@@ -33,3 +39,5 @@ export const stages=[
 ];
 export function careStage(status){return status==='new'?'intake':status==='closed'?'care_completed':status==='resolving_request'?'resolution':'outreach'}
 export function pipelineStage(row){return row.outcome_churned===true?'churned':row.outcome_churned===false?'retained':row.care_stage||careStage(row.case_status)}
+
+export const queuePeriod = (rows,current) => rows.some(r=>r.target_period_start===current) ? current : rows.map(r=>r.target_period_start).sort().at(-1)||'';

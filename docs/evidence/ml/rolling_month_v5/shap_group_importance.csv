@@ -1,0 +1,7 @@
+group_id,group_name,mean_abs_net_log_odds,mean_signed_log_odds,top3_customer_count
+connection_quality,Connection Quality,0.1056556174546708,0.0381571652964734,1329
+support_experience,Support Experience,0.1487286346848953,-0.0014532236676348,143
+payment_overdue,Payment & Overdue Bills,0.3288270815305807,0.0426613108056729,4208
+usage_engagement,Usage & Engagement,0.1190936833139561,0.0311542276449509,867
+renewal_promotion,Renewal & Promotion Status,0.7127000518775867,0.0777594594997741,917
+plan_pricing_relationship,"Plan, Pricing & Relationship",0.1236452042294465,-0.0173171637617684,359

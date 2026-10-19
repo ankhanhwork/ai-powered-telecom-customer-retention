@@ -22,8 +22,8 @@ def groups_for(features):
 def build_features(snapshots, daily, tickets):
     """Use service_date < next midnight, and ticket status at that same cutoff.
 
-    consecutive_issue_months: consecutive snapshots with >=3 issue days in their
-    last 30 days, including current snapshot. Not a causal diagnosis.
+    consecutive_issue_months: current 30d issue state plus consecutive qualifying
+    prior calendar month-end states; extra snapshots never increment the count.
     usage_change_pct_7d: last 7 days versus preceding 7, all 14 observed.
     oldest_open_ticket_days: oldest ticket still open, including older than 30d.
     """
@@ -62,13 +62,14 @@ def build_features(snapshots, daily, tickets):
             if previous_month is not None and month != previous_month + 1:
                 streak = 0
             if pd.isna(row['service_issue_days_30d']):
-                streak = 0
+                current_streak = 0
             else:
-                streak = streak + 1 if row['service_issue_days_30d'] >= 3 else 0
-                result.at[idx, 'consecutive_issue_months'] = streak
-            previous_month = month
+                current_streak = streak + 1 if row['service_issue_days_30d'] >= 3 else 0
+                result.at[idx, 'consecutive_issue_months'] = current_streak
+            if pd.Timestamp(row['snapshot_date']).is_month_end:
+                streak,previous_month = current_streak,month
     assert result['oldest_open_ticket_days'].ge(0).all()
-    assert result['consecutive_issue_months'].dropna().between(0, 9).all()
+    assert result['consecutive_issue_months'].dropna().between(0,result['snapshot_date'].str[:7].nunique()).all()
     pd.testing.assert_frame_equal(snapshots, result[snapshots.columns])
     return result
 

@@ -1,26 +1,38 @@
 # Hướng dẫn triển khai và tiếp tục dự án
 
-Cập nhật: **18/10/2026**. Tài liệu làm việc chung cho leader, thành viên và AI ở các chat tiếp theo. Đây là thứ tự triển khai, tiêu chí nghiệm thu và trạng thái thực tế; không phải tuyên bố sản phẩm đã hoạt động.
+Cập nhật: **19/10/2026**. Tài liệu làm việc chung cho leader, thành viên và AI ở các chat tiếp theo. Đây là thứ tự triển khai, tiêu chí nghiệm thu và trạng thái thực tế; không phải tuyên bố sản phẩm đã hoạt động.
 
 ## Tiếp tục từ đây
+
+**19/10 — đã xuất PPTX 24 slide:** `deliverables/AI_Powered_Telecom_Customer_Retention.pptx` (857.860 bytes), English, 16:9 nền trắng/theme FPT, logo chỉ slide 3 (đã kiểm relationship/media, crop logo khỏi screenshot khác). Có 24 speaker notes, 16 native tables và 3 native charts với workbook Excel nhúng. Nguồn `docs/SLIDE_CONTENT.md`; build/preview/validation riêng ở `tmp/pptx-build/`. Đã kiểm từng ảnh render, sửa mũi tên và spacing; import lại final và render đủ 24, hai chart có thay đổi pixel sau import đã xem riêng, 22 slide còn lại pixel-identical. Package/layout/font/chart-workbook/import checks đạt; validator có 7 cảnh báo ước lượng độ cao native table, ảnh render cuối không tràn. Chưa mở bằng PowerPoint native, chưa rehearsal hoặc xác nhận layout trên máy thành viên. Chưa có executive summary/gói nộp cuối. Không đổi app/model/cloud hoặc chạy n8n (0 executions). Bước tiếp theo: người dùng review deck, bổ sung tên nhóm/thành viên nếu cần; kiểm bằng PowerPoint máy nhóm trước nộp, giữ nhãn financial assumptions/demo historical. Đọc SLIDE_CONTENT, REPORT và final PPTX.
+
+**19/10 — nội dung deck 24 slide:** đã tạo `docs/SLIDE_CONTENT.md` theo outline người dùng đính kèm: English on-slide copy, speaker notes, visual/source instructions từng slide, literature review/mapping, demo fallback, test evidence có ngày và business case giả định có công thức. Giữ thứ tự (demo slide 13, model 14–15, SHAP 16, chat/call 17); cập nhật nội dung v4 cũ sang v5/LightGBM/2.705 khách/207 cases. Theme trắng, palette lấy từ logo local; logo chỉ slide 3 và crop khỏi screenshot khác. Đã kiểm đủ số/thứ tự 24 slide, nguồn local, số liệu model/SHAP và số học kịch bản; không chạy ML/n8n/cloud, 0 executions. Còn thiếu tên nhóm/thành viên, URL/license nguồn, acceptance runtime hiện hành; chưa xuất PPTX hoặc tổng nghiệm thu. Việc tiếp theo: tạo deck từ `SLIDE_CONTENT.md` khi người dùng yêu cầu; đọc file đó cùng REPORT, RESULTS v5, figures/slides/README và evidence cutover/migration. Không tự bật workflow để làm ảnh demo.
+
+**SHAP và Supabase đã hoàn tất 19/10/2026:** native LightGBM SHAP cho 5.533 snapshots, giữ nguyên model/xác suất; 127 features/6 nhóm, signed sums và Platt a=1,2400316422/b=0,3482248508. Raw additivity error 7,41e-15, probability error 2,11e-15. Supabase đã thay v4 bằng latest batch 11/10: **2.705 khách/predictions/contexts, 207 cases >500**, kỳ [11/10,11/11), outcome Unknown. Xóa v4 khỏi bảng vận hành; backup 25 bảng ở `app_private.v4_demo_backup`, không có quyền browser/worker; `supabase/restore_demo_v4.sql` đã kiểm round-trip local. Giữ Auth 3 users/staff 2; portal remap vào case mới, consent/opt-out được giữ theo customer_ref khi khớp. Không tự cấp consent mới hoặc gửi tin.
+
+**Biểu đồ English cho slide:** `docs/evidence/ml/rolling_month_v5/figures/slides/` có 7 biểu đồ × PNG/SVG, `README.md` hướng dẫn dùng và `chart_data.json` lưu số liệu/hashes. Dùng latest 2.705 khách một lần/người cho SHAP global; test ROC/PR là 1.485 dòng/758 khách với cửa sổ chồng nhau. SHAP là model risk drivers, không phải nguyên nhân xác nhận, không phải % xác suất.
+
+**19/10 — hoàn tất data/train v5 theo yêu cầu leader:** prediction ngày **1/11/21**, snapshot **cuối tháng/10/20**, horizon **một tháng lịch trượt**. Đã tạo **5.517 khách, 113.937 snapshot, 127 features** và tune **30 trials/họ**. Chọn **LightGBM tuned** theo validation ROC AUC **0,9483**; test exploratory AUC **0,9467**, AP **0,7138**, đạt mốc khoảng **0,89** leader làm rõ. CatBoost tuned validation/test AUC **0,9356/0,9348**. Một full-cohort generation, không sửa simulator sau test; baseline chỉ đối chiếu, không đổi winner theo test. 36 ML tests + verification hash/save-reload/customer-grouped calibration đạt. Canonical mới trong `final/rolling_month_v5/`; local artifacts v4 giữ nguyên; dữ liệu cloud v4 đã chuyển vào backup private.
+
+**Còn vướng/việc kế tiếp:** data/train/SHAP và Supabase v5 đã hoàn tất; không chạy lại khi không có yêu cầu/lỗi mới. Nguồn UI đã hiển thị kỳ trượt và tự chọn lại period sau cutover, 10 UI tests/build đạt. Tiếp theo deploy UI khi được yêu cầu, diễn tập browser, tiếp tục cost/catalog/report; xử lý n8n migration group-2-new còn unpublished/timer disabled theo quota. Chưa chạy n8n/LLM/send/E2E browser, 0 executions. Không coi controlled reset lần này là cơ chế refresh case tự động ở mọi batch tương lai. Đọc ml/README, DATA_ML, evidence/ml/rolling_month_v5/shap_summary.json, supabase_v5_cutover.json, figures/slides/README.md, SYSTEM và DEPLOYMENT.
 
 **AI ở chat mới phải đọc mục này trước khi làm việc**, rồi kiểm tra file thực tế trong repo. Không dựa vào việc nhớ một cuộc chat khác.
 
 | Nội dung | Trạng thái tại lần cập nhật này |
 |---|---|
-| Đã có | Problem/System, ML/SHAP, bản thảo báo cáo, 7 trách nhiệm logic, 5 workflow n8n theo evidence và English mockup; Supabase cloud 25 bảng/32 RPC, 3.202 khách synthetic/260 case. Phiên rà soát này chạy lại đạt 39 DB checks, 7 UI checks, 5 workflow validator checks và web build |
+| Đã có | V5 data/train/SHAP/cloud: 2.705 khách/207 cases latest 11/10, 127 features/6 nhóm; 43 ML +38 DB +7 rolling migration +2 replace/restore +10 UI tests/build đạt. Biểu đồ English PNG/SVG đã xuất. V4 private backup và local artifacts giữ lịch sử. |
 | Mockup hiện hành | English: `01-care-queue-en.png`, `02-customer-details-en.png`, `03-customer-chat-en.png` trong `website/mockups/`; bản VI lưu `tmp/mockups-vi-20261017/`, không dùng để code |
 | Nguồn dữ liệu đã nhận | telecom_customer_churn.csv, telecom_data_dictionary.csv và group_features_exp_3 (1).py từ Downloads. Người dùng xác nhận file Python là tài liệu nhóm cần tham khảo; đã profile bằng ml/generation/profile_source_data.py, kết quả docs/evidence/source_data_profile.json |
 | Chưa có | Kaggle URL/license đầy đủ; kiểm định trên dữ liệu thật FPT |
 | Đã chốt về phạm vi | App nghiệp vụ chỉ cho DVKH; model doanh nghiệp đã có; kỹ thuật dùng phần mềm riêng, DVKH chỉ gửi yêu cầu hỗ trợ |
 | Ngôn ngữ bắt buộc | Giảng viên yêu cầu sản phẩm, report/executive summary, slide và nội dung trình bày demo bằng tiếng Anh. Docs nội bộ vẫn tiếng Việt; không cần dịch toàn bộ repo |
 | Chưa hoàn thiện | Cost form và chart; catalog/eligibility được duyệt; delay 3 giờ còn là cấu hình đề xuất; UI polish; deadline/phân công tên |
-| Bước hiện tại | Đang bước 8–9; bước 7 hoàn thành kỹ thuật với model/6 nhóm đã duyệt và đã tích hợp. Bước 10 có bản thảo nhưng chưa có bộ nộp cuối. Xem đánh giá và gói giao việc ở mục 4; chưa phải production-ready |
-| Việc tiếp theo | 5 workflow đã chuyển sang group-2-new và map credentials; giữ unpublished/timer disabled. Tiếp theo thiết kế kích hoạt theo sự kiện hoặc phiên demo có kiểm soát, rồi publish/cutover app và Vercel khi được chốt. Không chạy live E2E để kiểm import; sau đó tiếp tục QA/UI/report ở mục 4 |
+| Bước hiện tại | Bước 7 data/train/SHAP v5 hoàn tất và đã import Supabase. Bước 8–9 còn browser/deploy UI/n8n cutover/cost/catalog. Bước 10 chưa xuất bộ nộp cuối. |
+| Việc tiếp theo | Dùng bộ figures/slides cho report/deck; deploy UI và diễn tập khi được yêu cầu. n8n group-2-new giữ unpublished/timer disabled; không execute để kiểm import. |
 | Đã xác minh về dữ liệu | 7.043×38; 5.517 khách Internet, 5.245 Stayed/Churned có tỷ lệ churn 33,48%; 9 nhóm công ty/1.964 feature; nguồn public mô tả fictional. Cột reason/category hậu churn và 120 Monthly Charge âm cần được xử lý đúng phạm vi |
 | SHAP UI 18/10 | Mỗi nhóm hiện % của net SHAP increase trên cả 6 nhóm: contribution_log_odds / (logit(probability) − baseline). Không phải % xác suất churn; có thể >100% do nhóm âm bù trừ; không chuẩn hóa riêng top 3. Dữ liệu invalid/net không dương hiện Unavailable. 7 UI checks + build đạt; đối chiếu toàn bộ 3.202 dòng group_shap.csv đạt. Chưa kiểm browser ở phiên này; không đổi model/data/schema/workflow. |
-| Phiên gần nhất | Hoàn tất import 5 workflow trên group-2-new, đọc lại đối chiếu 52 node: connections/parameters khớp source, credentials Supabase mới gắn đúng worker nodes, Google Sheets mới đọc được metadata tab FAQ. Cả 5 active=false và 5 timer disabled; không execute/LLM/send/publish. Đã cập nhật exports n8n/, thêm quota rule AGENTS.md, local validator 6/6 đạt. Evidence: evidence/n8n_migration.json. Chỉ bỏ builtInTools rỗng không hợp lệ ở explanation model; không đổi model/prompt/data |
-| File cần đọc tiếp | n8n/README.md (5 URL mới và trạng thái chưa publish); evidence/n8n_migration.json; AGENTS.md (quota); DEPLOYMENT.md (chưa cutover); SYSTEM.md |
+| Phiên gần nhất | Hoàn tất SHAP LightGBM, migrate Supabase và xóa v4 khỏi bảng vận hành (backup private 25 bảng). Giữ Auth/staff, remap portal, bảo toàn consent/opt-out khi khớp; 2.705 khách/207 cases. 43 ML/38 DB/7 migration/2 replacement/10 UI checks đạt. 0 n8n executions. |
+| File cần đọc tiếp | ml/README.md; DATA_ML; evidence/ml/rolling_month_v5/shap_summary.json và supabase_v5_cutover.json; figures/slides/README.md; SYSTEM; n8n/README; DEPLOYMENT. |
 | Deploy hiện hành | GitHub main đã có cấu hình Vercel từ phiên trước. App/Vercel proxy và hosted smoke scripts vẫn dùng group-2.app.n8n.cloud; chưa đổi sang group-2-new vì workflow mới chưa publish. Không gọi migration draft là demo đã khôi phục. Thay đổi phiên migration đang ở local, chưa push GitHub |
 | Quota / migration n8n | Tài khoản demo có ngân sách 1.000 executions theo người dùng. Đã chuyển đủ 5 workflow sang group-2-new (OAuth MCP đúng instance); chưa publish và mọi timer disabled. Không chạy execution để kiểm import/credential. Credentials được gắn theo ID; Supabase runtime chưa được kiểm, Google Sheets đã lookup tab bằng metadata. Export hiện hành n8n/ đã thay bằng bản mới; evidence trước migration vẫn là lịch sử account cũ |
 
@@ -78,10 +90,10 @@ Trạng thái dùng thống nhất: **Chưa bắt đầu / Đang làm / Chờ đ
 | 4 | Duyệt mockup và chia module | English mockup được duyệt baseline; Channel/Notifications đã có trong app | Đang làm: có gói giao việc ở mục 4; chưa gán tên/nhận bàn giao, UX còn hoàn thiện |
 | 5 | Supabase, Auth/RLS và seed demo | Bước 3 | Hoàn thành nền demo: cloud 25 bảng/32 RPC theo evidence, data/Auth mapping; chạy lại 39 local checks đạt. Catalog/eligibility chưa được duyệt để trống; không phải kiểm định production |
 | 6 | Một luồng xuyên suốt cho một khách | Bước 4–5; prediction đã có từ model chốt | Hoàn thành luồng cốt lõi: real LLM draft → staff approval → mock delivery → customer reply; evidence/n8n_workflows.json |
-| 7 | Hoàn thiện ML và giải thích nhóm rủi ro | CatBoost tuned/127 features và 6 nhóm đã duyệt; output đã import, UI và 3 LLM requests đã có evidence | Hoàn thành kỹ thuật trong phạm vi synthetic demo; review chất lượng lời AI tiếp tục ở bước 9. Không train lại |
+| 7 | Hoàn thiện ML và giải thích nhóm rủi ro | LightGBM v5/127 features, 6 nhóm native SHAP, 2.705 contexts/207 cases Supabase; evidence/figures có nguồn | Hoàn tất kỹ thuật v5; còn kiểm browser/LLM quality ở bước 9 |
 | 8 | Hoàn thiện workflow và UI/UX | Bước 6; tích hợp output bước 7 | Đang làm: 5 workflow active; còn cost/chart, catalog và UI polish |
 | 9 | Kiểm thử, sửa lỗi và thu bằng chứng | Module có thể chạy; chốt sau bước 8 | Đang làm: chạy lại 39 DB + 7 UI + 5 workflow checks, build đạt; có hosted E2E evidence cũ. Chưa tổng nghiệm thu browser/usability/concurrency |
-| 10 | Chốt báo cáo, xuất file và diễn tập | Evidence bước 7–9 | Đang làm nội dung: có REPORT.md và figures; chưa có executive summary/slide/data-code package cuối hoặc rehearsal |
+| 10 | Chốt báo cáo, xuất file và diễn tập | Evidence bước 7–9 | Đã có REPORT.md, figures, SLIDE_CONTENT.md và PPTX English 24 slide với notes/native tables/charts; render/import/package checks đạt. Chưa kiểm PowerPoint native, executive summary/data-code package cuối hoặc rehearsal |
 
 Bước 2 và mockup của bước 4 có thể song song. Bước 7 có thể chạy song song bước 5–6 khi đã chốt feature/output contract. Bước 6 dùng prediction simulated có nhãn nếu model demo chưa sẵn sàng; không báo đó là prediction đã train. Research, viết báo cáo và soạn checklist bắt đầu từ bước 1, không chờ đến bước 10.
 
@@ -213,12 +225,14 @@ Bước 2 và mockup của bước 4 có thể song song. Bước 7 có thể ch
 
 ### Bước 7 — Hoàn thiện ML và giải thích nhóm rủi ro
 
+**Trạng thái 19/10:** data/train/chọn model/SHAP v5 và payload Supabase đã hoàn tất theo evidence; UI source đã sửa/build, chưa deploy Vercel hoặc diễn tập browser. Các mục v4 dưới đây là lịch sử đã triển khai, không phải yêu cầu quay lại model cũ.
+
 **Mục tiêu:** thay đầu vào simulated bằng output model demo có thể tái lập, hoặc dùng adapter model doanh nghiệp nếu được cấp dữ liệu/quyền phù hợp. Leader/AI phụ trách.
 
 **Việc cần làm:**
 
-1. Giữ temporal split dataset v4/127: snapshots Jan–Jun train (targets Feb–Jul), Jul validation/calibration với khách riêng (target Aug), Aug audit test (target Sep, một tháng, exploratory), Sep inference (target Oct Unknown). Calibration/audit IDs không vào fit/tuning/selection. Không dùng ID làm feature; không thay frozen data.
-2. Pipeline hiện hành đã so sánh baseline/tuned LightGBM và CatBoost native categorical, 30 Optuna trials/họ trên ba rolling folds; CatBoost tuned đã được leader duyệt. Không chạy lại tuning hoặc đổi winner theo test khi nhận phần hoàn thiện sản phẩm.
+1. Lịch sử v4 (v5 dùng purged split ở DATA_ML): temporal split dataset v4/127: snapshots Jan–Jun train (targets Feb–Jul), Jul validation/calibration với khách riêng (target Aug), Aug audit test (target Sep, một tháng, exploratory), Sep inference (target Oct Unknown). Calibration/audit IDs không vào fit/tuning/selection. Không dùng ID làm feature; không thay frozen data.
+2. Lịch sử v4 đã so sánh baseline/tuned LightGBM và CatBoost native categorical, 30 Optuna trials/họ trên ba rolling folds; CatBoost tuned đã được leader duyệt. Không chạy lại tuning hoặc đổi winner theo test khi nhận phần hoàn thiện sản phẩm.
 3. Chọn model, calibration và ngưỡng/capacity policy bằng train/CV/validation; khóa trước khi đánh giá test cuối.
 4. Đánh giá PR-AUC, Recall@K/Precision@K, calibration và confusion matrix theo dữ liệu/nhãn thật; nêu cỡ mẫu và giới hạn.
 5. Lưu preprocessing/model/metadata và environment; infer phải dùng lại artifact, không fit lại encoder.
@@ -427,3 +441,5 @@ Browser đã kiểm khách 2931: chọn saved draft, nút Approve & Send vẫn d
 Message timestamp/send feedback: website/app/src/main.jsx dùng created_at và sent_at từ Supabase, format Asia/Saigon qua date(). Spinner Approve & Send theo approval request và delivery_status queued/sending; sent mới tick, failed hiện hướng dẫn quay Unused. Giữ nguyên revision approval, consent và outbox worker.
 
 Browser kiểm trên 7801: lưu một tin test mô phỏng, Approve & Send hiện Working và disabled xuyên suốt queued; delivery worker execution 336 xử lý, tin xuất hiện trong hội thoại và Used có Created 17:01 / Sent 17:02 (18/10 Asia/Saigon). Không gọi LLM trong lượt kiểm này. Evidence website-send-working.png và website-message-times.png.
+
+**Security review sau cutover 19/10:** 25 public tables RLS; Agent1/Supervisor207/Portal0 internal +1 thread đã kiểm SQL. Backup/staging private có RLS và không có browser/worker grants (no-policy INFO là chủ ý deny-all); staging đã xóa payload sau commit. Advisor vẫn cảnh báo 19 RPC SECURITY DEFINER có auth/ownership guards và leaked-password protection đang tắt; chưa đổi Auth setting ngoài phạm vi. Tham khảo [password security](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). Không gọi đây là production security sign-off. Restore đã kiểm local; chưa restore cloud vì sẽ thay dữ liệu đang dùng.

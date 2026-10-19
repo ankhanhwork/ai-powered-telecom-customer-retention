@@ -1,0 +1,48 @@
+{
+  "snapshot": "2026-10-10",
+  "customers": 2705,
+  "alerts": 207,
+  "group_mean_abs": {
+    "connection_quality": 0.12659148446162008,
+    "usage_engagement": 0.15139785472299683,
+    "plan_pricing_relationship": 0.15715408015800209,
+    "support_experience": 0.159651583712793,
+    "payment_overdue": 0.4879266322390843,
+    "renewal_promotion": 0.6652369362082599
+  },
+  "top_features": {
+    "repeat_contacts_30d": 0.021219839940967735,
+    "plan_change_requests_30d": 0.027366606497633686,
+    "tenure_months": 0.028892389584059857,
+    "overdue_days": 0.038488456029071666,
+    "oldest_open_ticket_days": 0.04535542282518161,
+    "repeat_contacts_7d": 0.05502426011771284,
+    "fee_change_pct_30d": 0.055110411227439995,
+    "usage_gb_7d": 0.060543348955462435,
+    "inactive_days_7d": 0.07068325171202412,
+    "fee_change_pct_60d": 0.07514156717315175,
+    "service_issue_days_7d": 0.07650019713510682,
+    "promo_days_remaining": 0.09618372579405532,
+    "overdue_amount_vnd": 0.16074000014705972,
+    "days_since_last_payment": 0.27983174816909767,
+    "prepaid_days_remaining": 0.5770494590898789
+  },
+  "example": {
+    "example": "Highest-scoring latest-batch synthetic profile; ID omitted",
+    "baseline_log_odds": -4.236930172594861,
+    "group_log_odds": {
+      "connection_quality": 0.0563804054078343,
+      "support_experience": -0.0340397626726824,
+      "payment_overdue": 0.7055567604240859,
+      "usage_engagement": -0.0736288518469568,
+      "renewal_promotion": -0.0149437889515389,
+      "plan_pricing_relationship": 7.061212946535331
+    },
+    "reconstructed_probability": 0.9696343656044497,
+    "saved_probability": 0.96963436560445
+  },
+  "source_sha256": {
+    "feature_shap_raw.csv": "14e684c0724133d546159181fbf1b776e74acdb9ee3f3b0ee14fbaf4e8209f0c",
+    "group_shap.csv": "97653c177682045a7705b72f83e0da643500db19accd4715ff16e3936943f9ad"
+  }
+}

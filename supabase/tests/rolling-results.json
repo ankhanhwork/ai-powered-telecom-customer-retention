@@ -1,0 +1,15 @@
+{
+  "passed": 7,
+  "checks": [
+    "migration retains v4 row and derives exact window end",
+    "v5 real SHAP payload imports unchanged and idempotently",
+    "invalid horizon and unsupported issue day rejected",
+    "old model context cannot be attached to v5 prediction",
+    "backup and staging are private with RLS and no browser/worker privileges",
+    "outcome remains blocked before rolling window completes",
+    "queue and worker context expose exact start and end"
+  ],
+  "limits": [
+    "Local PGlite; Auth and Storage stubs; no multi-connection test."
+  ]
+}

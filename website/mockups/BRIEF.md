@@ -1,5 +1,9 @@
 # Mockup website — 3 màn hình tiếng Anh
 
+## Delta 19/10 — contract prediction mới, đã sửa UI source
+
+Leader chốt prediction ngày 1/11/21 từ snapshot cuối tháng/10/20, dự báo một tháng lịch tới. Khi tích hợp v5, hiển thị **One-month churn risk · Updated on days 1, 11 and 21**, ngày snapshot và khoảng start/end thực tế. Outcome chờ hết đúng cửa sổ. Giữ case/assignee/history khi refresh, tránh chăm sóc trùng. Mockup v4 giữ làm lịch sử. Queue/Progress nguồn đã dùng start/end của v5, tự chọn lại kỳ hợp lệ sau thay batch; 10 UI tests và build đạt. Supabase đã v5; chưa deploy Vercel hoặc kiểm browser toàn luồng.
+
 Cập nhật: 17/10/2026. Trạng thái: ảnh đề xuất để review; chưa phải app chạy được hoặc thiết kế đã được duyệt.
 
 ## Ảnh đã lưu

@@ -1,7 +1,7 @@
-"""Run fair 127-feature baseline/tuned comparison, calibration and prediction.
+"""Compare 127-feature models; lock validation selection before test scoring.
 
-Model selection is written before test scoring. Historical September test has
-already been exposed; all test comparisons are exploratory. No SHAP is run.
+Rolling-month runs purge future labels and group calibration by customer.
+Test metrics are exploratory synthetic benchmarks, never a selection input.
 """
 import argparse
 import importlib.metadata
@@ -22,6 +22,9 @@ from tune import run as tune_model
 
 
 def choose(candidates,cfg):
+    if cfg['model_selection'].get('metric')=='roc_auc':
+        eligible = [name for name in candidates if name.endswith('_tuned')]
+        return min(eligible,key=lambda name:(-candidates[name]['validation']['roc_auc'],candidates[name]['validation']['log_loss'],name))
     best_ap = max(c['validation']['average_precision'] for c in candidates.values())
     eligible = [name for name,c in candidates.items() if c['validation']['average_precision']>=best_ap-cfg['model_selection']['ap_tolerance']]
     loss = min(candidates[name]['validation']['log_loss'] for name in eligible)
@@ -66,7 +69,8 @@ def main():
             raw_val = raw_predict(model,algorithm,parts['validation'][cfg['features']],cfg)
             raw_cal = raw_predict(model,algorithm,parts['calibration'][cfg['features']],cfg)
             y_cal = parts['calibration']['churn_next_month'].astype(int).to_numpy()
-            calibrator,cal_metrics,oof,folds = cross_fit(raw_cal,y_cal,cfg['seed'])
+            groups = parts['calibration']['customer_id'].to_numpy() if cfg.get('snapshot_schedule')=='three_per_month' else None
+            calibrator,cal_metrics,oof,folds = cross_fit(raw_cal,y_cal,cfg['seed'],groups=groups)
             timings = []
             for _ in range(5):
                 started = time.perf_counter()
@@ -79,10 +83,10 @@ def main():
             metadata = {'candidate':candidate,'algorithm':algorithm,'variant':variant,'model_file':model_file,
                         'model_sha256':sha(bundle/model_file),'calibration_version':f"{cfg['protocol_version']}_{candidate}_platt",
                         'parameters':cv['parameters'],'iterations':iterations,'feature_count':127,
-                        'approval_status':'Proposed; awaiting user model/parameter approval',
-                        'shap_status':'Deferred by user; no SHAP generated'}
+                        'approval_status':'Candidate in user-authorized offline comparison; not deployed',
+                        'shap_status':'Not regenerated for this new model; v4 mapping remains pinned to v4'}
             write_json(bundle/'schema.json',{'features':cfg['features'],'categorical_features':cfg['categorical_features'],
-                                            'dataset_version':cfg['dataset_version']})
+                                            'dataset_version':cfg['dataset_version'],'snapshot_schedule':cfg.get('snapshot_schedule','month_end'),'target':'One calendar month from target_period_start; end exclusive'})
             write_json(bundle/'metadata.json',metadata)
             write_json(bundle/'calibrator.json',calibrator)
             saved = load_model(algorithm,bundle/model_file)
@@ -99,9 +103,9 @@ def main():
             models[candidate],calibrators[candidate] = model,calibrator
             print(f'{candidate}: validation AP={validation["average_precision"]:.5f}; AUC={validation["roc_auc"]:.5f}; iterations={iterations}',flush=True)
     champion = choose(candidates,cfg)
-    selection = {'champion':champion,'status':'Proposed; awaiting user approval','test_used_for_selection':False,
+    selection = {'champion':champion,'status':'Selected offline under user-authorized comparison; not deployed','test_used_for_selection':False,
                  'rule':cfg['model_selection'],'candidates_validation':{name:c['validation'] for name,c in candidates.items()},
-                 'shap':'Deferred; wait for user model/parameter approval'}
+                 'shap':'Not regenerated; old model explanations must not be attached to the new model'}
     write_json(evidence/'selection.json',selection)
     selection_hash = sha(evidence/'selection.json')
     rows = []
@@ -115,7 +119,7 @@ def main():
         prediction = test[['customer_id','snapshot_date']].copy()
         prediction['churn_next_month'],prediction['raw_probability'],prediction['churn_probability'] = test['churn_next_month'].to_numpy(),expit(raw),probability
         prediction.to_csv(offline/f'{name}_test_exploratory.csv',index=False)
-        rows.append({'candidate':name,'feature_count':127,'cv_average_precision':c['cv']['mean_ap'],
+        rows.append({'candidate':name,'feature_count':127,'cv_average_precision':c['cv']['mean_ap'],'cv_roc_auc':c['cv'].get('mean_auc',float(np.mean(c['cv']['fold_auc']))),
             'validation_average_precision':c['validation']['average_precision'],'validation_roc_auc':c['validation']['roc_auc'],
             'validation_log_loss':c['validation']['log_loss'],'calibration_oof_brier':c['calibration']['oof_after']['brier'],
             'test_roc_auc_exploratory':c['test_calibrated']['roc_auc'],'test_ap_exploratory':c['test_calibrated']['average_precision'],
@@ -128,6 +132,9 @@ def main():
     if champion_dir.exists():
         raise ValueError('Champion directory exists')
     shutil.copytree(ROOT/candidates[champion]['bundle'],champion_dir)
+    champion_metadata = read_json(champion_dir/'metadata.json')
+    champion_metadata.update(approval_status=selection['status'],selection_sha256=selection_hash)
+    write_json(champion_dir/'metadata.json',champion_metadata)
     inference = parts['inference'].drop(columns='churn_next_month')
     prediction = predict_frame(load_bundle(champion_dir),inference)
     infer_dir = ROOT/cfg['inference_dir']
@@ -137,15 +144,15 @@ def main():
     assert prediction['label_status'].eq('Unknown').all() and 'churn_next_month' not in prediction
     versions = {package:importlib.metadata.version(package) for package in ['lightgbm','catboost','optuna','scikit-learn','pandas','numpy','scipy','matplotlib']}
     result = {'protocol_version':cfg['protocol_version'],'dataset_version':cfg['dataset_version'],
-              'feature_count':127,'champion':champion,'approval_status':'Proposed; await user approval before SHAP',
+              'feature_count':127,'champion':champion,'approval_status':'Selected offline under user-authorized comparison; not deployed',
               'candidates':candidates,'dependencies':versions,'selection_sha256':selection_hash,
-              'inference_rows':len(prediction),'inference_gt500':int(prediction.company_gt_500.sum()),
-              'test_status':'Exploratory; September audit cohort previously exposed',
+              'inference_rows':len(prediction),'inference_unique_customers':int(prediction.customer_id.nunique()),'inference_gt500':int(prediction.company_gt_500.sum()),
+              'test_status':cfg.get('test_status','Exploratory; September audit cohort previously exposed'),
               'checks':{'features_exactly_127':True,'calibration_customer_disjoint':True,'test_not_used_for_selection':True,
                         'save_reload_predictions_match':True,'monotone_calibration_preserves_test_auc':True,
-                        'october_labels_unknown':True,'no_shap_computed':True},'limitations':cfg['limitations']}
+                        'inference_labels_unknown':True,'no_shap_computed':True,'calibration_oof_customer_grouped':cfg.get('snapshot_schedule')=='three_per_month'},'limitations':cfg['limitations']}
     write_json(evidence/'comparison.json',result)
-    print(f'Proposed champion: {champion}; inference >500: {result["inference_gt500"]}/{len(prediction)}',flush=True)
+    print(f'Selected offline champion: {champion}; inference >500: {result["inference_gt500"]}/{len(prediction)}',flush=True)
 
 
 if __name__=='__main__':

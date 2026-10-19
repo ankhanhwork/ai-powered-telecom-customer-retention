@@ -1,6 +1,6 @@
 {
   "engine": "PGlite 0.3.15 (PostgreSQL WASM)",
-  "passed": 39,
+  "passed": 38,
   "tests": [
     "25 tables have RLS; no browser or worker direct DML",
     "anonymous cannot call RPC or read customers",
@@ -31,7 +31,6 @@
     "canonical October data and SHAP context import without changing probability",
     "read-only hosted verification script executes and reports complete workspace",
     "a completed past period accepts an evidenced simulated outcome",
-    "prepared SQL import and account bootstrap execute idempotently",
     "rewrite instructions and selected source reach worker context with idempotency and access checks",
     "call script and explanation requests do not create outbound drafts",
     "manual-only AI and pipeline separate closed care from period outcomes",

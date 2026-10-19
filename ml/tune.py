@@ -22,7 +22,7 @@ def evaluate_folds(algorithm,params,frame,cfg):
         aucs.append(float(roc_auc_score(y,probabilities)))
         losses.append(float(log_loss(y,probabilities)))
         iterations.append(count)
-    return {'mean_ap':float(np.mean(scores)),'std_ap':float(np.std(scores)),
+    return {'mean_ap':float(np.mean(scores)),'mean_auc':float(np.mean(aucs)),'std_ap':float(np.std(scores)),
             'fold_ap':scores,'fold_auc':aucs,'fold_logloss':losses,'fold_iterations':iterations,
             'refit_iterations':max(1,int(statistics.median(iterations)))}
 
@@ -49,12 +49,13 @@ def run(algorithm,cfg):
     state_dir.mkdir(parents=True,exist_ok=True)
     protocol_path = evidence/'tuning_protocol.json'
     protocol = {'config':cfg,'config_sha256':sha(ROOT/'ml/config.json'),
+                'source_sha256':{name:sha(ROOT/'ml'/name) for name in ['data.py','tune.py','train.py','models_api.py','calibration.py','predict.py','common.py']},
                 'data_manifest_sha256':sha(evidence/'data_manifest.json'),
                 'selection_data':'CV inside training only; validation/calibration/audit test excluded',
-                'early_stopping':'Logloss on inner validation month; AP objective on the same inner fold',
+                'early_stopping':'Logloss on inner chronological validation; configured objective on the same fold',
                 'final_iterations':'Median best iteration across three CV folds, fixed before outer validation',
                 'sampler':'TPE(seed=42,n_startup_trials=10), sequential trials; no pruning for equal completed budgets',
-                'shap':'Deferred by user; no SHAP or feature contributions generated'}
+                'objective':cfg['objective'],'shap':'No SHAP during model selection'}
     if protocol_path.exists():
         assert read_json(protocol_path)==protocol,'Protocol/data changed; use a new run directory'
     else:
@@ -72,8 +73,8 @@ def run(algorithm,cfg):
         result = evaluate_folds(algorithm,params,frame,cfg)
         for name,value in result.items():
             trial.set_user_attr(name,value)
-        print(f"{algorithm} trial {trial.number+1}/{cfg['trials_per_model']}: mean AP={result['mean_ap']:.5f}; iterations={result['fold_iterations']}",flush=True)
-        return result['mean_ap']
+        print(f"{algorithm} trial {trial.number+1}/{cfg['trials_per_model']}: AUC={result['mean_auc']:.5f}; AP={result['mean_ap']:.5f}; iterations={result['fold_iterations']}",flush=True)
+        return result['mean_auc'] if cfg['model_selection'].get('metric')=='roc_auc' else result['mean_ap']
     remaining = cfg['trials_per_model']-len(study.trials)
     if remaining>0:
         study.optimize(objective,n_trials=remaining,gc_after_trial=True)
@@ -88,7 +89,7 @@ def run(algorithm,cfg):
     except TypeError:
         importance = optuna.importance.get_param_importances(study,evaluator=optuna.importance.FanovaImportanceEvaluator(seed=cfg['seed']))
     write_json(evidence/f'{algorithm}_parameter_importance.json',importance)
-    print(f'{algorithm} complete: best CV AP={study.best_value:.5f}',flush=True)
+    print(f"{algorithm} complete: {cfg['objective']}={study.best_value:.5f}",flush=True)
 
 
 if __name__=='__main__':
