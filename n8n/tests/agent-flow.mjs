@@ -18,8 +18,8 @@ try{
   const key=`manual:${type}:agent-smoke-${crypto.randomUUID()}`;
   const id=await request('/rest/v1/rpc/retention_request_recommendation',{p_case_id:row.case_id,p_request_key:key,p_instructions:type==='explanation'?null:'Be concise and ask two questions to confirm current needs.',p_source_text:null},agent.access_token);
   const duplicate=await request('/rest/v1/rpc/retention_request_recommendation',{p_case_id:row.case_id,p_request_key:`manual:${type}:duplicate-${crypto.randomUUID()}`,p_instructions:type==='explanation'?null:'Be concise and ask two questions to confirm current needs.',p_source_text:null},agent.access_token);assert.equal(duplicate,id,'Pending request did not coalesce');
-  const response=await fetch('https://group-2.app.n8n.cloud/webhook/retention-ai-'+type,{method:'POST',headers:{apikey:env.VITE_SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${agent.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({job_id:id})});
-  assert(response.ok,`Webhook ${type} HTTP ${response.status}`);const duplicateWake=await fetch('https://group-2.app.n8n.cloud/webhook/retention-ai-'+type,{method:'POST',headers:{apikey:env.VITE_SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${agent.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({job_id:id})});assert(duplicateWake.ok);requests.push({type,id,key});
+  const response=await fetch('https://group-2-new.app.n8n.cloud/webhook/retention-ai-'+type,{method:'POST',headers:{apikey:env.VITE_SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${agent.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({job_id:id})});
+  assert(response.ok,`Webhook ${type} HTTP ${response.status}`);const duplicateWake=await fetch('https://group-2-new.app.n8n.cloud/webhook/retention-ai-'+type,{method:'POST',headers:{apikey:env.VITE_SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${agent.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({job_id:id})});assert(duplicateWake.ok);requests.push({type,id,key});
  }
  console.log('Three authenticated webhook requests accepted; awaiting results.');
  let jobs=[];

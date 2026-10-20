@@ -12,7 +12,7 @@ Hệ thống phối hợp liên phòng ban để chuyển cảnh báo churn thà
 
 **Ngôn ngữ đã chốt theo yêu cầu giảng viên:** sản phẩm và bản nộp (report/executive summary, slide và nội dung demo) bằng **tiếng Anh**. UI, AI diễn giải, tin nhắn/call script mẫu và thông báo hệ thống cũng dùng tiếng Anh. Tài liệu làm việc trong repo vẫn được phép viết **tiếng Việt**; bản thảo tiếng Việt chưa phải bản nộp cuối. Mockup chuẩn hiện hành là bộ English trong `website/mockups/`.
 
-**n8n migration 18/10:** đã chuyển 5 workflow sang `group-2-new`, gắn credentials mới, giữ unpublished và mọi timer tắt để bảo toàn quota 1.000 executions. Chưa chạy test live hoặc đổi host app/Vercel; demo chưa được khôi phục trên account mới. Xem [n8n README](n8n/README.md) và [evidence migration](docs/evidence/n8n_migration.json).
+**n8n cutover 19/10:** ba webhook AI đã publish trên `group-2-new`; app local, proxy config Vercel và smoke script đã đổi host mới. Test đúng 5 executions: ba AI artifacts completed, delivery thành công nhánh queue rỗng, follow-up/support tạo 1 reminder + 1 mock receipt. Không có case hiện hành có sẵn Zalo consent phù hợp để kiểm nhánh gửi; không đổi consent. Mọi timer vẫn tắt; delivery/support/reminder cần operator chạy thủ công. Source chưa push/redeploy Vercel, domain hosted chưa được kiểm. Xem [n8n README](n8n/README.md) và [evidence cutover](docs/evidence/n8n_cutover.json).
 
 ## Tài liệu cần đọc
 

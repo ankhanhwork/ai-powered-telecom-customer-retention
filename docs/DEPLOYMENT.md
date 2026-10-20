@@ -1,5 +1,7 @@
 # Deploy demo lên Vercel
 
+**Cutover 19/10/2026:** source app local và ba rewrite destinations hiện trỏ `https://group-2-new.app.n8n.cloud`; ba AI webhook đã publish/test live, mọi timer n8n disabled. Chưa push/redeploy Vercel nên chưa xác minh hosted domain nhận config mới. Delivery/follow-up/support cần demo operator chạy thủ công, không có fallback timer tự retry. Evidence `evidence/n8n_cutover.json`: 5 executions, delivery chỉ kiểm queue rỗng vì không có consent khớp case hiện hành.
+
 Chuẩn bị ngày 18/10/2026. Chỉ deploy web React/Vite; Supabase và n8n tiếp tục chạy trên cloud hiện tại. Không upload dataset, model, credential hoặc chạy lại SQL setup. Repository: https://github.com/ankhanhwork/ai-powered-telecom-customer-retention.
 
 ## 1. Import GitHub repository
@@ -35,7 +37,7 @@ Vite lấy env lúc build; đổi biến cần **Redeploy** để bundle nhận 
 
 Bản production gọi `POST /api/retention-ai-message`, `/api/retention-ai-call_script`, `/api/retention-ai-explanation` cùng domain. Ba external rewrites chuyển request tới đúng webhook n8n hiện hành; không tạo một proxy tùy ý tới mọi workflow. JWT phiên, publishable key và job_id vẫn được gửi, n8n vẫn kiểm JWT/RLS rồi claim trước khi gọi LLM. Không bật cache cho các routes này.
 
-Local `npm run dev` vẫn gọi webhook trực tiếp với localhost origins hiện có. Không cần thêm wildcard `*.vercel.app` vào n8n CORS khi dùng proxy cùng domain. Không đổi live workflow/CORS trong đợt chuẩn bị này. Nếu production proxy lỗi, job đã tạo vẫn có worker fallback theo phút; thông báo lỗi không đồng nghĩa draft đã mất hoặc cần bấm liên tục.
+Local `npm run dev` gọi webhook group-2-new trực tiếp với localhost origins hiện có. Không cần thêm wildcard `*.vercel.app` vào n8n CORS khi dùng proxy cùng domain. Nếu proxy lỗi, job đã tạo vẫn ở database; operator phải chạy worker thủ công do fallback timer tắt. Không bấm liên tục để thử lại.
 
 ## 4. Sau deploy
 
@@ -45,7 +47,7 @@ Local `npm run dev` vẫn gọi webhook trực tiếp với localhost origins hi
 4. Dùng case synthetic còn consent để diễn tập approval→mock receipt→portal reply; kiểm consent/owner trước lượt chạy. Giữ opt-out của 2931. 7801 là fixture còn consent theo evidence cũ, không phải cam kết trạng thái live.
 5. Kiểm Customer không đọc notes/risk nội bộ; Unknown không thành retained. Deployment không thay thế ma trận QA trong IMPLEMENTATION mục 4.
 
-Nếu login bị lỗi Invalid API key, kiểm publishable key và redeploy. Nếu trang trắng, kiểm Console và env build. Nếu Request AI trả 404/HTML, kiểm Root Directory/vercel.json; nếu 401/403 kiểm session và RLS, không thay bằng service key. Nếu n8n không có kết quả, kiểm worker active và executions bằng credential quản trị hiện có. Timer delivery/follow-up vẫn chạy trên n8n, không phải Vercel cron.
+Nếu login bị lỗi Invalid API key, kiểm publishable key và redeploy. Nếu trang trắng, kiểm Console và env build. Nếu Request AI trả 404/HTML, kiểm Root Directory/vercel.json; nếu 401/403 kiểm session và RLS, không thay bằng service key. Nếu n8n không có kết quả, kiểm worker active và executions bằng credential quản trị hiện có. Delivery/follow-up chạy manual trên n8n; timer tắt, không có Vercel cron.
 
 Sau khi ổn, các push tiếp theo lên `main` sẽ deploy qua Vercel Git integration đã kết nối. Không cần commit `dist`, `node_modules`, `.vercel` hoặc `.env.local`. Giữ deployment protection phù hợp với người cần truy cập demo; không cung cấp quyền Vercel admin chỉ để xem app.
 

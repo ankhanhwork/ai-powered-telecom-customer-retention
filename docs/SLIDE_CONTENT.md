@@ -4,6 +4,19 @@ Content version: 19 October 2026. Language: English. Format: 24 main slides, in 
 
 **PPTX export, 19 October 2026:** `../deliverables/AI_Powered_Telecom_Customer_Retention.pptx` now contains the 24-slide deck, speaker notes, editable tables and three editable charts with embedded workbook snapshots. All slides were rendered and the final file was re-imported for checks. Native PowerPoint rendering and team rehearsal remain pending. The content below remains the source for revisions; the exported deck uses a signed horizontal SHAP chart in place of the suggested waterfall, with chart values rounded to three decimals and full-precision source attribution preserved in notes.
 
+**Later content revision:** slides 14–15 now expand the data-science design using complete descriptions of snapshots, target windows, temporal splitting, model mechanics, tuning and calibration; slide 16 uses a staff-verification explanation table. The existing PPTX has not yet been updated with these revisions. All model metrics and source artifacts are unchanged.
+
+**Current slide 14 insert:** [training_records_white.png](../deliverables/training_records_white.png), with editable [SVG source](../deliverables/training_records_white.svg), supersedes the earlier generated image below. Requested plain-language title: “Which Records Can Be Used for Training?” No “purging” wording appears in the image. Solid-white vector background is #FFFFFF, rasterised to 2000 × 2500; border pixels verified pure white. Common-axis dates are aligned proportionally at 1 June / 11 June / 1 July / 11 July. Two ImageGen attempts retained near-white noise, so the delivered asset is a newly authored deterministic vector diagram rather than a retouched generated image. Earlier outputs are historical alternatives; PPTX remains unchanged.
+
+**Slide 14 image insert:** [purging_validation_boundary.png](../deliverables/purging_validation_boundary.png), generated with built-in ImageGen for the right-hand slide column. White/FPT-colour schematic contrasts a fully observed [1 June, 1 July) window with an incomplete [11 June, 11 July) window at a 1 July validation boundary. Dates and inclusion/exclusion were visually checked; horizontal spacing is schematic, not an exact time-scale measurement. The file is an illustrative raster asset, not a model output or a revision of the PPTX.
+
+<details>
+<summary>ImageGen prompt used for the purging insert</summary>
+
+Use case: infographic-diagram. Create one polished, very readable English educational infographic as an insert for the empty right-hand column of a university data-science PowerPoint slide. Portrait composition approximately 4:5, high resolution, perfectly white background. Flat professional editorial vector-like typography, Arial-like sans serif. No logo, no watermark, no illustrations, no photo, no shadows, no unnecessary panels. Palette dark navy #142C48 text, FPT blue #0D69B3 timelines, orange #F27323 boundary/exclusion, green #1FB34A inclusion. Generous spacing, crisp large text. Title EXACT: 'Purging at the Validation Boundary'. Below title make a common horizontal chronological axis with dates '1 June', '11 June', '1 July', '11 July', in proportional order (offsets 0,10,30,40 days). A vertical orange dashed line at 1 July extends through the axis and both example timelines; label it ABOVE the axis 'Validation starts: 1 July'. First example row heading EXACT 'Snapshot: 31 May'. Its blue target-window bar starts at 1 June and ends at the 1 July boundary, not beyond. Clearly label the interval '[1 June, 1 July)' below this bar. Below first bar put a green check and 'Include' with smaller explanation 'Outcome window complete'. Second example row heading EXACT 'Snapshot: 10 June'. Its target-window bar starts at 11 June and ends at 11 July, crossing the 1 July validation boundary; colour the segment beyond the boundary orange and the earlier segment blue. Clearly label interval '[11 June, 11 July)' below it. Below second bar put an orange cross and 'Exclude' with smaller explanation 'Outcome window incomplete'. The first and second bars MUST use exactly the same time axis and the SAME aligned 1 July dashed boundary; do not give them independent axes or misleading endpoints. The intervals are end-exclusive: first label known at start of validation, second not known then. Footer EXACT: 'Train only on outcomes fully observed before validation begins.' Keep footer comfortably separated and all text inside wide safe margins. No other copy. Make the technical diagram immediately understandable and visually balanced when pasted into a narrow slide column.
+
+</details>
+
 ## Editorial decisions
 
 - Preserve all 24 slide numbers and titles below. Problem, Data, Method, Tools, and Business Value & Strategy are section labels, not additional divider slides. The prototype demonstration intentionally precedes the detailed model slides.
@@ -455,95 +468,144 @@ Sources: [v5 cutover](evidence/ml/rolling_month_v5/supabase_v5_cutover.json), [n
 
 ## Slide 14 — Model Development and Evaluation Design
 
-**Section:** Method. **Purpose:** Explain how the current model comparison avoids temporal and customer leakage.
+**Section:** Method. **Purpose:** Define the prediction problem, explain the snapshot schedule and justify time-based evaluation.
 
 ### On-slide copy
 
-**Common input:** 127 frozen features for LightGBM and CatBoost, baseline and tuned.
+**Customer-snapshot classification with a rolling one-month target**
 
-| Partition / stage | V5 protocol |
+| Design component | Specification and purpose |
 |---|---|
-| Training | Development customers; target windows ending by 1 July |
-| Tuning | 30 trials per family, three purged chronological folds; mean ROC AUC |
-| Validation | July-start windows; selection between the two tuned candidates |
-| Calibration | Separate customers; five-fold customer-grouped OOF evaluation |
-| Exploratory test | Audit customers; windows starting 1 and 11 September |
-| Current inference | October-start windows; incomplete outcomes remain Unknown |
+| Observation unit | One active customer at one snapshot date. Multiple snapshots capture changes in the same customer's condition. |
+| Model input | The same 127 features for both model families, calculated only from facts available at the cutoff. Customer IDs, target labels and generation audit variables are excluded. |
+| Snapshot schedule | Previous month-end (28/29/30/31), day 10 and day 20. Predictions are issued on days 1, 11 and 21 to refresh risk during the month. |
+| Prediction target | Estimate the probability of churn within the next calendar month, approximately 30 days. The label is 1 for churn within the window and 0 for no churn, once the full window is observed. Incomplete windows remain Unknown. |
 
-**Purge by target-window end. Lock selection before test scoring.**
+**Snapshot and target-window examples**
+
+| Snapshot | Issue date | Target window, end exclusive |
+|---|---|---|
+| 30 September | 1 October | [1 October, 1 November) |
+| 10 October | 11 October | [11 October, 11 November) |
+| 20 October | 21 October | [21 October, 21 November) |
+
+**Purged time-series split**
+
+Train on earlier completed windows → validate on July-start windows → test on September-start windows.
+
+**Why not a random split?** Random row splitting can mix future and past records and place overlapping customer windows in both sets. Time-based evaluation reflects the real task: predict future risk using information already available.
+
+*The 20 October row illustrates the schedule; this snapshot was not yet available as of 19 October 2026. Synthetic v5 data.*
 
 ### Speaker notes
 
-Overlapping monthly labels make snapshot-date splitting alone insufficient. A training example is available only after its target window has ended, so the pipeline purges labels extending into a validation boundary. The three inner folds preserve chronology. Calibration customers and audit customers are excluded from model fitting and selection. Calibration cross-validation also keeps all observations for a customer together. We evaluate four candidates, but the prespecified selection pool contains only the two tuned models. Validation ROC AUC is primary, with log loss as a tie-breaker. September testing is reported as exploratory synthetic evidence, and is not used to change the winner or fit calibration. Repeated snapshot rows are not independent customer experiments.
+The model is a binary classifier applied repeatedly to customer snapshots, not a sequence model. At each snapshot, the features summarise the information available about an active subscriber. The project keeps 127 features, including recent usage, service issues, billing, support and customer-relationship information. A new snapshot on the tenth or twentieth day allows risk to be updated using recent changes rather than waiting for the next monthly batch. This is a design rationale, not measured evidence that the schedule improves retention.
+
+The target is one calendar month beginning at the issue date. It is approximately 30 days but can be 28, 29, 30 or 31 days, depending on the calendar. For example, 11 October covers the period up to, but excluding, 11 November. A fixed 30-day target would be a different label contract and is not the model currently evaluated. The same underlying churn event determines all overlapping labels. For the frozen v5 dataset, a complete window is required before a binary outcome is used in training or evaluation; incomplete windows remain Unknown.
+
+A random row split is inappropriate for this forecasting setup because it can use later information to evaluate earlier periods and place strongly related snapshots or overlapping outcomes on both sides. We use a custom chronological split with purging based on target-window end. At each evaluation boundary, only training labels whose windows are complete may be used. This prevents a future outcome from entering fitting even when its snapshot date is earlier than the validation period.
+
+The development train and validation sets may contain the same customers at different times: that evaluates future risk for existing customers, rather than promising complete customer-disjointness for every partition. Calibration and audit-test customers are reserved separately and do not enter fitting or model selection. All snapshots of a calibration customer stay together within calibration folds. Time separation and customer separation address different leakage risks.
 
 ### Visual and source instructions
 
-Editable timeline with separated customer lanes for development, calibration and audit. Keep July-start windows visually distinct from September-start testing. Footnote counts if space permits: train 42,936 rows; validation 6,253; calibration 1,552; test 1,485 rows from 758 customers. Move hyperparameters into notes, not the visible slide.
+Use a three-part editorial layout instead of one full-slide table: a compact design table at the top, a snapshot/issue/window strip in the middle, and a temporal split diagram with a clear random-split explanation at the bottom. All descriptions above are complete sentences, not shorthand fragments. Keep a visible note that the third October example is scheduled, not an observed batch. If the content is too dense, move the full window-example table into notes and show one example on the slide; do not omit the definition of the target or the rationale for purging.
 
-Sources: [ML README](../ml/README.md), [DATA_ML](DATA_ML.md), [split summary](evidence/ml/rolling_month_v5/split_summary.csv), [verification](evidence/ml/rolling_month_v5/verification.json).
+The detailed split is: train development snapshots January–May with target end no later than 1 July; three inner validation folds with target starts in April, May and June; outer validation uses July 1/11/21-start windows; calibration uses separate customers at the same July-start windows; audit test uses September 1/11-start windows. Snapshot 20 September is not used as a completed test window at as-of 19 October. October incomplete windows are inference only. Train 42,936 rows; validation 6,253; calibration 1,552; audit test 1,485 rows from 758 customers. These are snapshot-row counts, not independent customers. The main model evaluation is chronological; the customer-grouped calibration cross-fitting procedure serves a separate purpose and is not described as ordinary random row splitting.
+
+Sources: [ML README](../ml/README.md), [DATA_ML](DATA_ML.md), [split implementation](../ml/data.py), [split summary](evidence/ml/rolling_month_v5/split_summary.csv), [verification](evidence/ml/rolling_month_v5/verification.json).
 
 ---
 
 ## Slide 15 — Model Results and Selection
 
-**Section:** Method. **Purpose:** Present the selected model under the actual selection rule.
+**Section:** Method. **Purpose:** Explain the learners, fitting objective, tuning protocol, calibration and model selection rather than showing only a metric table.
 
 ### On-slide copy
+
+**Why LightGBM and CatBoost?**
+
+Both are gradient-boosted tree classifiers that capture nonlinear relationships and feature interactions in tabular customer data. Both accept categorical inputs, so they provide comparable candidates using the same 127 features without a manual one-hot preprocessing pipeline.
+
+**Optuna TPE — finding suitable hyperparameters**
+
+Optuna tests **30 parameter combinations per model family**, including learning rate, tree depth and regularisation. It uses earlier trial results to propose promising combinations. Each trial is evaluated across **three chronological folds**; the objective is the highest mean ROC AUC.
+
+**Platt calibration — making probabilities more reliable**
+
+A model can rank customers well but overestimate or underestimate their churn probabilities. Calibration adjusts those probabilities using a **separate customer group**. We adopt the adjustment only when both **Brier score and log loss improve in out-of-fold evaluation**.
+
+**Why select LightGBM tuned?**
+
+| Tuned model | Validation ROC AUC | Exploratory test ROC AUC |
+|---|---:|---:|
+| **LightGBM — selected** | **0.9483** | **0.9467** |
+| CatBoost | 0.9356 | 0.9348 |
+
+LightGBM has the higher validation AUC under the predefined selection rule. The choice is fixed before test scoring.
+
+**Selected configuration:** 114 boosting rounds, maximum depth 7 and 12 leaves.
+
+*Synthetic results; no claim of general algorithm superiority or FPT production performance.*
+
+### Speaker notes
+
+Both candidates are gradient-boosted tree ensembles for binary classification. They fit additional trees to improve the ensemble's predictions. This makes them suitable candidates for comparing nonlinear effects and interactions in the tabular data we have engineered. LightGBM uses histogram-based split search and grows the leaf offering the greatest improvement. CatBoost has a native categorical interface and, with the growth policy left at its default in this project, uses symmetric trees. We should not claim that this run explicitly enabled Ordered boosting: the code does not set that parameter. Both libraries can accept categorical inputs, but their internal treatment is different. In particular, passing billing_mode to CatBoost does not justify saying that CatBoost never internally uses one-hot encoding.
+
+Training minimises binary log loss, while Optuna chooses hyperparameters using average ROC AUC over three purged rolling folds. These are distinct roles: the fitting loss trains each model, while the search objective selects settings. The budget is 30 completed TPE trials per family. Early stopping allows at most 1,000 rounds and stops after 50 rounds without improvement in fold log loss. Final round counts are fixed using the median best iteration from the three folds, before outer validation. LightGBM tuned uses 114 rounds, max_depth 7, num_leaves 12, learning_rate 0.0369475551 and min_child_samples 75. Column/row sampling and L2 regularisation were also tuned.
+
+The independent July-start validation comparison selects LightGBM tuned with ROC AUC 0.9483. The baseline candidates provide comparison context but are outside the eligible winner pool specified before evaluation. The September exploratory test AUC is 0.9467 and AP is 0.7138. LightGBM baseline has a slightly higher test AUC, while CatBoost tuned has a higher test AP. Neither changes the validation-based choice, and neither shows general algorithm superiority. ROC AUC measures ranking, not a percentage of correct predictions.
+
+Calibration uses five-fold StratifiedGroupKFold over calibration customers, keeping each customer's overlapping snapshots together. Each candidate has its own positive-slope Platt mapping, fitted to raw margins. It is adopted only when both grouped out-of-fold Brier score and log loss improve. The selected LightGBM mapping was adopted: p = sigmoid(a × raw_margin + b), with a = 1.2400316422 and b = 0.3482248508. A positive-slope mapping preserves within-model ranking while adjusting probabilities. Calibration and test labels do not enter fitting, tuning or model selection. We do not claim verified real-world calibration from a synthetic dataset.
+
+An intuitive calibration explanation for discussion: if many comparable cases receive a probability near 0.70, approximately 70% should churn over their target windows in a well-calibrated setting. This is a conceptual illustration, not a measured reliability-bin result from this project. AUC evaluates ranking; calibration evaluates the probability scale. Our positive-slope Platt mapping preserves ranking and therefore does not itself raise ROC AUC. This matters because the score >500 alert rule uses calibrated probability, not just relative order. Calibration does not estimate whether outreach or an offer will prevent churn.
+
+### Visual and source instructions
+
+Use approximately 60% of the width for the three short explanations (model rationale, Optuna, calibration), and 40% for the two-row results table, selection reason and configuration. Highlight validation AUC and the selected row. Keep body descriptions as full sentences, not parameter-name fragments. If space is limited, shorten the general model rationale before deleting the Optuna or calibration explanation. Put leaf-wise versus symmetric-tree mechanics, the mean CV AUC values (0.9107 and 0.9088), early stopping, full parameter precision and the calibration equation in notes or backup material. Preserve the distinction between binary log-loss fitting, chronological CV ROC-AUC tuning, outer validation selection and calibration-only grouped evaluation. Do not say calibration increased AUC, that all categorical features avoid internal one-hot encoding, or that Optuna guarantees the global optimum.
+
+The earlier full comparison remains available for Q&A:
 
 | Candidate | Validation ROC AUC | Exploratory test ROC AUC | Exploratory test AP |
 |---|---:|---:|---:|
 | LightGBM baseline | 0.9469 | 0.9473 | 0.7166 |
-| **LightGBM tuned — selected** | **0.9483** | **0.9467** | **0.7138** |
+| LightGBM tuned | 0.9483 | 0.9467 | 0.7138 |
 | CatBoost baseline | 0.9365 | 0.9374 | 0.7183 |
 | CatBoost tuned | 0.9356 | 0.9348 | 0.7253 |
 
-**Selection:** highest validation ROC AUC among the two tuned candidates.
+Official method references: [LightGBM features](https://lightgbm.readthedocs.io/en/stable/Features.html), [CatBoost tree and parameter guidance](https://catboost.ai/docs/en/concepts/parameter-tuning), [CatBoost categorical processing](https://catboost.ai/docs/en/features/categorical-features). These explain the algorithms, not their superiority on this dataset. Project configuration and fitted artifacts determine the claims about the actual run.
 
-**Latest inference:** 207 alerts among 2,705 customers; outcome Unknown.
-
-*Synthetic v5 results. AUC measures ranking, not percentage accuracy or retention impact.*
-
-### Speaker notes
-
-LightGBM tuned was selected using validation ROC AUC of 0.9483. Its exploratory test AUC is 0.9467 and AP is 0.7138. The baseline's slightly higher test AUC and CatBoost tuned's higher test AP do not alter the prespecified choice. These differences do not establish universal algorithm superiority. The selected model uses 114 boosting rounds, and its own Platt calibrator passed the customer-grouped adoption checks. A score above 500 means calibrated probability above 0.5 under this synthetic model; it does not mean the customer can be retained by an offer. The latest batch has 207 alerts. We do not combine all 409 alerts across two overlapping inference batches into unique cases.
-
-### Visual and source instructions
-
-Use the exact four-row comparison table and a single latest-batch annotation. Orange emphasis only on the selected row. Optional small distribution figure: `evidence/ml/rolling_month_v5/figures/slides/03_prediction_distribution.svg`. Keep ROC/PR and tuning-history figures as backup material rather than crowding the slide. Existing `01_model_comparison.svg` covers the tuned pair; it does not replace the requested four-candidate table.
-
-Sources: [RESULTS](evidence/ml/rolling_month_v5/RESULTS.md), [comparison.csv](evidence/ml/rolling_month_v5/comparison.csv), [chart data](evidence/ml/rolling_month_v5/figures/slides/chart_data.json).
+Project sources: [model adapters](../ml/models_api.py), [Optuna search](../ml/tune.py), [calibration](../ml/calibration.py), [active config](../ml/config.json), [RESULTS](evidence/ml/rolling_month_v5/RESULTS.md), [comparison.csv](evidence/ml/rolling_month_v5/comparison.csv), [ML README](../ml/README.md).
 
 ---
 
 ## Slide 16 — Risk Explanations
 
-**Section:** Method. **Purpose:** Show a faithful model explanation and its action boundary.
+**Section:** Method. **Purpose:** Show what staff can learn from the model explanation and what they still need to verify.
 
 ### On-slide copy
 
-**Six approved business groups**
+**A risk score tells staff who to review. SHAP shows which information raised that score.**
 
-Connection Quality · Support Experience · Payment & Overdue Bills · Usage & Engagement · Renewal & Promotion Status · Plan, Pricing & Relationship
+Example: **96.96% predicted churn risk** for one selected synthetic customer.
 
-**Selected synthetic example: predicted probability 96.96%**
+| Main signals raising the score | What the agent should verify |
+|---|---|
+| Plan, Pricing & Relationship | Does the current plan still fit? Have charges changed? |
+| Payment & Overdue Bills | Do payment fields apply, and is any amount actually overdue? |
+| Connection Quality | Are connection issues still happening? |
 
-| Positive group | Contribution, calibrated log-odds |
-|---|---:|
-| Plan, Pricing & Relationship | +7.061 |
-| Payment & Overdue Bills | +0.706 |
-| Connection Quality | +0.056 |
+**Group 127 features into six business categories. Show up to three groups that raise the score.**
 
-**Review the underlying facts before choosing an action.**
-
-*Purposefully selected highest-scoring profile. SHAP explains the model; it does not confirm why the customer will leave.*
+*These are prompts for verification, not confirmed causes or automatic reasons to offer a discount.*
 
 ### Speaker notes
 
-The example comes from the verified latest-batch figure data. It is the highest-scoring synthetic profile, so it is intentionally illustrative rather than representative. Feature contributions are summed with their signs into six approved groups; the interface surfaces up to three strictly positive groups. The full explanation also includes negative contributions and a baseline. For this example, the baseline is about −4.237 calibrated log-odds, with negative offsets from Support Experience, Usage & Engagement, and Renewal & Promotion Status. All six groups reconstruct the saved probability of approximately 0.9696. The figures are log-odds contributions, not percentage-point changes in probability. A positive payment-group attribution alone does not prove debt; staff must check billing mode, applicability and actual facts.
+The model assigns a risk score, and SHAP helps us understand which inputs pushed that score higher or lower. To make 127 inputs easier for staff to read, we organise their contributions into six business categories and show up to three groups that raise the score. In this selected synthetic example, the largest positive group is Plan, Pricing & Relationship, followed by Payment & Overdue Bills and Connection Quality. These labels help the agent decide what to check. They do not prove that a price change, unpaid bill or service fault exists. For example, the agent must check billing mode before interpreting payment information, because postpaid payment fields do not apply to prepaid customers. The next step is to verify the facts and discuss the customer's concern, then choose a permitted action. This highest-scoring example is illustrative, not representative of all customers.
 
 ### Visual and source instructions
 
-Use `evidence/ml/rolling_month_v5/figures/slides/07_shap_example_waterfall.svg`, retaining all six signed groups and baseline. The small positive-group table may be reduced to annotations if the full chart is large. Never normalise the top three into shares of churn probability. Do not use this highest-scoring example as a live portal identity without separately checking permissions/consent and matching the current record.
+Use the simple signal-to-verification table as the primary visual. The questions are suggested staff checks, not observed customer facts or executed AI output. Move the log-odds chart and technical reconstruction into backup material so the audience can focus on how to use the explanation. For Q&A, the actual positive contributions are Plan, Pricing & Relationship +7.061213, Payment & Overdue Bills +0.705557 and Connection Quality +0.056380, in calibrated log-odds. Other groups contribute negative offsets; the baseline is approximately −4.236930. All six full-precision signed groups reconstruct probability 0.96963436560445. Never call these contributions percentages of churn probability or normalise the top three into such shares. The other approved groups are Support Experience, Usage & Engagement, and Renewal & Promotion Status. The verified waterfall remains at `evidence/ml/rolling_month_v5/figures/slides/07_shap_example_waterfall.svg`. Do not use this selected profile as a portal identity without checking permissions/consent. Model, data and explanation artifacts remain unchanged.
 
 Sources: [chart data](evidence/ml/rolling_month_v5/figures/slides/chart_data.json), [SHAP verification](evidence/ml/rolling_month_v5/shap_summary.json), [active group mapping](../ml/shap_groups.json).
 
