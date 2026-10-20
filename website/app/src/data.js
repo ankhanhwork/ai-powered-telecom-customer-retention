@@ -29,6 +29,7 @@ export function sendBlockedReason(detail,channel){
  return '';
 }
 export const usedMessage = message => ['queued','sending','sent'].includes(message.delivery_status);
+export const stalledAIRequest = (job,now=Date.now()) => job?.status==='queued' && now-Date.parse(job.claimed_at||job.created_at)>(job.claimed_at?300000:30000);
 export const stages=[
  {id:'intake',title:'New predictions',hint:'Supervisor reviews and assigns'},
  {id:'outreach',title:'Outreach',hint:'Contact the customer and verify concerns'},

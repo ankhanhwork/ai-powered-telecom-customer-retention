@@ -1,0 +1,49 @@
+{
+  "checked_at": "2026-10-20T17:45:38.805Z",
+  "host": "https://ai-powered-telecom-customer-retention.vercel.app",
+  "executions_triggered": 4,
+  "requests": [
+    {
+      "job_id": "9260d566-0a86-4b7d-aced-999d9158c815",
+      "case_id": "df11593a-90c2-4d52-bd33-12555759ef1c",
+      "type": "explanation",
+      "proxy_status": 200,
+      "started_at": "2026-10-20T17:43:16.327Z",
+      "existing": true,
+      "status": "completed"
+    },
+    {
+      "type": "message",
+      "case_id": "df11593a-90c2-4d52-bd33-12555759ef1c",
+      "job_id": "25f0e9fe-7896-432d-bd2c-f23d2300a558",
+      "existing": false,
+      "status": "completed"
+    },
+    {
+      "type": "call_script",
+      "case_id": "df11593a-90c2-4d52-bd33-12555759ef1c",
+      "job_id": "0db50198-8c8e-41d1-bdb9-2c032bfc60a7",
+      "existing": false,
+      "status": "completed"
+    },
+    {
+      "type": "explanation",
+      "case_id": "86626a7f-e81a-4822-a5ed-c935533a45f3",
+      "job_id": "f03773fc-b47f-4db3-b956-a6de1c6629b7",
+      "existing": true,
+      "status": "completed"
+    }
+  ],
+  "checks": [
+    "All three output types completed via production Vercel proxy",
+    "Two pre-existing unclaimed explanation jobs resumed",
+    "Retry RPC returned the existing queued job ID",
+    "Message remains draft and not queued; no approval or outbound send",
+    "No remaining queued AI jobs visible to Supervisor",
+    "No workflow, credentials, consent, schema or timers changed"
+  ],
+  "limits": [
+    "Original failed request transport cannot be reconstructed because production execution data is disabled",
+    "Browser button interaction not tested in this API check"
+  ]
+}

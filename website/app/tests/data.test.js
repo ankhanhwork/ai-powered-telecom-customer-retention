@@ -1,6 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {shapShare,filterQueue,externalMessages,careStage,pipelineStage,sendBlockedReason,usedMessage} from '../src/data.js';
+import {shapShare,filterQueue,externalMessages,careStage,pipelineStage,sendBlockedReason,usedMessage,stalledAIRequest} from '../src/data.js';
+
+test('AI retry unlocks unclaimed jobs after 30 seconds and claimed jobs after the server five-minute expiry',()=>{
+ const now=Date.parse('2026-10-21T00:00:00Z');
+ const job={status:'queued',created_at:new Date(now-30001).toISOString(),claimed_at:null};
+ assert(stalledAIRequest(job,now));
+ assert(!stalledAIRequest(job,now-1));
+ assert(!stalledAIRequest({...job,claimed_at:new Date(now-30001).toISOString()},now));
+ assert(stalledAIRequest({...job,claimed_at:new Date(now-300001).toISOString()},now));
+ for(const status of ['completed','failed','cancelled'])assert(!stalledAIRequest({...job,status},now));
+ assert(!stalledAIRequest(undefined,now));
+});
 
 test('send eligibility explains opt-out, missing permission and closed care separately',()=>{
  const detail={case:{case_status:'waiting_customer'},contact_preferences:[{channel:'Zalo',contact_allowed:false,opt_out_at:'2026-10-18T09:05:40Z'}]};
