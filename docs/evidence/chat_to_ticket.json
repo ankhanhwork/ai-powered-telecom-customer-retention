@@ -31,8 +31,24 @@
   ],
   "limits": [
     "Missing-information clarification branch checked locally; not exercised live because sample has no missing fields",
-    "UI/proxy not yet deployed; no browser click E2E",
+    "Production bundle and GET proxy verified; no browser click E2E",
     "Support handoff worker remains manual; no timer enabled"
   ],
-  "security_advisor": "22 authenticated SECURITY DEFINER RPC warnings including 3 new guarded staff RPCs; existing private deny-all INFO and leaked-password protection warning retained"
+  "security_advisor": "22 authenticated SECURITY DEFINER RPC warnings including 3 new guarded staff RPCs; existing private deny-all INFO and leaked-password protection warning retained",
+  "deployment": {
+    "verified_at": "2026-10-20T18:43:00.814Z",
+    "commit": "8aec764",
+    "host": "https://ai-powered-telecom-customer-retention.vercel.app",
+    "bundle": {
+      "page_status": 200,
+      "asset": "/assets/index-Cuvgv-ph.js",
+      "support_ticket": true,
+      "ticket_rpc": true,
+      "submit_rpc": true
+    },
+    "ticket_route_get_status": 404,
+    "ticket_route_get_message": "This webhook is not registered for GET requests. Did you mean to make a POST request?",
+    "vercel_status": "success",
+    "additional_n8n_executions": 0
+  }
 }
