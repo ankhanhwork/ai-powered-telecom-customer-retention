@@ -1,0 +1,14 @@
+{
+  "engine": "PGlite",
+  "passed": 8,
+  "tests": [
+    "manual draft persists without queueing; wrong owner and customer cannot access",
+    "empty chat cannot start AI; invalid category rejected at server",
+    "ticket edits check version; submit is explicit and idempotent",
+    "AI job freezes full external chat, excludes notes and unsent drafts, and coalesces requests",
+    "AI evidence must quote actual customer chat; explicit flags need evidence",
+    "AI completion saves draft once; no message or outbox is created",
+    "closed case blocks new ticket and submit",
+    "migration preserves existing support history when upgrading the prior workspace"
+  ]
+}

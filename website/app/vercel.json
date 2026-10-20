@@ -16,6 +16,10 @@
     {
       "source": "/api/retention-ai-explanation",
       "destination": "https://group-2-new.app.n8n.cloud/webhook/retention-ai-explanation"
+    },
+    {
+      "source": "/api/retention-ai-ticket",
+      "destination": "https://group-2-new.app.n8n.cloud/webhook/retention-ai-ticket"
     }
   ]
 }

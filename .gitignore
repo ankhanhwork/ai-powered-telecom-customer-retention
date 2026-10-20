@@ -35,3 +35,6 @@ coverage/
 !/deliverables/**/.gitkeep
 .DS_Store
 Thumbs.db
+
+# Supabase CLI transient cache
+supabase/.temp/

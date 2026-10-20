@@ -1,0 +1,38 @@
+{
+  "started_at": "2026-10-20T18:30:50.679Z",
+  "executions_triggered": 1,
+  "checks": [
+    "Authenticated Supervisor webhook produced structured LLM ticket draft",
+    "Source snapshot and evidence match real synthetic customer chat",
+    "No ticket submitted or message created by ticket worker"
+  ],
+  "requests": [
+    {
+      "type": "ticket",
+      "job_id": "d1740655-8b52-49b0-8d9c-bc1de6e0a810"
+    }
+  ],
+  "case_id": "1df49385-9fdc-4e46-ac9d-a85fb7bdfd44",
+  "ticket_id": "98a87138-0bdf-4d30-bf28-d26742884318",
+  "verified_at": "2026-10-20T18:31:05.026Z",
+  "workflow_id": "uYazemvlz8sw7FW3",
+  "timers_enabled": false,
+  "migration": "20261020182841_chat_to_ticket",
+  "local_checks": {
+    "ui": 18,
+    "db_regression": 38,
+    "ticket_db": 8,
+    "n8n_validator": 9,
+    "build": "passed"
+  },
+  "cloud_checks": [
+    "Staff/worker/anon EXECUTE separation verified",
+    "Save then explicit Submit and duplicate Submit verified inside rollback-only transaction"
+  ],
+  "limits": [
+    "Missing-information clarification branch checked locally; not exercised live because sample has no missing fields",
+    "UI/proxy not yet deployed; no browser click E2E",
+    "Support handoff worker remains manual; no timer enabled"
+  ],
+  "security_advisor": "22 authenticated SECURITY DEFINER RPC warnings including 3 new guarded staff RPCs; existing private deny-all INFO and leaked-password protection warning retained"
+}

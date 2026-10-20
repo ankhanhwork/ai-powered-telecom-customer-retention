@@ -1,0 +1,7 @@
+export const ticketCategories={connection_issue:'Connection issue',billing:'Billing',plan_change:'Plan change',cancellation:'Cancellation',other:'Other'};
+export const ticketDepartments={connection_issue:'Technical Support',billing:'Billing',plan_change:'Customer Retention',cancellation:'Customer Retention',other:'Customer Service'};
+export const emptyTicket={description:'',category:'',priority:'',repeat_issue:'unknown',churn_concern:'unknown',preferred_contact_time:'',missing_fields:[]};
+export const ticketForm=row=>row?{description:row.request_body,category:row.category||'',priority:row.priority||'',repeat_issue:row.repeat_issue,churn_concern:row.churn_concern,preferred_contact_time:row.preferred_contact_time||'',missing_fields:row.missing_fields||[]}: {...emptyTicket};
+export const ticketPayload=form=>({...form,missing_fields:form.missing_fields.map(s=>s.trim()).filter(Boolean),category:form.category||null,priority:form.priority||null,preferred_contact_time:form.preferred_contact_time.trim()||null});
+export const clarificationInstructions=fields=>'Ask the customer only for these missing details, using a concise, helpful message: '+fields.join('; ')+'. Do not claim a ticket was submitted or confirm an appointment.';
+export const ticketSourceChanged=(row,messages)=>!!row?.source_job_id&&JSON.stringify((row.source_messages||[]).map(m=>[m.id,m.body]))!==JSON.stringify(messages.map(m=>[m.id,m.body]));

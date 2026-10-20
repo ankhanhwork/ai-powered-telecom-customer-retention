@@ -156,3 +156,8 @@ SCREEN 3: Customer-facing support chat, preserve entire landscape screenshot and
 ## Delta UI đã triển khai 18/10
 
 Queue có hai chế độ Pipeline/Table; 4 care columns New predictions, Outreach, Resolving request, Care completed; 2 outcome columns Continued service (green), Churned (red). Outcome chưa biết giữ ở care stage, không suy từ đóng case/reply. Detail có care progress/update, period-end outcome với evidence và chặn sớm; tab Message / Call script / Internal notes. Request AI explanation/message/call script là thao tác chủ động, chưa có n8n thì hiện queued và không bịa output. Số liệu/facts/rank truy vấn Supabase; chỉ labels/UI copy cố định. Không hiển thị Python explanation_draft hoặc suggested_action như AI-generated prose. Staff notes không thêm Sales role.
+
+
+## Delta Chat-to-Ticket đã duyệt — 21/10/2026
+
+Giữ layout web hiện hành và hai card Conversation & History / Care Follow-up bên phải. Tab Care actions theo thứ tự Message / Call script / **Support ticket** / Internal notes. Support ticket chứa Chat-to-Ticket, Draft ticket from chat, Description, Category/Priority, Receiving department (theo category), Repeat issue/Churn concern, Preferred contact time, Information to confirm và evidence từ chat. Save draft và Submit ticket riêng; submit chỉ mở khi saved/required fields đủ/case open. Empty chat tắt tạo AI draft và hiện lý do; manual draft vẫn được lưu. Missing fields có Draft clarification message sang Message, vẫn cần staff duyệt gửi. Không dùng lại mockup ticket thành một cột/trang riêng trước đó; không áp nội dung call. Thay card Refer to Technical Support bằng tab mới; lịch sử support cũ giữ trong Saved tickets.

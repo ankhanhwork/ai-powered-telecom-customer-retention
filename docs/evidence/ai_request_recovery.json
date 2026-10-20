@@ -45,5 +45,15 @@
   "limits": [
     "Original failed request transport cannot be reconstructed because production execution data is disabled",
     "Browser button interaction not tested in this API check"
-  ]
+  ],
+  "deployment": {
+    "commit": "96b8270",
+    "branch": "main",
+    "vercel_status": "success",
+    "production_http_status": 200,
+    "bundle": "/assets/index-CP-tuubk.js",
+    "retry_fix_verified": true,
+    "acknowledgment_validation_verified": true,
+    "additional_n8n_executions": 0
+  }
 }

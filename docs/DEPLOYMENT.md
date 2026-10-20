@@ -1,5 +1,7 @@
 # Deploy demo lên Vercel
 
+**Delta 21/10 Chat-to-Ticket:** source thêm route `/api/retention-ai-ticket` → webhook group-2-new cùng tên. UI tab đã build/test local; migration Supabase và workflow ticket đã publish/test 1 execution. Route này cần release source lên Vercel trước khi dùng trên website. Tổng bốn AI routes; không mở proxy tùy ý hoặc bật timer.
+
 **Cutover 19/10/2026:** source app local và ba rewrite destinations hiện trỏ `https://group-2-new.app.n8n.cloud`; ba AI webhook đã publish/test live, mọi timer n8n disabled. Chưa push/redeploy Vercel nên chưa xác minh hosted domain nhận config mới. Delivery/follow-up/support cần demo operator chạy thủ công, không có fallback timer tự retry. Evidence `evidence/n8n_cutover.json`: 5 executions, delivery chỉ kiểm queue rỗng vì không có consent khớp case hiện hành.
 
 Chuẩn bị ngày 18/10/2026. Chỉ deploy web React/Vite; Supabase và n8n tiếp tục chạy trên cloud hiện tại. Không upload dataset, model, credential hoặc chạy lại SQL setup. Repository: https://github.com/ankhanhwork/ai-powered-telecom-customer-retention.
