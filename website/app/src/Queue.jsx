@@ -1,7 +1,7 @@
 import React,{useEffect,useState} from 'react';
 import useAutoRefresh from './useAutoRefresh';
 import {supabase} from './client';
-import {date,label,filterQueue,stages,outcomeStages,pipelineStage,outcomeStage,monthNames} from './data';
+import {date,label,filterQueue,stages,outcomeStages,pipelineStage,outcomeStage,monthNames,careStage} from './data';
 const openStages=['intake','outreach','resolution'];
 export default function Queue({staff,act,open}){
  const [rows,setRows]=useState(null),[search,setSearch]=useState(''),[sel,setSel]=useState(null);

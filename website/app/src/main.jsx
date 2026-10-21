@@ -66,8 +66,8 @@ function Details({id,staff,act,busy,ui}){
  const [detail,setDetail]=useState(null),[staffList,setStaffList]=useState([]),[editor,setEditor]=useState(null),[body,setBody]=useState(''),[offer,setOffer]=useState(''),[tab,setTab]=useState('info'),[jobs,setJobs]=useState([]),[messageInstructions,setMessageInstructions]=useState(''),[approving,setApproving]=useState(false),[sendingId,setSendingId]=useState(null),[sendDone,setSendDone]=useState(false);
  const channel='Zalo',pendingAI=useRef(null),thread=useRef(null);
  async function loadCapacity(){const capacity=await rpc('retention_agent_capacity');setStaffList(capacity.agents.map(a=>({...a,limits:capacity.limits})))}
- async function load(){setDetail(await rpc('retention_case_detail',{p_case_id:id}));const {data,error}=await supabase.from('automation_jobs').select('id,status,request_key,created_at,claimed_at').eq('case_id',id).order('created_at',{ascending:false});if(error)throw error;setJobs(data);if(staff.role==='supervisor')await loadCapacity()}
- useEffect(()=>{setDetail(null);setEditor(null);setBody('');pendingAI.current=null;act(load)},[id]);
+ async function load(){setDetail(await rpc('retention_case_detail',{p_case_id:id}));const {data,error}=await supabase.from('automation_jobs').select('id,status,request_key,created_at,claimed_at').eq('case_id',id).order('created_at',{ascending:false});if(error)throw error;setJobs(data);}
+ useEffect(()=>{setDetail(null);setEditor(null);setBody('');pendingAI.current=null;act(async()=>{await load();if(staff.role==='supervisor')await loadCapacity()})},[id]);
  const syncError=useAutoRefresh(load,id);
  const delivery=detail?.messages.find(m=>m.id===sendingId);
  const sending=approving||detail?.messages.some(m=>['queued','sending'].includes(m.delivery_status));
@@ -100,7 +100,7 @@ function Details({id,staff,act,busy,ui}){
    <details><summary>Rewrite with instructions</summary><RewriteRequest jobs={jobs} type="message" value={messageInstructions} onChange={setMessageInstructions} source={body} busy={busy} closed={closed} request={requestAI} act={act}/></details>
   </div></section>
   {ui.panelOpen&&<>{ui.grip('panel')}<section className="chat-panel"><div className="tabs" aria-label="Case details">{[['info','Info'],['call','Call'],['ticket','Ticket'],['insights','Insights']].map(([value,title])=><button key={value} aria-pressed={tab===value} className={tab===value?'active':''} onClick={()=>setTab(value)}>{title}</button>)}</div>
-   {tab==='info'&&<InfoTab detail={detail} staff={staff} staffList={staffList} busy={busy} act={act} load={load}/>}
+   {tab==='info'&&<InfoTab detail={detail} staff={staff} staffList={staffList} busy={busy} act={act} load={async()=>{await load();if(staff.role==='supervisor')await loadCapacity()}}/>}
    {tab==='call'&&<CallTab detail={detail} jobs={jobs} busy={busy} act={act} load={load} request={requestAI}/>}
    <div hidden={tab!=='ticket'} className="panel-tab"><SupportTicket detail={detail} jobs={jobs} busy={busy} act={act} reload={load} request={requestAI} clarify={instructions=>requestAI('message',instructions,null)} confirm={instructions=>requestAI('message',instructions,null)}/></div>
    {tab==='insights'&&<InsightsTab detail={detail} jobs={jobs} busy={busy} act={act} request={requestAI}/>}
