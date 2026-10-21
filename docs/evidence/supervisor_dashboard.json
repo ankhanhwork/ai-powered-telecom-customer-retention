@@ -1,0 +1,75 @@
+{
+  "checked_at": "2026-10-21T15:07:41.467856+00:00",
+  "status": "Cloud data and authenticated API verified; deployment pending",
+  "seed_version": "dashboard-v1",
+  "cases": 507,
+  "customers": 2748,
+  "predictions": 3005,
+  "staff": 5,
+  "known_outcomes": 272,
+  "active": 250,
+  "churned": 22,
+  "current_known": 0,
+  "periods": [
+    {
+      "n": 150,
+      "target_period_start": "2026-08-01",
+      "target_period_end_exclusive": "2026-09-01"
+    },
+    {
+      "n": 150,
+      "target_period_start": "2026-09-01",
+      "target_period_end_exclusive": "2026-10-01"
+    },
+    {
+      "n": 207,
+      "target_period_start": "2026-10-11",
+      "target_period_end_exclusive": "2026-11-11"
+    }
+  ],
+  "auth_checks": [
+    {
+      "role": "supervisor",
+      "status": 200,
+      "cases": 507,
+      "staff": 5,
+      "elapsed_ms": 1204,
+      "historical_detail": 200
+    },
+    {
+      "role": "agent",
+      "status": 403
+    },
+    {
+      "role": "customer",
+      "status": 403
+    },
+    {
+      "role": "anonymous",
+      "status": 401
+    }
+  ],
+  "local_db_checks": [
+    "full seed + FK/revision/approval constraints",
+    "rerun is idempotent",
+    "protected fixtures preserved",
+    "no AI jobs/consent/queued delivery or support",
+    "Supervisor JSON complete",
+    "Agent/Portal/anon/inactive denied",
+    "rollback restores baseline locally"
+  ],
+  "release_ui_tests": 22,
+  "model_sha256": "881dc8ed7252389256e2c2fd20fb3c558c74e0fdbc43165f02946059ee6217a4",
+  "new_public_tables": 0,
+  "migration": "20261021150146_supervisor_dashboard",
+  "n8n_executions": 0,
+  "new_roster_identities": "Three banned identities without login credentials; existing three login accounts unchanged",
+  "operational_fixtures": "Three used cases excluded from seed; concurrent user activity may change their state/job counts",
+  "rollback": "Private generated tmp/dashboard-cloud/rollback.sql; local round trip passed; refuses new staff activity",
+  "limits": [
+    "Historical cases are an unstratified care sample, not the score >500 alert cohort.",
+    "Primary care issue groups are scenario context, not verified causal churn reasons.",
+    "Historical predictions use the frozen champion; no retraining, label changes or canonical artifact overwrite.",
+    "Browser UI verification pending."
+  ]
+}

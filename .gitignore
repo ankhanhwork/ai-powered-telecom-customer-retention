@@ -15,6 +15,7 @@ dist/
 coverage/
 .vercel/
 *.log
+.dashboard-fixture.json
 # Data / model artifacts: documentation and empty folders remain trackable
 /data/raw/*
 /data/processed/*
