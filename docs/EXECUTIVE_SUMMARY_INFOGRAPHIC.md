@@ -1,6 +1,29 @@
 # Executive Summary Infographic Content and Design Brief
 
-## Current version 21 October 2026 — five A4 portrait pages
+## Current version 21 October 2026 — six A4 portrait pages
+
+The user replaced the source attachment and requested another substantive page. **Only** `C:/Users/ADMIN/Downloads/AI_Powered_Telecom_Customer_Retention.pptx (1).pptx` (29 slides, SHA256 `21a8e44e4c5c7fdde44f4989425d03ea58769f73a514c71d52b64a62017be7c8`) supplies the current content. Earlier exports and this document's historical specifications are not content sources. Current output: `../deliverables/Executive_Summary_PDMT_A4_6_Pages_Updated.pptx`.
+
+| Page | Content | Source slides |
+|---|---|---|
+| 1 | Cover, Group 2, course and academic-prototype scope | 1, 6, 26 |
+| 2 | Problem, national/local churn, subscription revenue exposure, operational gaps, roles and compact Data | 2–9 |
+| 3 | Literature-informed Method, selected model/evaluation, six care steps, four AI outputs, Supervisor tools and technology | 10–20, 27 |
+| 4 | Retention mechanism, benefit/cost/ROI scenarios, seven reported test passes and limitations | 21–23, 28–29 |
+| 5 | Engineering, three phased pilot features and gates, three expansion waves, six risks and responses | 24–25 |
+| 6 | Decorative rear cover only, without text | User request |
+
+White/FPT palette, English, editable text/tables/chart, exact210×297mm. Logo only page2. Data is compact and Problem/Method remain the focus of PD/MT. Two substantive pages now cover material outside PDMT. The previous five-page output is preserved as history.
+
+### Current financial handling
+
+The new attachment itself has conflicting figures: its break-even benefit21.312bn does not match the27.232bn cost implied by both base/high benefit-minus-net rows. Its riskR3 also retains a6.67percentage-point threshold inconsistent with its12-month ROI scenario. Current pages keep source base/high values and cost categories, explicitly label27.232bn as calculated, disclose the conflicting break-even row and omit its unsupported numeric conclusion. No cohort-timing assumption is added. The600000 full-six-month benefit assumption and year-one recognition require business confirmation. Local subscription exposure uses205000/month; rollout contribution uses250000/month and40%margin, as separately stated in the new source.
+
+### Checks and remaining work
+
+Reviewed text of29slides and extracted financial/risk evidence images; rendered27source slides, with23/25 inspected through extracted evidence because their OLE workbook objects prevent rendering. Inspected all6output pages and re-imported/re-rendered finalPPTX; all6 final images match reviewed candidates. Package/layout/font/chart-workbook/import checks passed, zero findings/warnings. Content assertions cover source version, A4, six pages, logo placement, blank decorative back, updated business/data/model/ROI/pilot figures. Private evidence/build is `tmp/summary-six/`. No native PowerPoint or physical print proof, noPDF. No app/ML/cloud changes and0n8nexecutions. Next: user review and financial-source reconciliation before submission.
+
+## Historical five-page version — superseded
 
 The latest user request supersedes the four-page specification below. The primary content source is the group's final attachment `C:/Users/ADMIN/Downloads/AI_Powered_Telecom_Customer_Retention.pptx.pptx` (30 slides), rather than the earlier 24-slide draft. Output: `../deliverables/Executive_Summary_PDMT_A4_5_Pages.pptx`.
 
