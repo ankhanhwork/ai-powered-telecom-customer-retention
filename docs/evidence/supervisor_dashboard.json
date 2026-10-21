@@ -1,6 +1,6 @@
 {
   "checked_at": "2026-10-21T15:07:41.467856+00:00",
-  "status": "Cloud data and authenticated API verified; deployment pending",
+  "status": "Cloud data and authenticated API verified; code pushed; user will deploy Vercel",
   "seed_version": "dashboard-v1",
   "cases": 507,
   "customers": 2748,
@@ -71,5 +71,12 @@
     "Primary care issue groups are scenario context, not verified causal churn reasons.",
     "Historical predictions use the frozen champion; no retraining, label changes or canonical artifact overwrite.",
     "Browser UI verification pending."
-  ]
+  ],
+  "release": {
+    "commit": "efcfdd7d73da67f5bf50b6d811c7278602870d3c",
+    "branch": "main",
+    "host": "https://ai-powered-telecom-customer-retention.vercel.app",
+    "deployment": "User explicitly chose to deploy Vercel themselves. No deployment record/status was available at handoff.",
+    "browser": "Existing production Supervisor sign-in verified; site still served previous bundle, so new Dashboard click QA is pending deployment."
+  }
 }

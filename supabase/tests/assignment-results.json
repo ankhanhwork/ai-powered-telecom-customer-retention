@@ -1,0 +1,18 @@
+{
+  "engine": "PGlite PostgreSQL WASM",
+  "passed": 9,
+  "checks": [
+    "only active Supervisor can read capacity or preview; no direct writes",
+    "Preview is read-only, risk sorted and deterministically rotates",
+    "Confirm persists once with one summary per recipient and unchanged care state",
+    "batch notifications are private and readable without case_id",
+    "manual no-op, expected owner, unassign and follow-up transfer preserve quota",
+    "capacity and configuration constraints apply to manual and batch",
+    "confirm skips a concurrently assigned case and never reroutes approved recipients",
+    "server planner matches weighted example and rejects forged payloads",
+    "same case received twice today consumes one slot in server batch and manual paths"
+  ],
+  "limits": [
+    "Auth gateway and true multi-connection concurrency require separate checks."
+  ]
+}

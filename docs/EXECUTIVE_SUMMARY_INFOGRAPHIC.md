@@ -1,5 +1,33 @@
 # Executive Summary Infographic Content and Design Brief
 
+## Current version 21 October 2026 — five A4 portrait pages
+
+The latest user request supersedes the four-page specification below. The primary content source is the group's final attachment `C:/Users/ADMIN/Downloads/AI_Powered_Telecom_Customer_Retention.pptx.pptx` (30 slides), rather than the earlier 24-slide draft. Output: `../deliverables/Executive_Summary_PDMT_A4_5_Pages.pptx`.
+
+| Page | Current content | Source slides |
+|---|---|---|
+| 1 | Cover, Group 2, academic prototype | 1, 27 |
+| 2 | Problem-led PD: company/local context, current handover, operational gaps, roles and compact data | 2–9, 13 |
+| 3 | Method-led MT: research choices, model/calibration/SHAP, six-step workflow, four AI outputs, Chat-to-Ticket, Supervisor dashboard/assignment and tools | 10–20, 28 |
+| 4 | Remaining material: 12-month ROI, test evidence and open limitations, randomised pilot, phased roadmap, target gates and risks | 21–26, 29–30 |
+| 5 | Decorative rear cover only, no text | User's layout request |
+
+All five pages are 210 × 297 mm, white, English, with the FPT palette. The company logo appears once, on page 2. Text, workflow, table and chart are editable; the chart includes an embedded workbook. The original source and the previous four-page export remain unchanged. Group 2 comes from the source deck; individual member identities are not invented.
+
+### Financial version and reconciliation
+
+Use the source final deck's **illustrative 12-month rollout**, not the historical three-month/1,000-customer scenario below. Base: 7,400 additional retained/month, 88,800/year; first-year contribution VND 42.180bn, net VND 14.948bn, ROI 54.9%. High: contribution VND 63.270bn, net VND 36.038bn, ROI 132.3%. Both rows imply incremental first-year cost VND 27.232bn. Financial assumptions remain VND 250,000/month × 40% contribution margin × six extra paid months; recognised year-one benefit depends on cohort timing.
+
+The source contains a conflicting break-even benefit cell (~VND 21.312bn) and an older 6.67-percentage-point scenario in the risk image. Do not carry either into this summary. The output states only the reconciled threshold: approximately 57,331 additional retained/year, about 65% of the base target. Calculations and this interpretation are recorded in page 4's notes. These are assumptions, not observed impact or an approved rollout budget.
+
+### Validation and printing
+
+Final PPTX was re-imported and all five pages rendered. Each render was inspected, with no visual differences from the reviewed candidate; package/layout/font/import/chart-workbook checks passed with no findings or warnings. Verified exact A4 dimensions, five-page count, logo only on page 2, and text-free page 5. No native PowerPoint opening or physical print proof has been performed. No PDF was requested or exported.
+
+For printing, retain reader order and actual A4 size. Five pages are not a single folded four-page booklet; duplex output may require an extra blank reverse side. Do not silently add a sixth slide to the PPTX.
+
+## Historical four-page specification — superseded
+
 **Project:** AI-Powered Telecom Customer Retention  
 **Content version:** 19 October 2026  
 **Deliverable planned:** four A4 portrait pages, with two substantive infographic pages  

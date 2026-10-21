@@ -1,5 +1,21 @@
 # Mockup website — 3 màn hình tiếng Anh
 
+## Case Assignment — UI đã duyệt và tích hợp 21/10
+
+Theo yêu cầu mới, **Assign cases** mở ba cards Manual/Round-robin/Weighted; icon **i** giải thích cách tính. Modal Config → Preview → Confirm → Results đã nối Supabase, có badge **Live workspace**, lịch sử synthetic ghi **Based on simulated history**. Giữ labels English. **Save team limits & default weights** là thao tác lưu cấu hình riêng; Preview không ghi. Confirm tạo assignment/audit/group notification, không gửi khách; lỗi retry cùng confirmation key. Details có chọn owner/capacity và **Confirm owner change**, unassign nhập reason; closed case không đổi owner. Notification batch dùng **Open queue**. Source/local live tại `http://127.0.0.1:5175/`; preview simulation cũ vẫn DEV-only tại `?preview=assignment`. Backend cloud đã áp, chưa push/deploy Vercel; proof/runtime và giới hạn ở [evidence](../../docs/evidence/case_assignment.json). Không còn coi phần mở rộng này chỉ là mockup chưa triển khai; đề xuất bên dưới giữ lịch sử review.
+
+## Đề xuất 21/10 — Auto-assign tại Queue
+
+**Prototype local đã có:** `http://127.0.0.1:5175/?preview=assignment`, nút **Assign cases** mở ba cards Manual/Round-robin/Weighted; icon **i** bật panel giải thích ngay trong modal, chọn card mở cấu hình. Có Preview/Confirm local, reset weights/capacity/team và kết quả phân bổ; ảnh `docs/evidence/assignment-chooser.jpg`. 27 tests/build và browser happy paths đã kiểm; mobile/keyboard tổng thể và persistence cloud chưa kiểm. Cả ba lựa chọn ban đầu chưa được chọn để leader xem đầy đủ; Round-robin vẫn là default đề xuất khi chốt production. Chưa thay mockup ảnh baseline, chưa bật production assignment.
+
+Chưa triển khai/chưa duyệt policy. Supervisor có nút **Auto-assign** kế thừa kỳ start/end đang chọn; modal Config → Preview → Confirm → Results, Round-robin mặc định đề xuất và Weighted tùy chọn. Hiện capacity trước/sau, proposed owner, routing score/reason, counts theo Agent và case còn lại/không hợp lệ; đổi owner cần Preview lại, không âm thầm giao người khác khi Confirm. Nhãn **Relevant case experience** thay Skill, **Based on simulated history** khi có dùng lịch sử giả lập; routing score không phải churn probability. Preview không ghi dữ liệu. Manual Details thêm quota/cảnh báo và explicit confirmation cho ngoại lệ/unassign theo policy được chốt; thông báo gộp **You have N new cases** mở Queue. Toàn bộ UI English, không thêm trang quản trị. Đọc [kế hoạch assignment](../../docs/IMPLEMENTATION.md#kế-hoạch-tích-hợp-case-assignment--đề-xuất-2110-chưa-triển-khai) để biết các quyết định còn mở và ma trận nghiệm thu.
+
+## Delta 21/10 — thêm tab Dashboard cho Supervisor
+
+Delta mới nhất: tên staff tiếng Việt; bỏ banner/note synthetic/simulated khỏi sản phẩm theo yêu cầu leader, giữ provenance ở docs. Dashboard thêm grouped bars **Primary care issues · Contracts & churn**, có counts/rate/known outcome và drill-down; một contract dùng latest eligible window, không cộng trùng qua kỳ. Nội dung UI còn lại vẫn English.
+
+Theo yêu cầu mới của leader, bổ sung **Dashboard** cạnh Customer Care Queue chỉ cho Supervisor; Agent và Customer portal giữ scope hiện hành. [SUPERVISOR_DASHBOARD.md](../../docs/SUPERVISOR_DASHBOARD.md) mô tả chi tiết bố cục, KPI, bộ lọc, biểu đồ, drill-down, data gaps và nghiệm thu. Đây là đề xuất chờ review, chưa có mockup ảnh/code hoặc release Dashboard. Delta này mở rộng quy định baseline “chỉ hai mục điều hướng” ở phần lịch sử bên dưới; không tạo dashboard kỹ thuật. UI dùng English và ghi rõ synthetic/mock; Closed, customer reply và service outcome là ba lớp độc lập.
+
 ## Delta 19/10 — contract prediction mới, đã sửa UI source
 
 Leader chốt prediction ngày 1/11/21 từ snapshot cuối tháng/10/20, dự báo một tháng lịch tới. Khi tích hợp v5, hiển thị **One-month churn risk · Updated on days 1, 11 and 21**, ngày snapshot và khoảng start/end thực tế. Outcome chờ hết đúng cửa sổ. Giữ case/assignee/history khi refresh, tránh chăm sóc trùng. Mockup v4 giữ làm lịch sử. Queue/Progress nguồn đã dùng start/end của v5, tự chọn lại kỳ hợp lệ sau thay batch; 10 UI tests và build đạt. Supabase đã v5; chưa deploy Vercel hoặc kiểm browser toàn luồng.

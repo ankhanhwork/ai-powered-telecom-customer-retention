@@ -1,5 +1,5 @@
 -- Run after setup.sql. This file only reads catalogs/data.
--- Expect tables=25, rls_tables=25, anon_table_privileges=0,
+-- Expect tables=26, rls_tables=26, anon_table_privileges=0,
 -- authenticated_direct_writes=0, worker_direct_writes=0, private_bucket=true.
 with workspace_tables as (
   select c.oid,c.relname,c.relrowsecurity from pg_class c
@@ -8,7 +8,7 @@ with workspace_tables as (
       'prediction_contexts','retention_cases','staff_members','customer_portal_users','workspace_settings',
       'offers','customer_offer_eligibility','ai_recommendations','conversations','contact_preferences',
       'messages','message_revisions','message_approvals','delivery_outbox','interaction_events',
-      'follow_up_tasks','notifications','support_requests','retention_outcomes','intervention_costs','automation_jobs')
+      'follow_up_tasks','notifications','support_requests','retention_outcomes','intervention_costs','automation_jobs','assignment_runs')
 )
 select count(*) as tables,count(*) filter(where relrowsecurity) as rls_tables,
   count(*) filter(where has_table_privilege('anon',oid,'SELECT,INSERT,UPDATE,DELETE')) as anon_table_privileges,
@@ -20,7 +20,7 @@ from workspace_tables;
 select table_name,column_name,data_type,is_nullable
 from information_schema.columns where table_schema='public' order by table_name,ordinal_position;
 
--- Read policies must exist for all 25 tables. Portal only reads via filtered RPC.
+-- Read policies must exist for all 26 tables. Portal only reads via filtered RPC.
 select tablename,policyname,roles,cmd from pg_policies where schemaname='public' order by tablename,policyname;
 
 -- Public/anon must not execute retention_* functions. Worker/staff separation.

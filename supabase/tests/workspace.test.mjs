@@ -57,9 +57,9 @@ const pred={raw_probability:0.8,churn_probability:0.8,explanations_status:'Fixtu
 async function ingest(ref,prediction=pred,fs=features,runMeta=run,context=null){return rpc('service_role',null,'retention_ingest_prediction',
  [runMeta,ref,fs,prediction,context,{display_name:'Fictional customer',billing_mode:'Prepaid',monthly_fee:205000}]);}
 let one,two,half;
-await test('25 tables have RLS; no browser or worker direct DML',async()=>{
+await test('26 tables have RLS; no browser or worker direct DML',async()=>{
  const tables=await q(`select relname,relrowsecurity from pg_class where relnamespace='public'::regnamespace and relkind='r'`);
- assert.equal(tables.length,25);assert(tables.every(t=>t.relrowsecurity));
+ assert.equal(tables.length,26);assert(tables.every(t=>t.relrowsecurity));
  for(const role of ['authenticated','service_role','anon']) assert.equal(await scalar(`select count(*)::int from pg_class c where c.relnamespace='public'::regnamespace and c.relkind='r'
    and has_table_privilege($1,c.oid,'INSERT,UPDATE,DELETE')`,[role]),0);
 });
@@ -343,7 +343,7 @@ if(sourceCompatibility==='prepared canonical inference payloads')await test('can
 
 await test('read-only hosted verification script executes and reports complete workspace',async()=>{
  const results=await db.exec(await readFile(resolve(root,'supabase/verify_workspace.sql'),'utf8'));
- assert.equal(results[0].rows[0].tables,25);assert.equal(results[0].rows[0].rls_tables,25);
+ assert.equal(results[0].rows[0].tables,26);assert.equal(results[0].rows[0].rls_tables,26);
  assert.equal(results[0].rows[0].anon_table_privileges,0);assert.equal(results[0].rows[0].private_bucket,true);
 });
 await test('a completed past period accepts an evidenced simulated outcome',async()=>{

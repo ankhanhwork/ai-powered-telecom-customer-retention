@@ -2,7 +2,7 @@
   "engine": "PGlite 0.3.15 (PostgreSQL WASM)",
   "passed": 38,
   "tests": [
-    "25 tables have RLS; no browser or worker direct DML",
+    "26 tables have RLS; no browser or worker direct DML",
     "anonymous cannot call RPC or read customers",
     "ingestion is idempotent and score 500 does not create case",
     "ingestion rejects labels, missing features, bad probability and frozen-data mutation",

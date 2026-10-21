@@ -1,0 +1,178 @@
+{
+  "checked_at": "2026-10-21T15:40:18.496658+00:00",
+  "status": "Supabase migrations applied; live UI integrated and browser preview verified on localhost; not pushed/deployed to Vercel",
+  "migrations": [
+    {
+      "file": "20261021151952_case_assignment.sql",
+      "sha256": "b11a8a0e0b58b4826ca518241a1748ec0b3b3864d02d7040b5406fb8d200d75d"
+    },
+    {
+      "file": "20261021153227_assignment_daily_receipts.sql",
+      "sha256": "8c5def53ab690ab9d8c2e8ecd1b153d81c6cfceb4e04f7894bc873f56d171142"
+    }
+  ],
+  "defaults": {
+    "daily": 20,
+    "open": 40,
+    "weights": {
+      "continuity": 40,
+      "experience": 30,
+      "load": 30
+    },
+    "history_days": 90,
+    "timezone": "Asia/Ho_Chi_Minh"
+  },
+  "tables": 26,
+  "local": {
+    "assignment_db": {
+      "engine": "PGlite PostgreSQL WASM",
+      "passed": 9,
+      "checks": [
+        "only active Supervisor can read capacity or preview; no direct writes",
+        "Preview is read-only, risk sorted and deterministically rotates",
+        "Confirm persists once with one summary per recipient and unchanged care state",
+        "batch notifications are private and readable without case_id",
+        "manual no-op, expected owner, unassign and follow-up transfer preserve quota",
+        "capacity and configuration constraints apply to manual and batch",
+        "confirm skips a concurrently assigned case and never reroutes approved recipients",
+        "server planner matches weighted example and rejects forged payloads",
+        "same case received twice today consumes one slot in server batch and manual paths"
+      ],
+      "limits": [
+        "Auth gateway and true multi-connection concurrency require separate checks."
+      ]
+    },
+    "workspace_checks": 38,
+    "ticket_checks": 8,
+    "rolling_checks": 7,
+    "replacement_checks": 2,
+    "dashboard_seed_checks": 7,
+    "ui_tests": 28,
+    "build": "passed"
+  },
+  "cloud": {
+    "auth_checks": [
+      {
+        "role": "supervisor",
+        "capacity_status": 200,
+        "agents": 4,
+        "cases": 507,
+        "capacity_elapsed_ms": 697,
+        "methods": [
+          {
+            "method": "manual",
+            "ready": 0,
+            "remaining": 12,
+            "elapsed_ms": 305
+          },
+          {
+            "method": "round_robin",
+            "ready": 1,
+            "remaining": 11,
+            "elapsed_ms": 307
+          },
+          {
+            "method": "weighted",
+            "ready": 1,
+            "remaining": 11,
+            "elapsed_ms": 206
+          }
+        ],
+        "invalid_weights_status": 400
+      },
+      {
+        "role": "agent",
+        "capacity_status": 403,
+        "denied": [
+          "retention_preview_assignment",
+          "retention_confirm_assignment",
+          "retention_assignment_settings"
+        ]
+      },
+      {
+        "role": "customer",
+        "capacity_status": 403,
+        "denied": [
+          "retention_preview_assignment",
+          "retention_confirm_assignment",
+          "retention_assignment_settings"
+        ]
+      },
+      {
+        "role": "anonymous",
+        "status": 401
+      }
+    ],
+    "rollback": [
+      {
+        "result": {
+          "rollback_check": "passed",
+          "migration_applied": true,
+          "persisted_test_runs": 0
+        }
+      }
+    ],
+    "separate_connection_rollbacks": [
+      {
+        "connection": 1,
+        "assigned": 1,
+        "scenario": "different cases compete for last open slot",
+        "elapsed_ms": 1078,
+        "open_after": 40,
+        "session_pid": 411841
+      },
+      {
+        "connection": 2,
+        "assigned": 1,
+        "scenario": "different cases compete for last open slot",
+        "elapsed_ms": 442,
+        "open_after": 40,
+        "session_pid": 411843
+      }
+    ],
+    "concurrency_limit": "Different backend PIDs verified, but no lock wait was observed; this is not proof of simultaneous contention.",
+    "advisors": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 2,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "level": "WARN",
+        "count": 25,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "level": "WARN",
+        "count": 1,
+        "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+      }
+    ],
+    "persisted_test_runs": 0,
+    "unassigned_october_after_checks": 12
+  },
+  "browser": {
+    "url": "http://127.0.0.1:5175/",
+    "supervisor_login": true,
+    "live_weighted_preview": {
+      "ready": 1,
+      "remaining": 11
+    },
+    "manual_capacity_labels": true,
+    "owner_confirmation_initially_disabled": true,
+    "confirmation_not_clicked_on_browser": true,
+    "screenshot": "docs/evidence/assignment-live.jpg"
+  },
+  "limits": [
+    "No Vercel release or git push in this task.",
+    "No proven simultaneous lock contention or load test; multi-session rollback checks are recorded separately.",
+    "Three additional Agent identities are roster-only with sign-in disabled; existing Auth credentials are unchanged.",
+    "Synthetic historical care and routing groups remain labelled; no new history was seeded."
+  ],
+  "n8n_executions": 0,
+  "customer_messages_sent": 0,
+  "auth_or_consent_changed": false
+}
