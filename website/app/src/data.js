@@ -35,10 +35,22 @@ export const stages=[
  {id:'outreach',title:'Outreach',hint:'Contact the customer and verify concerns'},
  {id:'resolution',title:'Resolving request',hint:'Coordinate the agreed next step'},
  {id:'care_completed',title:'Care completed',hint:'Care closed · outcome may still be unknown'},
+ {id:'failed',title:'Failed',hint:'Could not reach or engage the customer'}
+];
+export const outcomeStages=[
  {id:'retained',title:'Continued service',hint:'Verified after the target period'},
  {id:'churned',title:'Churned',hint:'Verified after the target period'}
 ];
-export function careStage(status){return status==='new'?'intake':status==='closed'?'care_completed':status==='resolving_request'?'resolution':'outreach'}
-export function pipelineStage(row){return row.outcome_churned===true?'churned':row.outcome_churned===false?'retained':row.care_stage||careStage(row.case_status)}
+export const failReasons=[
+ {id:'wrong_number',title:'Wrong number',contact:'wrong_contact'},
+ {id:'no_answer',title:'No answer to calls',contact:'no_answer'},
+ {id:'no_reply',title:'No reply to messages',contact:'no_answer'},
+ {id:'other',title:'Other',contact:'not_contacted'}
+];
+const failedContacts=['not_contacted','no_answer','wrong_contact'];
+export function careStage(status,contact){return status==='new'?'intake':status==='closed'?(failedContacts.includes(contact)?'failed':'care_completed'):status==='resolving_request'?'resolution':'outreach'}
+export function pipelineStage(row){return careStage(row.case_status,row.contact_result)}
+export function outcomeStage(row){return row.outcome_churned===true?'churned':row.outcome_churned===false?'retained':'unknown'}
 
 export const queuePeriod = (rows,current) => rows.some(r=>r.target_period_start===current) ? current : rows.map(r=>r.target_period_start).sort().at(-1)||'';
+export const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
