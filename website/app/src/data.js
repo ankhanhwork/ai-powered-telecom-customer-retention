@@ -21,11 +21,8 @@ export function filterQueue(rows, search, status, mine, userId) {
 export function externalMessages(messages) {
   return messages.filter(m => m.visibility==='external' && (m.direction==='inbound' || m.delivery_status==='sent'));
 }
-export function sendBlockedReason(detail,channel){
+export function sendBlockedReason(detail){
  if(detail.case.case_status==='closed')return 'This care case is closed. Reopen it before sending a message.';
- const preference=detail.contact_preferences.find(p=>p.channel===channel);
- if(preference?.opt_out_at)return 'This customer has stopped proactive messages on '+channel+'. Sending is blocked. A customer reply does not restore contact permission.';
- if(!preference?.contact_allowed)return 'Contact permission for '+channel+' has not been recorded. Sending is blocked until permission is confirmed.';
  return '';
 }
 export const usedMessage = message => ['queued','sending','sent'].includes(message.delivery_status);

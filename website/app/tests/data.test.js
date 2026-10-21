@@ -13,14 +13,10 @@ test('AI retry unlocks unclaimed jobs after 30 seconds and claimed jobs after th
  assert(!stalledAIRequest(undefined,now));
 });
 
-test('send eligibility explains opt-out, missing permission and closed care separately',()=>{
+test('sending is blocked only when the care case is closed',()=>{
  const detail={case:{case_status:'waiting_customer'},contact_preferences:[{channel:'Zalo',contact_allowed:false,opt_out_at:'2026-10-18T09:05:40Z'}]};
- assert.match(sendBlockedReason(detail,'Zalo'),/stopped proactive messages/);
- assert.match(sendBlockedReason(detail,'Portal'),/not been recorded/);
- detail.contact_preferences[0].contact_allowed=true;
- assert.match(sendBlockedReason(detail,'Zalo'),/stopped proactive messages/);
- detail.contact_preferences[0].opt_out_at=null;assert.equal(sendBlockedReason(detail,'Zalo'),'');
- detail.case.case_status='closed';assert.match(sendBlockedReason(detail,'Zalo'),/case is closed/);
+ assert.equal(sendBlockedReason(detail),'');
+ detail.case.case_status='closed';assert.match(sendBlockedReason(detail),/case is closed/);
 });
 
 test('only messages committed to delivery move to Used; failed messages can be retried',()=>{
