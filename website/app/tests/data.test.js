@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {shapShare,filterQueue,externalMessages,careStage,pipelineStage,sendBlockedReason,usedMessage,stalledAIRequest} from '../src/data.js';
+import {shapShare,filterQueue,externalMessages,careStage,pipelineStage,outcomeStage,sendBlockedReason,usedMessage,stalledAIRequest} from '../src/data.js';
 
 test('AI retry unlocks unclaimed jobs after 30 seconds and claimed jobs after the server five-minute expiry',()=>{
  const now=Date.parse('2026-10-21T00:00:00Z');
@@ -36,8 +36,12 @@ test('queue combines ownership, status and case-insensitive search',()=>{
 test('care completion stays separate from verified period outcomes',()=>{
  assert.equal(careStage('closed'),'care_completed');
  assert.equal(pipelineStage({case_status:'closed',outcome_churned:null}),'care_completed');
- assert.equal(pipelineStage({case_status:'closed',outcome_churned:false}),'retained');
- assert.equal(pipelineStage({case_status:'resolving_request',outcome_churned:true}),'churned');
+ assert.equal(pipelineStage({case_status:'closed',outcome_churned:false}),'care_completed');
+ assert.equal(outcomeStage({case_status:'closed',outcome_churned:false}),'retained');
+ assert.equal(pipelineStage({case_status:'resolving_request',outcome_churned:true}),'resolution');
+ assert.equal(outcomeStage({outcome_churned:true}),'churned');assert.equal(outcomeStage({outcome_churned:null}),'unknown');
+ assert.equal(pipelineStage({case_status:'closed',contact_result:'wrong_contact'}),'failed');
+ assert.equal(pipelineStage({case_status:'closed',contact_result:'contacted'}),'care_completed');
  assert.equal(careStage('waiting_customer'),'outreach');
  assert.equal(careStage('resolving_request'),'resolution');
 });

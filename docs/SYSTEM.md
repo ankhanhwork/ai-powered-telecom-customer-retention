@@ -500,3 +500,30 @@ Leader đã duyệt Support ticket là tab thứ ba trong Care actions: Message 
 Trường description dùng request_body hiện có; category/priority/department/repeat_issue/churn_concern/missing_fields/evidence/source_messages/source_job_id/version/submitted_by/submitted_at/model_version thêm vào support_requests. Category demo: connection_issue→Technical Support; billing→Billing; plan_change/cancellation→Customer Retention; other→Customer Service. Priority low/normal/high là đề xuất AI theo tác động được khách báo; high phải có trích dẫn. Repeat yes/no cần lời khách xác nhận, còn lại unknown; churn explicit cần lời khách về hủy/rời dịch vụ, not_observed là chưa thấy trong chat, không là xác nhận khách không churn. Đây là taxonomy demo, không phải catalog chính thức FPT.
 
 Staff lưu bằng retention_save_ticket (version guard), tự submit đúng bản đã lưu qua retention_submit_ticket. Worker credential không có EXECUTE các RPC staff; browser không có quyền hoàn tất AI job hoặc DML. Submit idempotent, kiểm case open và required fields; lưu actor/version/event, queued chuyển tới mock support worker hiện hành. Đọc/nhận ticket không đồng nghĩa hẹn lịch hoặc đã giải quyết; không quản lý nội bộ phòng ban. Không bật timer. Danh sách thông tin thiếu có thể sửa, Draft clarification message dùng AI message hiện có và chuyển sang tab Message để review; không tự gửi. UI hiển thị cảnh báo chat thay đổi sau snapshot và giữ editor khi poll/tab switch. Mọi nội dung UI/AI bằng English.
+
+## Phân bổ case cho CC — quyết định 21/10/2026 (chưa triển khai)
+
+Người dùng chốt ba cơ chế giao case cho Supervisor; không thay quyết định "Supervisor được đổi" và không thêm quản lý ca. Trọng số mặc định và trần case mở là **đề xuất cấu hình**, chưa phải chính sách công ty; cần leader xác nhận trước khi đưa vào báo cáo.
+
+| Cơ chế | Cách chạy |
+|---|---|
+| 1. Manual | Supervisor mở case và chọn CC (đã có `retention_assign_case`). Được vượt hạn mức nhưng UI phải cảnh báo; lượt gán vẫn tính vào hạn mức ngày |
+| 2. Auto — Round-robin | Xoay vòng ổn định giữa CC được chọn, bắt đầu sau CC cuối của lượt round-robin trước; bỏ qua CC hết hạn mức |
+| 3. Auto — Weighted | Lớp 1 ràng buộc cứng, lớp 2 chấm điểm theo trọng số Supervisor sửa được |
+
+**Phạm vi auto (2 và 3):** chỉ case chưa gán, chưa đóng, thuộc kỳ đang chọn; Supervisor chọn tập CC tham gia (mặc định mọi staff role agent đang active). Thứ tự xử lý: `churn_probability` giảm dần → chờ lâu hơn (`created_at`) → case_id. Case còn lại khi mọi CC hết hạn mức giữ Unassigned và được báo trong kết quả.
+
+**Lớp 1 — hạn mức (Asia/Ho_Chi_Minh):** `remaining = min(20 − số case giao cho CC trong ngày, open_limit − số case mở của CC)`. Giao mới/ngày mặc định 20 (người dùng chốt); `open_limit` mặc định đề xuất 40. Tính cả lượt gán manual; CC có remaining ≤ 0 bị loại.
+
+**Lớp 2 — điểm (0–1 mỗi yếu tố):** `score = (w_c·Continuity + w_s·Skill + w_l·Load) / 100`, tổng trọng số phải bằng 100. Gợi ý mặc định Continuity 40 / Skill 30 / Load 30.
+
+- Continuity = 1 nếu CC từng phụ trách khách này ở kỳ trước (case thật hoặc lịch sử mô phỏng), ngược lại 0.
+- Skill = số case trước đây CC xử lý có cùng **top-1 nhóm SHAP** (`drivers` rank 1, một trong 6 group_id) chia cho số lớn nhất trong các CC đủ điều kiện; case thiếu driver thì Skill = 0 cho mọi CC. SHAP là model attribution, không phải nguyên nhân đã xác nhận; UI dùng chữ "risk driver", không dùng "cause".
+- Load = 1 − số case mở / open_limit, cập nhật sau mỗi lượt gán trong cùng run.
+- Bằng điểm: ít case mở hơn → user_id ổn định. Mỗi đề xuất kèm lý do English, ví dụ "Cared for this customer before · 3 past cases with Connection quality · 12/40 open".
+
+**Preview → Confirm:** preview không ghi dữ liệu. Supervisor có thể đổi CC từng dòng rồi Confirm. Confirm khóa case/staff, kiểm lại quyền, trạng thái chưa gán, CC active và hạn mức trong transaction; dòng không còn hợp lệ bị bỏ qua và báo lại, không ghi đè case đã có người. Idempotent theo request key; ghi run (strategy, weights, params, actor, kết quả), event `case.assigned` có run_id/score/reason, một notification gộp cho mỗi CC mỗi run thay vì một thông báo cho từng case.
+
+**Lịch sử demo:** cohort Supabase hiện chỉ có một kỳ, nên Continuity/Skill sẽ gần như luôn 0. Seed lịch sử chăm sóc kỳ trước vào bảng riêng có `is_simulated=true`, không tạo prediction/case/outcome giả và không dùng làm feature ML. UI ghi rõ khi điểm dựa trên lịch sử mô phỏng. Cần thêm vài tài khoản Agent demo do người dùng tạo trong Supabase Auth.
+
+**Không thuộc phạm vi đợt này:** dashboard hiệu suất CC, gán theo performance/outcome, rebalance tự động, dùng n8n/LLM để phân bổ. Thuật toán là SQL xác định trong Supabase, 0 execution n8n.

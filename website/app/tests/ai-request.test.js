@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 const source=await readFile(new URL('../src/main.jsx',import.meta.url),'utf8');
 const body=source.slice(source.indexOf(' async function requestAI('),source.indexOf('\n async function save()')).replaceAll('import.meta.env.PROD','true').replaceAll('import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY',"'public-test-key'");
 function requestWith(fetch,load){
- return new Function('rpc','supabase','fetch','load','id','key','setMessageView','setScriptView',body+';return requestAI;')(
-  async()=> 'existing-job',{auth:{getSession:async()=>({data:{session:{access_token:'test-token'}}})}},fetch,load,'case',()=> 'key',()=>{},()=>{});
+ return new Function('rpc','supabase','fetch','load','id','key','pendingAI','outbound',body+';return requestAI;')(
+  async()=> 'existing-job',{auth:{getSession:async()=>({data:{session:{access_token:'test-token'}}})}},fetch,load,'case',()=> 'key',{current:null},[]);
 }
 test('webhook starts even when the subsequent screen refresh fails',async()=>{
  let calls=0;
