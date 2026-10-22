@@ -3,21 +3,22 @@ import sys
 import unittest
 from pathlib import Path
 
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
+
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from common import ROOT,config,read_json
-from explain import aggregate,care_drivers,explain_frame,fact,top_groups,validate_mapping
-from predict import load_bundle
+from ml.common import ROOT,config,read_json
+from ml.shap.explain import aggregate,care_drivers,explain_frame,fact,top_groups,validate_mapping
+from ml.predict.predict import load_bundle
 
 
 class ExplanationChecks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cfg = config(ROOT/'ml/config_monthend_v4.json')
+        cfg = config()
         cls.bundle = load_bundle(ROOT/cfg['models_dir']/'champion')
-        cls.mapping = read_json(ROOT/'ml/shap_groups_monthend_v4.json')
+        cls.mapping = read_json(ROOT/'ml/shap/shap_groups.json')
         cls.frame = pd.read_csv(ROOT/cfg['inference_dir']/'features.csv').head(8)
 
     def test_complete_mapping_rejects_duplicates_missing_and_wrong_feature(self):
@@ -101,12 +102,14 @@ class ExplanationChecks(unittest.TestCase):
             explain_frame(self.bundle,self.frame,bad)
 
 
-class LightGBMExplanationChecks(ExplanationChecks):
+class CatBoostExplanationChecks(ExplanationChecks):
     @classmethod
     def setUpClass(cls):
         cfg = config()
-        cls.bundle = load_bundle(ROOT/cfg['models_dir']/'champion')
-        cls.mapping = read_json(ROOT/'ml/shap_groups.json')
+        cls.bundle = load_bundle(ROOT/cfg['models_dir']/'catboost/tuned')
+        cls.mapping = read_json(ROOT/'ml/shap/shap_groups.json')
+        # Test-only mapping pins the same grouping to the comparison candidate.
+        cls.mapping['model_sha256'] = cls.bundle[1]['model_sha256']
         cls.frame = pd.read_csv(ROOT/cfg['inference_dir']/'features.csv').head(8)
 
 

@@ -3,7 +3,7 @@ import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import assert from 'node:assert/strict';
 const root=resolve(import.meta.dirname,'../..');
-const {PGlite}=await import(pathToFileURL(resolve(root,'tmp/db-tests/node_modules/@electric-sql/pglite/dist/index.js')));
+const {PGlite}=await import('@electric-sql/pglite');
 const db=new PGlite();
 process.on('uncaughtException',e=>{console.error(JSON.stringify({message:e.message,detail:e.detail,where:e.where}));process.exit(1)});
 const source=await readFile(resolve(root,'supabase/tests/workspace.test.mjs'),'utf8');

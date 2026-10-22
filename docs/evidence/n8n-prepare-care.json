@@ -1,8 +1,0 @@
-{
-  "mode": "prepare-care",
-  "checked_at": "2026-10-18T08:34:50.976Z",
-  "checks": [
-    "Mock support handoff queued",
-    "Manual demo reminder scheduled ten seconds ahead"
-  ]
-}

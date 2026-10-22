@@ -1,0 +1,16 @@
+{
+  "passed": 7,
+  "fixture": "Three synthetic cases; no cloud backup",
+  "checks": [
+    "seed constraints and outcome",
+    "idempotent rerun",
+    "owned case protected",
+    "no AI/consent/pending delivery/support",
+    "Supervisor payload",
+    "Agent/Portal/anon/inactive denied",
+    "rollback restores baseline"
+  ],
+  "limits": [
+    "Local PGlite; no hosted Auth or multi-connection test"
+  ]
+}

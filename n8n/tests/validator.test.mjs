@@ -1,7 +1,7 @@
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-const workflow=JSON.parse(await readFile(new URL('../02_ai_message.json',import.meta.url),'utf8'));
+const workflow=JSON.parse(await readFile(new URL('../workflows/02_ai_message.json',import.meta.url),'utf8'));
 const code=workflow.nodes.find(n=>n.name==='Validate AI output').parameters.jsCode;
 function validate(type,out,{asText=false,status='completed'}={}){
  const response={output:asText?JSON.stringify(out):out};
@@ -27,7 +27,7 @@ test('rejects malformed JSON, schema drift, empty text and excessive content',()
 });
 test('each output has an Agent, knowledge tool and JWT/RLS gate before worker context',async()=>{
  for(const type of ['message','call_script','explanation']){
-  const w=JSON.parse(await readFile(new URL('../02_ai_'+type+'.json',import.meta.url),'utf8'));
+  const w=JSON.parse(await readFile(new URL('../workflows/02_ai_'+type+'.json',import.meta.url),'utf8'));
   assert(w.nodes.some(n=>n.type==='@n8n/n8n-nodes-langchain.agent'));
   assert(w.nodes.some(n=>n.name==='Read_company_FAQ'&&n.type==='n8n-nodes-base.googleSheetsTool'));
   assert.equal(w.settings.saveDataSuccessExecution,'none');assert.equal(w.settings.saveDataErrorExecution,'none');
@@ -45,7 +45,7 @@ test('each output has an Agent, knowledge tool and JWT/RLS gate before worker co
 });
 test('exports contain credential references and scoped worker RPCs, not secrets or approval calls',async()=>{
  for(const file of ['02_ai_message.json','02_ai_call_script.json','02_ai_explanation.json','04_mock_delivery.json','06_followups_support.json']){
-  const raw=await readFile(new URL('../'+file,import.meta.url),'utf8'),w=JSON.parse(raw);
+  const raw=await readFile(new URL('../workflows/'+file,import.meta.url),'utf8'),w=JSON.parse(raw);
   assert(!raw.includes('sb_secret_'));assert(!/eyJ[A-Za-z0-9_-]{20,}/.test(raw));assert(!raw.includes('retention_review_message'));
   for(const n of w.nodes.filter(n=>n.type==='n8n-nodes-base.httpRequest'&&n.name!=='Authorize requested job')){assert.equal(n.parameters.authentication,'predefinedCredentialType');assert.equal(n.credentials.supabaseApi.name,'Supabase account');assert(n.parameters.url.startsWith('https://azeqdnbtzwaehewnyfdq.supabase.co/rest/v1/rpc/'));}
  }
@@ -53,7 +53,7 @@ test('exports contain credential references and scoped worker RPCs, not secrets 
 
 test('migrated workflows stay unpublished with all quota-consuming timers disabled',async()=>{
  for(const file of ['02_ai_message.json','02_ai_call_script.json','02_ai_explanation.json','04_mock_delivery.json','06_followups_support.json']){
-  const w=JSON.parse(await readFile(new URL('../'+file,import.meta.url),'utf8'));
+  const w=JSON.parse(await readFile(new URL('../workflows/'+file,import.meta.url),'utf8'));
   assert.equal(w.active,false);
   const timers=w.nodes.filter(n=>n.type==='n8n-nodes-base.scheduleTrigger');
   assert.equal(timers.length,1);

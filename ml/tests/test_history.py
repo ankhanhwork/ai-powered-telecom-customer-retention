@@ -1,12 +1,13 @@
 from pathlib import Path
+
 import sys
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'generation'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 import unittest
 
 import numpy as np
 import pandas as pd
 
-from build_history_features import EXTRA_FEATURES, build_features
+from ml.preprocess.build_history_features import EXTRA_FEATURES, build_features
 
 
 class HistoryFeatureChecks(unittest.TestCase):

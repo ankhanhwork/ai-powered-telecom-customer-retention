@@ -3,14 +3,14 @@ import {resolve,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import assert from 'node:assert/strict';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
-const {PGlite}=await import(pathToFileURL(resolve(root,'tmp/db-tests/node_modules/@electric-sql/pglite/dist/index.js')).href);
+const {PGlite}=await import('@electric-sql/pglite');
 const db=new PGlite();
 const source=await readFile(resolve(root,'supabase/tests/workspace.test.mjs'),'utf8');
 await db.exec(source.match(/const bootstrap=`([\s\S]*?)`;/)[1]);
 const fullSetup=await readFile(resolve(root,'supabase/setup.sql'),'utf8');
 const marker=fullSetup.indexOf('-- Rolling calendar-month inference;');
 await db.exec(marker<0?fullSetup:fullSetup.slice(0,marker)+'commit;');
-const cfg=JSON.parse(await readFile(resolve(root,'ml/config_monthend_v4.json'),'utf8'));
+const cfg={...JSON.parse(await readFile(resolve(root,'ml/config.json'),'utf8')),dataset_version:'synthetic_monthend_v4_strong_signal'};
 const features=Object.fromEntries(cfg.features.map(k=>[k,k==='billing_mode'?'Prepaid':0]));
 await db.query("select set_config('request.jwt.claims','{\"role\":\"service_role\"}',false)");
 const ingest=async p=>(await db.query('select public.retention_ingest_prediction($1,$2,$3,$4,$5,$6) as result',
@@ -22,7 +22,7 @@ await db.exec(await readFile(resolve(root,'supabase/migrations/20261019033021_ro
 let passed=0;const checks=[];
 async function test(name,fn){await fn();passed++;checks.push(name);console.log('PASS '+name)}
 const scalar=async(sql,args=[])=>Object.values((await db.query(sql,args)).rows[0])[0];
-const payloads=JSON.parse(await readFile(resolve(root,'tmp/supabase/import_payloads.json'),'utf8'));
+const payloads=JSON.parse(await readFile(resolve(root,'supabase/tests/fixtures/import_payloads.json'),'utf8'));
 const p=payloads[0];let got;
 await test('migration retains v4 row and derives exact window end',async()=>{
  assert.equal(await scalar('select target_period_end_exclusive::text from public.retention_cases where id=$1',[prior.case_id]),'2026-11-01');

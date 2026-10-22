@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-SOURCE = ROOT / 'data/synthetic/final/rolling_month_v5'
+SOURCE = ROOT / 'data/synthetic/dataset'
 AS_OF = '2026-10-21T10:00:00+00:00'
 staff = [{'id': f'demo-agent-{i}', 'name': name} for i, name in enumerate(
     ['Nguyễn Minh Anh', 'Trần Thu Hà', 'Lê Hoàng Nam', 'Phạm Ngọc Linh'], 1)]
@@ -86,7 +86,7 @@ for start in ('2026-08-01', '2026-09-01'):
     pool.sort(key=lambda r: hashlib.sha256((start+r['customer_id']).encode()).hexdigest())
     for i, row in enumerate(pool[:150]):
         add(row, i, True)
-with (ROOT / 'data/inference/final/rolling_month_v5/predictions.csv').open(encoding='utf-8-sig', newline='') as f:
+with (ROOT / 'data/output/predict/predictions.csv').open(encoding='utf-8-sig', newline='') as f:
     current = [r for r in csv.DictReader(f) if r['target_period_start'] == '2026-10-11'
                and float(r['churn_probability']) > .5]
 for i, prediction in enumerate(current):

@@ -1,22 +1,37 @@
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
+
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 
 import numpy as np
 import pandas as pd
 from scipy.special import expit
 from sklearn.metrics import brier_score_loss
 
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from calibration import apply_map,cross_fit
-from common import ROOT,config,matrix
-from data import customer_role,partition,rolling_folds
-from models_api import defaults,fit,load_model,raw_predict,save_model
-from predict import predict_frame
+from ml.train_finetune.calibration import apply_map,cross_fit
+from ml.common import ROOT,config,matrix
+from ml.preprocess.data import customer_role,partition,rolling_folds
+from ml.train_finetune.models_api import defaults,fit,load_model,raw_predict,save_model
+from ml.predict.predict import predict_frame
 
 
 class PipelineChecks(unittest.TestCase):
+    def test_explicit_explanation_output_does_not_publish_canonical_artifacts(self):
+        from ml.predict import predict
+        cfg = config()
+        with patch('ml.shap.explain.export',return_value={'rows':8}) as export, \
+             patch('ml.shap.explain.publish_summary') as publish:
+            with patch('sys.argv',['predict','--explain','--output','tmp/check/predictions.csv']):
+                predict.main()
+            self.assertEqual(export.call_args.args[2],Path('tmp/check/explanations'))
+            publish.assert_not_called()
+            with patch('sys.argv',['predict','--explain']):
+                predict.main()
+            publish.assert_called_once_with(ROOT/cfg['shap_dir'],ROOT/cfg['models_dir']/'champion',ROOT/cfg['inference_dir']/'predictions.csv')
+
     def test_locked_127_feature_contract(self):
         cfg = config()
         self.assertEqual(len(cfg['features']),127)
@@ -27,27 +42,31 @@ class PipelineChecks(unittest.TestCase):
             matrix(pd.DataFrame(),bad,'lightgbm')
 
     def test_customer_role_and_snapshot_partition(self):
-        cfg = config(ROOT/'ml/config_monthend_v4.json')
+        cfg = config()
         self.assertEqual(customer_role('A','audit_holdout',cfg),'audit')
         for role in ['audit','calibration','development']:
-            self.assertEqual(partition('2026-09-30',role),'inference')
-        self.assertEqual(partition('2026-07-31','calibration'),'calibration')
-        self.assertEqual(partition('2026-06-30','calibration'),'calibration_history')
-        self.assertEqual(partition('2026-08-31','audit'),'test')
-        self.assertEqual(partition('2026-07-31','development'),'validation')
+            self.assertEqual(partition('2026-09-30',role,cfg,'2026-11-01'),'inference')
+        self.assertEqual(partition('2026-06-30','calibration',cfg,'2026-08-01'),'calibration')
+        self.assertEqual(partition('2026-05-31','calibration',cfg,'2026-07-01'),'calibration_history')
+        self.assertEqual(partition('2026-08-31','audit',cfg,'2026-10-01'),'test')
+        self.assertEqual(partition('2026-06-30','development',cfg,'2026-08-01'),'validation')
         self.assertEqual(customer_role('A','development',cfg),customer_role('A','development',cfg))
 
     def test_rolling_folds_prevent_future_labels_and_exclude_other_roles(self):
         rows = []
-        for month in range(1,8):
-            snapshot = pd.Timestamp(2026,month,1)+pd.offsets.MonthEnd(0)
-            rows.append({'snapshot_date':snapshot.strftime('%Y-%m-%d'),'partition':'train' if month<=6 else 'validation',
-                         'target_period_start':(snapshot+pd.Timedelta(days=1)).strftime('%Y-%m-%d'),
-                         'target_period_end_exclusive':(snapshot+pd.offsets.MonthBegin(2)).strftime('%Y-%m-%d')})
-        folds = list(rolling_folds(pd.DataFrame(rows),config(ROOT/'ml/config_monthend_v4.json')))
+        for snapshot in pd.date_range('2026-01-01','2026-07-31'):
+            if snapshot.day not in (10,20) and not snapshot.is_month_end:
+                continue
+            start = snapshot+pd.Timedelta(days=1)
+            rows.append(dict(snapshot_date=str(snapshot.date()),target_period_start=str(start.date()),
+                target_period_end_exclusive=str((start+pd.DateOffset(months=1)).date()),
+                partition='train' if start.month<=6 else 'validation'))
+        folds = list(rolling_folds(pd.DataFrame(rows),config()))
         self.assertEqual(len(folds),3)
-        self.assertEqual([len(t) for t,v in folds],[3,4,5])
-        self.assertEqual([v.snapshot_date.str[5:7].iloc[0] for t,v in folds],['04','05','06'])
+        for train,valid in folds:
+            self.assertLessEqual(train.target_period_end_exclusive.max(),valid.target_period_start.min())
+            self.assertTrue(train.partition.eq('train').all())
+            self.assertTrue(valid.partition.eq('train').all())
 
     def test_calibration_cross_fit_corrects_bias(self):
         rng = np.random.default_rng(44)

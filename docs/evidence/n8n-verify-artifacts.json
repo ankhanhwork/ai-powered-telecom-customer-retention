@@ -1,9 +1,0 @@
-{
-  "mode": "verify-artifacts",
-  "checked_at": "2026-10-18T08:34:14.259Z",
-  "checks": [
-    "Real LLM message persisted with correct outbound separation",
-    "Real LLM call_script persisted with correct outbound separation",
-    "Real LLM explanation persisted with correct outbound separation"
-  ]
-}

@@ -1,0 +1,9 @@
+{
+  "model": "lightgbm_tuned",
+  "model_approved": true,
+  "groups_approved": true,
+  "approved_on": "2026-10-19",
+  "model_sha256": "881dc8ed7252389256e2c2fd20fb3c558c74e0fdbc43165f02946059ee6217a4",
+  "explanation_version": "lightgbm_tuned_127_groups_v5",
+  "mapping_sha256": "567ef994fda7314f1d647642b861ca8d7441a753b2bb2ebb91c4a4111bfd18c9"
+}

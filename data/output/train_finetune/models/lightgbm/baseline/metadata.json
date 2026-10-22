@@ -1,0 +1,21 @@
+{
+  "candidate": "lightgbm_baseline",
+  "algorithm": "lightgbm",
+  "variant": "baseline",
+  "model_file": "model.txt",
+  "model_sha256": "5924d79682194e3cffbf6789f33ae81a20668835af1e09603229e61c5a62cb39",
+  "calibration_version": "rolling_month_v5_127_optuna_v1_lightgbm_baseline_platt",
+  "parameters": {
+    "learning_rate": 0.05,
+    "num_leaves": 15,
+    "max_depth": 6,
+    "min_child_samples": 30,
+    "colsample_bytree": 1.0,
+    "subsample": 1.0,
+    "reg_lambda": 1.0
+  },
+  "iterations": 90,
+  "feature_count": 127,
+  "approval_status": "Candidate in user-authorized offline comparison; not deployed",
+  "shap_status": "Not regenerated for this new model; v4 mapping remains pinned to v4"
+}

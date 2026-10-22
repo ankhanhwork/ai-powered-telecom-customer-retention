@@ -1,23 +1,24 @@
 """Rolling windows, causal event consistency, purging and grouped calibration."""
 import json
+import tempfile
 import sys
 import unittest
 from datetime import date
 from pathlib import Path
 
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
+
 import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0,str(ROOT/'ml'))
-sys.path.insert(0,str(ROOT/'ml/generation'))
-from common import config
-from data import partition,rolling_folds
-from calibration import cross_fit
-from generate_data import generate_v4
-from rolling_quality import validate_rolling
-from build_history_features import build_features
-from train import choose
+from ml.common import config
+from ml.preprocess.data import partition,rolling_folds
+from ml.train_finetune.calibration import cross_fit
+from data.synthetic.generation.generate_data import generate
+from data.synthetic.generation.rolling_quality import validate_rolling
+from ml.preprocess.build_history_features import build_features
+from ml.train_finetune.train import choose
 
 
 class RollingChecks(unittest.TestCase):
@@ -68,12 +69,17 @@ class RollingChecks(unittest.TestCase):
         self.assertEqual(choose(candidates,config()),'catboost_tuned')
 
     def test_single_events_and_asof_invariance(self):
-        cfg = json.loads((ROOT/'ml/generation/simulator_rolling.json').read_text())
-        source = ROOT/'data/raw/telecom_customer_churn.csv'
-        full,_ = generate_v4(source,16,cfg)
+        cfg = json.loads((ROOT/'data/synthetic/generation/simulator.json').read_text())
+        (ROOT/'tmp').mkdir(exist_ok=True)
+        directory = tempfile.TemporaryDirectory(dir=ROOT/'tmp')
+        self.addCleanup(directory.cleanup)
+        source = Path(directory.name)/'source.csv'
+        pd.DataFrame({'Customer ID':[f'ROLL-{i:03}' for i in range(32)],
+            'Tenure in Months':[24]*32,'Internet Service':['Yes']*32}).to_csv(source,index=False)
+        full,_ = generate(source,16,cfg)
         self.assertTrue(validate_rolling(full,date.fromisoformat(cfg['as_of']))['checks_passed'])
         self.assertEqual(full['inference_latest'].snapshot_date.unique().tolist(),[full['customer_features'].snapshot_date.max()])
-        early,_ = generate_v4(source,16,{**cfg,'as_of':'2026-07-01'})
+        early,_ = generate(source,16,{**cfg,'as_of':'2026-07-01'})
         keys = ['customer_id','snapshot_date']
         left = early['customer_features'].set_index(keys).sort_index()
         right = full['customer_features'].set_index(keys).loc[left.index].sort_index()

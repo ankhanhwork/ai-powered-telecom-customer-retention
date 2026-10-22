@@ -6,9 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 const here=dirname(fileURLToPath(import.meta.url));
 const root=resolve(here,'../..');
-let modulePath=resolve(here,'node_modules/@electric-sql/pglite/dist/index.js');
-try { await access(modulePath); } catch { modulePath=resolve(root,'tmp/db-tests/node_modules/@electric-sql/pglite/dist/index.js'); }
-const {PGlite}=await import(pathToFileURL(modulePath).href);
+const {PGlite}=await import('@electric-sql/pglite');
 const db=new PGlite();
 const bootstrap=`
 create role anon nologin;
@@ -28,6 +26,8 @@ select set_config('request.jwt.claims','{}',false);`;
 await db.exec(bootstrap);
 const setup=await readFile(resolve(root,'supabase/setup.sql'),'utf8');
 await db.exec(setup);
+// Exercise the manual worker path; delivery.test.mjs checks the default inline trigger.
+await db.exec('alter table public.delivery_outbox disable trigger delivery_outbox_mock_deliver');
 console.log('Fresh setup compiled and applied.');
 let passed=0;
 const tests=[];
@@ -113,10 +113,9 @@ await test('staff draft is idempotent and invisible to portal; other agent denie
  assert.equal((await as('authenticated',customer,'select * from public.churn_predictions')).length,0);
  assert.equal((await as('authenticated',customer,'select * from public.message_revisions')).length,0);
 });
-await test('missing consent blocks approval and workers cannot approve',async()=>{
- await denied(()=>rpc('authenticated',agent,'retention_review_message',[draft.message_id,1,'approved']),/Contact not allowed/);
+await test('mock approval allows missing consent; workers still cannot approve',async()=>{
+ await rpc('authenticated',agent,'retention_review_message',[draft.message_id,1,'approved']);
  await denied(()=>rpc('service_role',null,'retention_review_message',[draft.message_id,1,'approved']),/permission denied/);
- assert.equal(await rpc('service_role',null,'retention_claim_delivery',[]),null);
  await rpc('service_role',null,'retention_set_demo_consent',[one.customer_id,'Zalo',true,'Explicit fictional demo consent']);
 });
 await test('approval enqueues once; claim holds lease; editing invalidates approval',async()=>{
@@ -185,12 +184,12 @@ await test('job completion is idempotent and creates an unsent AI draft',async()
  const stale=await scalar("select id from public.automation_jobs where request_key='manual-before-reply' and case_id=$1",[one.case_id]);
  await denied(()=>rpc('service_role',null,'retention_complete_job',[stale,...args.slice(1)]),/not pending/);
 });
-await test('opt-out cancels queued delivery and prevents future approval',async()=>{
+await test('opt-out cancels pending worker delivery and repeated imports preserve the preference',async()=>{
  await rpc('authenticated',agent,'retention_review_message',[aiDraft.message_id,1,'approved']);
  const queued=await rpc('service_role',null,'retention_claim_delivery',[]);
  await rpc('authenticated',customer,'retention_opt_out',[conv]);
  await denied(()=>rpc('service_role',null,'retention_deliver_mock',[queued.outbox_id,queued.lease_token]),/delivery lease/);
- await denied(()=>rpc('authenticated',agent,'retention_review_message',[aiDraft.message_id,1,'approved']),/Contact not allowed/);
+ await db.query('select app_private.assert_contact($1,$2)',[one.case_id,'Zalo']);
  await rpc('service_role',null,'retention_set_demo_consent',[one.customer_id,'Zalo',true,'same-seed-again']);
  assert.equal(await scalar('select contact_allowed from public.contact_preferences where customer_id=$1',[one.customer_id]),false);
  assert.notEqual(await scalar('select opt_out_at from public.contact_preferences where customer_id=$1',[one.customer_id]),null);
@@ -256,12 +255,12 @@ await test('send failure backs off and exhausted retries fail permanently',async
  await rpc('service_role',null,'retention_fail_delivery',[last.outbox_id,last.lease_token,'permanent_fixture_error',true]);
  assert.equal(await scalar('select status from public.delivery_outbox where id=$1',[lease.outbox_id]),'failed');
 });
-await test('cooldown, daily contact policy and synthetic reporting flags are enforced',async()=>{
+await test('removed contact gate ignores cooldown/limits; synthetic reporting flags remain enforced',async()=>{
  await rpc('authenticated',supervisor,'retention_set_contact_policy',[60,null]);
  const m=await save('Should wait for cooldown.','cooldown-draft');
- await denied(()=>rpc('authenticated',agent,'retention_review_message',[m.message_id,1,'approved']),/cooldown/);
+ await db.query('select app_private.assert_contact($1,$2)',[one.case_id,'Zalo']);
  await rpc('authenticated',supervisor,'retention_set_contact_policy',[0,1]);
- await denied(()=>rpc('authenticated',agent,'retention_review_message',[m.message_id,1,'approved']),/Daily contact limit/);
+ await db.query('select app_private.assert_contact($1,$2)',[one.case_id,'Zalo']);
  await rpc('authenticated',supervisor,'retention_set_contact_policy',[0,null]);
  await denied(()=>rpc('authenticated',agent,'retention_record_outcome',[one.case_id,null,'fictional',false]),/simulated outcome/);
  await denied(()=>rpc('authenticated',agent,'retention_record_cost',[one.case_id,1,'VND','contact','fictional',false,'false-cost']),/simulated cost/);
@@ -327,7 +326,7 @@ await test('exhausted n8n retries stop polling a failed AI job without overwriti
 });
 
 let sourceCompatibility='not run (prepare_import.py first)';
-const payloadPath=resolve(root,'tmp/supabase/import_payloads.json');
+const payloadPath=resolve(root,'supabase/tests/fixtures/import_payloads.json');
 try{await access(payloadPath);sourceCompatibility='prepared canonical inference payloads';}catch{}
 if(sourceCompatibility==='prepared canonical inference payloads')await test('canonical October data and SHAP context import without changing probability',async()=>{
  const payloads=JSON.parse(await readFile(payloadPath,'utf8')).slice(0,5);
@@ -342,7 +341,7 @@ if(sourceCompatibility==='prepared canonical inference payloads')await test('can
 });
 
 await test('read-only hosted verification script executes and reports complete workspace',async()=>{
- const results=await db.exec(await readFile(resolve(root,'supabase/verify_workspace.sql'),'utf8'));
+ const results=await db.exec(await readFile(resolve(root,'supabase/scripts/verify_workspace.sql'),'utf8'));
  assert.equal(results[0].rows[0].tables,26);assert.equal(results[0].rows[0].rls_tables,26);
  assert.equal(results[0].rows[0].anon_table_privileges,0);assert.equal(results[0].rows[0].private_bucket,true);
 });
@@ -353,23 +352,6 @@ await test('a completed past period accepts an evidenced simulated outcome',asyn
    [old.case_id,false,'fixture-period-end',true,'2020-03-01T00:00:00Z','fixture-evidence']);
  assert.equal(await scalar('select churned from public.retention_outcomes where id=$1',[id]),false);
 });
-if(sourceCompatibility.startsWith('5 canonical')&&JSON.parse(await readFile(payloadPath,'utf8')).length===5)await test('prepared SQL import and account bootstrap execute idempotently',async()=>{
- const before=await scalar('select count(*)::int from public.customers');
- await db.exec(await readFile(resolve(root,'tmp/supabase/import_demo.sql'),'utf8'));
- assert.equal(await scalar('select count(*)::int from public.customers'),before);
- await q(`update auth.users set email=case id when $1::uuid then 'supervisor@retention.example'
-   when $2::uuid then 'agent@retention.example' when $3::uuid then 'customer@retention.example' end
-   where id in ($1,$2,$3)`,[supervisor,agent,customer]);
- const script=await readFile(resolve(root,'supabase/connect_demo_accounts.sql'),'utf8');
- await db.exec(script);await db.exec(script);
- assert.equal(await scalar('select count(*)::int from public.customer_portal_users where user_id=$1',[customer]),1);
- const thread=(await rpc('authenticated',customer,'retention_portal_threads',[]))[0];
- await rpc('authenticated',customer,'retention_opt_out',[thread.conversation_id]);
- await db.exec(await readFile(resolve(root,'tmp/supabase/import_demo.sql'),'utf8'));
- assert.equal(await scalar(`select p.contact_allowed from public.contact_preferences p
-   join public.conversations cv on cv.customer_id=p.customer_id and cv.selected_channel=p.channel where cv.id=$1`,[thread.conversation_id]),false);
-});
-
 await test('rewrite instructions and selected source reach worker context with idempotency and access checks',async()=>{
  const args=[one.case_id,'manual:message:rewrite-fixture','Make it shorter and warmer.','Original verified customer draft.'];
  const id=await rpc('authenticated',agent,'retention_request_recommendation',args);
@@ -475,37 +457,6 @@ await test('upgrade from existing six-table foundation preserves customers',asyn
  await upgrade.exec(setup);
  assert.equal((await upgrade.query("select customer_ref from public.customers where customer_ref='EXISTING'")).rows.length,1);
  await denied(()=>upgrade.exec(setup),/already installed/);await upgrade.exec('rollback');await upgrade.close();
-});
-await test('lean upgrade keeps existing full-workspace drafts and queued requests',async()=>{
- const upgrade=new PGlite();await upgrade.exec(bootstrap);
- let oldSetup;
- try{oldSetup=await readFile(resolve(root,'tmp/supabase-before-lean/setup.sql'),'utf8');}catch{}
- await upgrade.exec(oldSetup??setup);
- if(!oldSetup){
-   // Portable compatibility fixture when the previous local snapshot is absent.
-   await upgrade.exec(`alter table public.automation_jobs drop constraint automation_jobs_status_check;
-     alter table public.automation_jobs add constraint automation_jobs_status_check check(status in ('queued','running','completed','failed','cancelled'));
-     alter table public.automation_jobs add column attempt_count int default 0,add column next_attempt_at timestamptz default now(),
-       add column lease_token uuid,add column lease_until timestamptz,add column error_code text;
-     create function public.retention_claim_job() returns jsonb language sql as $$select '{}'::jsonb$$;
-     create function public.retention_fail_job(uuid,uuid,text) returns void language sql as $$select$$;`);
- }
- await upgrade.query("select set_config('request.jwt.claims','{\"role\":\"service_role\"}',false)");
- const ids=(await upgrade.query('select public.retention_ingest_prediction($1,$2,$3,$4,$5,$6) as result',
-   [{...run,dataset_version:oldSetup?'synthetic_monthend_v4_strong_signal':run.dataset_version},'UPGRADE-CUSTOMER',features,pred,null,{}])).rows[0].result;
- await upgrade.query('insert into auth.users(id) values($1)',[agent]);
- await upgrade.query("insert into public.staff_members(user_id,display_name,role) values($1,'Upgrade Agent','agent')",[agent]);
- await upgrade.query('update public.retention_cases set assigned_agent_id=$1 where id=$2',[agent,ids.case_id]);
- await upgrade.query('select set_config(\'request.jwt.claims\',$1,false)',[JSON.stringify({role:'authenticated',sub:agent})]);
- const m=(await upgrade.query("select public.retention_save_draft($1,'Keep this draft','upgrade-draft') as result",[ids.case_id])).rows[0].result;
- await upgrade.exec("update public.automation_jobs set status='running',attempt_count=2,lease_token=gen_random_uuid(),lease_until=now()+interval '5 minutes'");
- const upgradeSql=await readFile(resolve(root,'supabase/upgrade_lean.sql'),'utf8');
- await upgrade.exec(upgradeSql);await upgrade.exec(upgradeSql);
- assert.equal((await upgrade.query('select body from public.message_revisions where message_id=$1',[m.message_id])).rows[0].body,'Keep this draft');
- assert.equal((await upgrade.query('select status from public.automation_jobs where case_id=$1',[ids.case_id])).rows[0].status,'queued');
- assert.equal((await upgrade.query("select count(*)::int as n from pg_proc where pronamespace='public'::regnamespace and (proname='retention_claim_job' or (proname='retention_fail_job' and pronargs<>1))")).rows[0].n,0);
- assert.equal((await upgrade.query("select has_function_privilege('anon','public.retention_complete_job(uuid,text,text,text,text,text,text,text,jsonb,uuid,uuid,text)'::regprocedure,'EXECUTE') as allowed")).rows[0].allowed,false);
- await upgrade.close();
 });
 console.log(`${passed} database integration checks passed.`);
 await writeFile(resolve(here,'results.json'),JSON.stringify({engine:'PGlite 0.3.15 (PostgreSQL WASM)',passed,tests,

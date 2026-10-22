@@ -1,0 +1,19 @@
+{
+  "candidate": "catboost_baseline",
+  "algorithm": "catboost",
+  "variant": "baseline",
+  "model_file": "model.cbm",
+  "model_sha256": "adcfff4022b97526af7f9f0a411db9ac75d2afc80ac61ddb419633701b711a76",
+  "calibration_version": "rolling_month_v5_127_optuna_v1_catboost_baseline_platt",
+  "parameters": {
+    "learning_rate": 0.05,
+    "depth": 6,
+    "l2_leaf_reg": 3.0,
+    "random_strength": 1.0,
+    "bagging_temperature": 1.0
+  },
+  "iterations": 385,
+  "feature_count": 127,
+  "approval_status": "Candidate in user-authorized offline comparison; not deployed",
+  "shap_status": "Not regenerated for this new model; v4 mapping remains pinned to v4"
+}

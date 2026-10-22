@@ -1,0 +1,140 @@
+{
+  "config": {
+    "dataset_version": "synthetic_rolling_month_v5",
+    "purpose": "Rolling month synthetic demo with persistent observed episodes and one causal churn event per customer.",
+    "seed": 20261019,
+    "as_of": "2026-10-19",
+    "holdout_hash_salt": "rolling-v5-audit-before-training",
+    "holdout_modulus": 4,
+    "holdout_remainder": 0,
+    "monthly_episode_probability": 0.06,
+    "episode_choices": [
+      "Connection",
+      "Payment",
+      "Support",
+      "Usage",
+      "Renewal",
+      "Price"
+    ],
+    "hazard_intercept": -7.0,
+    "hazard_max_severity_weight": 9.0,
+    "hazard_secondary_weight": 0.3,
+    "hazard_logit_noise_sd": 0.25,
+    "simulator_changes": [
+      "Persistent adverse episodes evolve independently of labels.",
+      "Observed snapshot severity determines a daily hazard until the next scheduled snapshot; a single churn event defines all overlapping labels.",
+      "One fixed initial seed/config; any later test-informed simulator change must be recorded as exploratory."
+    ],
+    "evaluation": "Purged chronological fit/CV; July-start validation/calibration; September 1/11 starts audit test; latest incomplete windows unknown.",
+    "snapshot_schedule": "three_per_month",
+    "episode_persistence": 0.97
+  },
+  "source_sha256": "9309f4308b9111da3604c1b13c337de40fd2de16c9dd75904f3b0d2bf5b5beed",
+  "generator_sha256": "bc13d3e8ad913c527a5e86e8f799f63791c31d11d4b357897302bade08b5c229",
+  "config_sha256": "7230d096453a9f3e3f476c3086015dfc208e5c75cff2cd53d79df46448537a21",
+  "dataset_version": "synthetic_rolling_month_v5",
+  "is_synthetic": true,
+  "feature_whitelist": [
+    "disconnect_count_30d",
+    "outage_minutes_30d",
+    "evening_speed_ratio_30d",
+    "service_issue_days_30d",
+    "usage_gb_7d",
+    "usage_gb_30d",
+    "usage_change_pct_30d",
+    "inactive_days_14d",
+    "monthly_fee_vnd",
+    "fee_change_pct_30d",
+    "overdue_days",
+    "overdue_amount_vnd",
+    "billing_mode",
+    "prepaid_days_remaining",
+    "promo_days_remaining",
+    "support_contacts_30d",
+    "unresolved_tickets_30d",
+    "repeat_contacts_30d",
+    "avg_resolution_hours_90d",
+    "tenure_months",
+    "plan_speed_mbps",
+    "plan_change_requests_30d"
+  ],
+  "feature_groups": {
+    "Connection Quality": [
+      "disconnect_count_30d",
+      "outage_minutes_30d",
+      "evening_speed_ratio_30d",
+      "service_issue_days_30d"
+    ],
+    "Usage & Engagement": [
+      "usage_gb_7d",
+      "usage_gb_30d",
+      "usage_change_pct_30d",
+      "inactive_days_14d"
+    ],
+    "Billing & Payment": [
+      "monthly_fee_vnd",
+      "fee_change_pct_30d",
+      "overdue_days",
+      "overdue_amount_vnd"
+    ],
+    "Renewal & Promotions": [
+      "billing_mode",
+      "prepaid_days_remaining",
+      "promo_days_remaining"
+    ],
+    "Support Experience": [
+      "support_contacts_30d",
+      "unresolved_tickets_30d",
+      "repeat_contacts_30d",
+      "avg_resolution_hours_90d"
+    ],
+    "Customer Relationship & Plan": [
+      "tenure_months",
+      "plan_speed_mbps",
+      "plan_change_requests_30d"
+    ]
+  },
+  "quality": {
+    "checks_passed": true,
+    "snapshot_rows": 113937,
+    "customers": 5517,
+    "known_labels": 105521,
+    "positive_labels": 8093,
+    "unknown_labels": 8416,
+    "single_event_consistency": true,
+    "calendar_month_windows": true,
+    "rows_by_table": {
+      "customers": 5517,
+      "daily_service_history": 1182087,
+      "billing_history": 21847,
+      "support_tickets": 5122,
+      "support_contacts": 7048,
+      "customer_features": 113937,
+      "churn_labels": 113937,
+      "inference_latest": 2705
+    },
+    "customer_disjoint_test": "Verified by ml/data.py after partition assignment",
+    "source_fields_read": [
+      "Customer ID",
+      "Tenure in Months",
+      "Internet Service"
+    ],
+    "cohort_counts": {
+      "development": 4117,
+      "audit_holdout": 1400
+    },
+    "limitations": [
+      "Synthetic rolling calendar-month task; not real FPT evidence.",
+      "One locked initial simulator config/seed; audit-only probabilities and episodes never features.",
+      "Incomplete windows remain Unknown; overlapping rows are not independent customers."
+    ],
+    "latest_snapshot": "2026-10-10"
+  },
+  "synthetic_task_changed_from_v3": true,
+  "unapproved_fpt_catalog": true,
+  "export_correction": {
+    "reason": "Update legacy inference_latest export from September 30 to actual latest October 10; no histories/features/labels changed. Also correct descriptive QA text.",
+    "generator_sha256_at_run": "bc13d3e8ad913c527a5e86e8f799f63791c31d11d4b357897302bade08b5c229",
+    "generator_sha256_after_export_fix": "d35f99a43d35fc84f709159e3a7880d7ef40a7f4bf0292db672cba53d9d20777"
+  }
+}

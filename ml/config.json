@@ -1,11 +1,11 @@
 {
   "protocol_version": "rolling_month_v5_127_optuna_v1",
   "dataset_version": "synthetic_rolling_month_v5",
-  "dataset_dir": "data/synthetic/final/rolling_month_v5",
-  "processed_dir": "data/processed/final/rolling_month_v5",
-  "models_dir": "ml/models/final/rolling_month_v5",
-  "evidence_dir": "docs/evidence/ml/rolling_month_v5",
-  "inference_dir": "data/inference/final/rolling_month_v5",
+  "dataset_dir": "data/synthetic/dataset",
+  "processed_dir": "data/output/preprocess",
+  "models_dir": "data/output/train_finetune/models",
+  "evidence_dir": "data/output/train_finetune/results",
+  "inference_dir": "data/output/predict",
   "seed": 42,
   "trials_per_model": 30,
   "threads": 4,
@@ -156,10 +156,10 @@
     "billing_mode"
   ],
   "limitations": [
-    "New synthetic DGP and overlapping rolling calendar-month labels; not comparable to v4 AUC or real FPT accuracy.",
-    "AUC around 0.89 is the user-confirmed synthetic demo target, not a production guarantee.",
+    "Synthetic benchmark; not real FPT accuracy or measured retention impact.",
+    "AUC around 0.89 is the synthetic demo target, not a production guarantee.",
     "Overlapping labels require purged temporal splits and customer-grouped calibration.",
-    "Cloud app and existing SHAP mapping remain pinned to v4 until a separate integration change."
+    "Test is exploratory; no test-based model selection."
   ],
   "feature_file": "features_127.csv",
   "snapshot_schedule": "three_per_month",
@@ -170,5 +170,6 @@
     6
   ],
   "test_status": "Exploratory synthetic benchmark; AUC target requested before generation; no test-based model selection",
-  "demo_auc_target": 0.89
+  "demo_auc_target": 0.89,
+  "shap_dir": "data/output/shap"
 }

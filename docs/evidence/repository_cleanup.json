@@ -1,0 +1,344 @@
+{
+  "date": "2026-10-22",
+  "scope": "Local repository cleanup; current artifacts only",
+  "moved_files_verified_sha256": 101,
+  "all_moved_bytes_unchanged": true,
+  "selected_model_sha256": "881dc8ed7252389256e2c2fd20fb3c558c74e0fdbc43165f02946059ee6217a4",
+  "prediction_rows_verified": 5533,
+  "prediction_probability_max_abs_error": 0.0,
+  "model_retrained": false,
+  "full_dataset_regenerated": false,
+  "cloud_changed": false,
+  "n8n_executions": 0,
+  "deleted": [
+    {
+      "path": "data/output/train_finetune/models/lightgbm/tuned",
+      "bytes": 181671
+    },
+    {
+      "path": ".chart-data-00IFP8",
+      "bytes": 0
+    },
+    {
+      "path": ".chart-data-hKaASL",
+      "bytes": 131993
+    },
+    {
+      "path": ".chart-data-j1hPmr",
+      "bytes": 0
+    },
+    {
+      "path": ".chart-data-JsSAA9",
+      "bytes": 859395
+    },
+    {
+      "path": ".chart-data-sp3cwU",
+      "bytes": 142007
+    },
+    {
+      "path": ".chart-data-tGVozG",
+      "bytes": 150083
+    },
+    {
+      "path": "data/evaluation_private",
+      "bytes": 0
+    },
+    {
+      "path": "data/samples",
+      "bytes": 0
+    },
+    {
+      "path": "data/synthetic/final",
+      "bytes": 168138978
+    },
+    {
+      "path": "data/processed",
+      "bytes": 34750743
+    },
+    {
+      "path": "data/inference",
+      "bytes": 24296059
+    },
+    {
+      "path": "ml/models",
+      "bytes": 1262306
+    },
+    {
+      "path": "ml/config_monthend_v4.json",
+      "bytes": 5414
+    },
+    {
+      "path": "ml/shap_groups_monthend_v4.json",
+      "bytes": 31972
+    },
+    {
+      "path": "docs/evidence/ml",
+      "bytes": 357374
+    },
+    {
+      "path": "data/synthetic/generation/generate_sample.py",
+      "bytes": 21235
+    },
+    {
+      "path": "data/synthetic/generation/profile_source_data.py",
+      "bytes": 6059
+    },
+    {
+      "path": "data/synthetic/generation/requirements.txt",
+      "bytes": 97
+    },
+    {
+      "path": "supabase/upgrade_lean.sql",
+      "bytes": 45544
+    },
+    {
+      "path": "supabase/replace_demo_v5.sql",
+      "bytes": 5168
+    },
+    {
+      "path": "supabase/restore_demo_v4.sql",
+      "bytes": 2577
+    },
+    {
+      "path": "supabase/tests/replacement.test.mjs",
+      "bytes": 4625
+    },
+    {
+      "path": "supabase/tests/replacement-results.json",
+      "bytes": 283
+    },
+    {
+      "path": "supabase/scripts/verify_foundation.sql",
+      "bytes": 1481
+    },
+    {
+      "path": "n8n/faq-template.csv",
+      "bytes": 444
+    },
+    {
+      "path": "docs/CASE_ASSIGNMENT.md",
+      "bytes": 8736
+    },
+    {
+      "path": "docs/SUPERVISOR_DASHBOARD.md",
+      "bytes": 40263
+    },
+    {
+      "path": "docs/SLIDE_CONTENT.md",
+      "bytes": 80908
+    },
+    {
+      "path": "docs/EXECUTIVE_SUMMARY_INFOGRAPHIC.md",
+      "bytes": 37139
+    },
+    {
+      "path": ".claude",
+      "bytes": 217
+    },
+    {
+      "path": "docs/evidence/project_readiness.json",
+      "bytes": 2639
+    },
+    {
+      "path": "docs/evidence/n8n_migration.json",
+      "bytes": 2257
+    },
+    {
+      "path": "docs/evidence/n8n_cutover.json",
+      "bytes": 3130
+    },
+    {
+      "path": "docs/evidence/n8n_workflows.json",
+      "bytes": 4041
+    },
+    {
+      "path": "docs/evidence/website_checks.json",
+      "bytes": 2722
+    },
+    {
+      "path": "docs/evidence/n8n-approve-ai.json",
+      "bytes": 204
+    },
+    {
+      "path": "docs/evidence/n8n-prepare-care.json",
+      "bytes": 182
+    },
+    {
+      "path": "docs/evidence/n8n-prepare.json",
+      "bytes": 247
+    },
+    {
+      "path": "docs/evidence/n8n-reply.json",
+      "bytes": 279
+    },
+    {
+      "path": "docs/evidence/n8n-request-artifacts.json",
+      "bytes": 172
+    },
+    {
+      "path": "docs/evidence/n8n-verify-ai-delivery.json",
+      "bytes": 281
+    },
+    {
+      "path": "docs/evidence/n8n-verify-artifacts.json",
+      "bytes": 304
+    },
+    {
+      "path": "docs/evidence/n8n-verify-care.json",
+      "bytes": 185
+    },
+    {
+      "path": "docs/evidence/website-live-ai.png",
+      "bytes": 90683
+    },
+    {
+      "path": "docs/evidence/website-login.png",
+      "bytes": 39957
+    },
+    {
+      "path": "docs/evidence/website-message-times.png",
+      "bytes": 131867
+    },
+    {
+      "path": "docs/evidence/website-pipeline.png",
+      "bytes": 92561
+    },
+    {
+      "path": "docs/evidence/website-rewrite.png",
+      "bytes": 84875
+    },
+    {
+      "path": "docs/evidence/website-send-permission.png",
+      "bytes": 137355
+    },
+    {
+      "path": "docs/evidence/website-send-working.png",
+      "bytes": 121812
+    },
+    {
+      "path": "data/original/.gitkeep",
+      "bytes": 0
+    },
+    {
+      "path": "data/synthetic/.gitkeep",
+      "bytes": 0
+    },
+    {
+      "path": "ml/.gitkeep",
+      "bytes": 0
+    },
+    {
+      "path": "supabase/.gitkeep",
+      "bytes": 0
+    },
+    {
+      "path": "website/app/.gitkeep",
+      "bytes": 0
+    },
+    {
+      "path": "n8n/tests/cutover-flow.mjs",
+      "bytes": 8208
+    },
+    {
+      "path": "n8n/tests/demo-flow.mjs",
+      "bytes": 7861
+    }
+  ],
+  "deleted_bytes_before_tmp_cleanup": 231278524,
+  "artifact_notes": [
+    "Original run manifests retain original code/config hashes. Current code/config changed location/imports; run history was not rewritten.",
+    "Selected model stored only in models/champion; lightgbm/tuned model/schema/calibrator matched before deduplication.",
+    "Runtime dataset/protocol identifiers and applied migration filenames retained for database compatibility."
+  ],
+  "verification": "Passed local tests/build, current artifact hashes and prediction equivalence; no live workflow or cloud mutation",
+  "immutable_artifacts_reverified": 50,
+  "tests": {
+    "ml": 44,
+    "database": {
+      "results.json": 37,
+      "rolling-results.json": 7,
+      "ticket-results.json": 8,
+      "assignment-results.json": 9,
+      "dashboard-results.json": 7,
+      "delivery-results.json": 4
+    },
+    "database_total": 72,
+    "ui": 35,
+    "n8n_validators": 9,
+    "web_build": "passed"
+  },
+  "setup_rebuilt_from_migrations": 21,
+  "applied_migrations_unchanged": true,
+  "source_python_ast": "passed",
+  "local_seed_generator": "507 cases, 272 known outcomes; DEV fixture only",
+  "label_free_import_generator": "5 payloads, no grant consent, no upload",
+  "tmp_cleanup": {
+    "status": "Removed obsolete builds, archives, logs and cached dependencies. Retained ignored local credentials, ticket replay guard and current operational rollback backups."
+  },
+  "limitations": [
+    "No commit/push/deployment in this cleanup",
+    "No hosted/browser E2E or concurrency validation",
+    "Kaggle source URL/license still unconfirmed; raw CSV is not redistributed"
+  ],
+  "all_moved_bytes_unchanged_note": "Verified before documentation/path-reference changes; immutable data/model/prediction/SHAP reverified after tests.",
+  "artifact_sha256": {
+    "data/original/telecom_customer_churn.csv": "9309f4308b9111da3604c1b13c337de40fd2de16c9dd75904f3b0d2bf5b5beed",
+    "data/original/telecom_data_dictionary.csv": "c54e0d89a371e43b12e80da5798990926af49dc702278076f19852a271d9afce",
+    "data/synthetic/dataset/billing_history.csv": "85ddf72acef85485d0183b7265ca479dd5701a2c04056ef88f0aebfb8ee27865",
+    "data/synthetic/dataset/churn_labels.csv": "5be2a865e8a7df5ac64fdcbd4033912c00675931e2cd84a86ceec223bd83672c",
+    "data/synthetic/dataset/customers.csv": "0ee00ed8d732c7ffca265dae0b7e6e78b0b80738363afc28a19317e19a74a7ff",
+    "data/synthetic/dataset/customer_features.csv": "75f5f59d5c80c968dd8cdf61c03b73107169a326d7e197193875a85d6ff12595",
+    "data/synthetic/dataset/daily_service_history.csv": "9d45fd5b55596262db681fa6e180849e4bc2a106855ab2f44ab16443153a4afa",
+    "data/synthetic/dataset/dataset_manifest.json": "ab6aa628d7995b775a1947936d4a76e3000c6931f6fd7259c6a76b88efbde2be",
+    "data/synthetic/dataset/features_127.csv": "b00886f4d463ab8eb15e510de4152326656fddd1dc3ed670add73569fba3ca5f",
+    "data/synthetic/dataset/generation_audit_private.csv": "45e37840edfa9379c90b97c727b6f9529af585578098b5d545c552c3e0b4d057",
+    "data/synthetic/dataset/inference_latest.csv": "37bbaaf26f16f56ab37804231c0844ce39a5ab29e5907adaa097efa88d0c422e",
+    "data/synthetic/dataset/support_contacts.csv": "32c74c9020de8999eed1c5a7c688faad33ed85839cfc2f5c253bb07d7a885209",
+    "data/synthetic/dataset/support_tickets.csv": "61a572e770f37c783eb847fd05294fe1420e6587bfd350a1c1170fdd658d48ae",
+    "data/output/preprocess/features.csv": "208d54b115dc17d5b643b3ce9a1208ef6f0e24a8ec64cb3ac8cae2631fac669c",
+    "data/output/preprocess/labels.csv": "d77d819d377a3d539886d4954256507c39bda5a797463571339a4f963fe413cd",
+    "data/output/preprocess/split_manifest.csv": "580039d6eb72bfaace6bb45fa3352eacf3f658b6fec7b5b27d837c054f3e9b2e",
+    "data/output/preprocess/evaluation/catboost_baseline_calibration_oof.csv": "242014623fefccc01aedf77051bdd5e9dc655ebe84cdacb3e82bf7fa9ea2c5ac",
+    "data/output/preprocess/evaluation/catboost_baseline_test_exploratory.csv": "bc886c679a872b6379274a31c2899febdd124a9cfc514643d51227a9dec32d53",
+    "data/output/preprocess/evaluation/catboost_tuned_calibration_oof.csv": "4b2998fbae7f0a3ba9452841414aadf764bdeacc30d4761249d6eeb4d7475890",
+    "data/output/preprocess/evaluation/catboost_tuned_test_exploratory.csv": "eb2caae68aa64df364c7bfdb8e71ec6b6384696a9faf81402dbadb7c7a16514a",
+    "data/output/preprocess/evaluation/lightgbm_baseline_calibration_oof.csv": "1025e23316cd37a13c07f048e11426a1a925f1d3d26d6cbca5f305a7a10be91a",
+    "data/output/preprocess/evaluation/lightgbm_baseline_test_exploratory.csv": "911f1d846df83b679bfa71c4562d390df264b0ac32497a094b80684f46812080",
+    "data/output/preprocess/evaluation/lightgbm_tuned_calibration_oof.csv": "7cbd1d49c74ff12e626bfcdd642fb842f43c3650569ab317ab0c29fa9dce3143",
+    "data/output/preprocess/evaluation/lightgbm_tuned_test_exploratory.csv": "6e25c9ad7e774155e03ca5bc325dcf3c1093625d975e6d8259d938fff8337b9a",
+    "data/output/predict/features.csv": "befc1530611f21d4e0384c0b06a7ec292333c210dc6862a16935788b74a64a11",
+    "data/output/predict/predictions.csv": "b8239b25dbd6ad514b0c151e98da9e5f56b5d21fd92872b5f7de6bd9712d3691",
+    "data/output/shap/care_context.jsonl": "be06d7b2786267eb5e1c1425fad172859ff3728409bb27c58546b621eb695de6",
+    "data/output/shap/feature_shap_raw.csv": "14e684c0724133d546159181fbf1b776e74acdb9ee3f3b0ee14fbaf4e8209f0c",
+    "data/output/shap/group_importance.csv": "ab81e416df53af75f5c93a02b2719d7d89cc426f280e7d71d4af69049af4b118",
+    "data/output/shap/group_shap.csv": "97653c177682045a7705b72f83e0da643500db19accd4715ff16e3936943f9ad",
+    "data/output/shap/manifest.json": "e1bee45e521fef5d4891787028a5037735b5f0ed903e0170c97d4fd7e2bb75d8",
+    "data/output/shap/predictions.csv": "b8239b25dbd6ad514b0c151e98da9e5f56b5d21fd92872b5f7de6bd9712d3691",
+    "data/output/train_finetune/models/champion/approval.json": "6b8f0d00058b4044898ce3d24bbde4da20f920e1e9061e852bf610a711581ba8",
+    "data/output/train_finetune/models/champion/calibrator.json": "167ff94f9e4003982c33e57ce0e4ac740f177a6d53bbc6bbd7d5ff457db26f7b",
+    "data/output/train_finetune/models/champion/metadata.json": "017bf7ff1069665e3db249b4b139c4af2ab857b9dee3b192aa23b5277898325b",
+    "data/output/train_finetune/models/champion/model.txt": "881dc8ed7252389256e2c2fd20fb3c558c74e0fdbc43165f02946059ee6217a4",
+    "data/output/train_finetune/models/champion/schema.json": "a914623d975e77bd5094e9b886b13671fd51ae3ae3b9fae3590f3f45caada70f",
+    "data/output/train_finetune/models/search/optuna.sqlite3": "10502dc0597c04c7e7bee648351540da042ec6ea9a0254f0892484f6fabb0655",
+    "data/output/train_finetune/models/lightgbm/baseline/calibrator.json": "119555e445f45e36e68f83eef619cab05eefc3afd71a60f3951dbd816597434a",
+    "data/output/train_finetune/models/lightgbm/baseline/metadata.json": "1ad00cae4ae7b227eef287fc932c8f0fecbea0e0f6ab7186654551d0e8f87151",
+    "data/output/train_finetune/models/lightgbm/baseline/model.txt": "5924d79682194e3cffbf6789f33ae81a20668835af1e09603229e61c5a62cb39",
+    "data/output/train_finetune/models/lightgbm/baseline/schema.json": "a914623d975e77bd5094e9b886b13671fd51ae3ae3b9fae3590f3f45caada70f",
+    "data/output/train_finetune/models/catboost/baseline/calibrator.json": "c590650891d65f5a2ab8947fe3f849b70a19fdcb8b926a9696fa969973b77234",
+    "data/output/train_finetune/models/catboost/baseline/metadata.json": "6fd8742223e607233ad1bdb91ab78fe7c7259270426386f16cd5cb7030efff61",
+    "data/output/train_finetune/models/catboost/baseline/model.cbm": "adcfff4022b97526af7f9f0a411db9ac75d2afc80ac61ddb419633701b711a76",
+    "data/output/train_finetune/models/catboost/baseline/schema.json": "a914623d975e77bd5094e9b886b13671fd51ae3ae3b9fae3590f3f45caada70f",
+    "data/output/train_finetune/models/catboost/tuned/calibrator.json": "0e86638cfb07484d7e96d328e184729bf784fde739e66e5db0de8d91bc0d2804",
+    "data/output/train_finetune/models/catboost/tuned/metadata.json": "ca2dbe0dc2c35652b07f579bbc2d74271eb27bb02bdb065e869e31d4cb5ac4dd",
+    "data/output/train_finetune/models/catboost/tuned/model.cbm": "fc01ad186e28a3b150dbd138661289325093966546a6eb6b3333fec3d6e2f13f",
+    "data/output/train_finetune/models/catboost/tuned/schema.json": "a914623d975e77bd5094e9b886b13671fd51ae3ae3b9fae3590f3f45caada70f"
+  },
+  "repository_checks": {
+    "shareable_files": 245,
+    "broken_markdown_links": 0,
+    "suspected_secret_patterns": 0,
+    "files_over_50MB": 0,
+    "synthetic_fixture_uses_test_staff_ids": true,
+    "git_diff_check": "passed"
+  }
+}

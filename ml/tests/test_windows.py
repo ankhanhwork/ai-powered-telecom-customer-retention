@@ -1,14 +1,15 @@
 from pathlib import Path
+
 import sys
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'generation'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 import unittest
 
 import numpy as np
 import pandas as pd
 
-from build_window_features import (EXTENDED_FEATURES, PAYMENT_FEATURES,
+from ml.preprocess.build_window_features import (EXTENDED_FEATURES, PAYMENT_FEATURES,
                                    build_extended_features, extended_groups, payment_features)
-from generate_sample import FEATURES
+from data.synthetic.generation.common import FEATURES
 
 
 class PaymentFeatureChecks(unittest.TestCase):

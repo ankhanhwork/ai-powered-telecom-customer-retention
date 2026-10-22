@@ -6,11 +6,11 @@
 **Phạm vi dịch vụ:** Internet  
 **Kỳ phân tích:** Lũy kế năm 2026 đến thời điểm nghiên cứu, so với cùng kỳ 2025; case Bình Dương tập trung tháng 9/2026
 **Ngày cập nhật:** 17/10/2026  
-**Trạng thái:** Bản thảo v3; vấn đề toàn quốc, thí điểm tại Bình Dương; tách thông tin nội bộ khỏi giả định thiết kế
+**Trạng thái:** Bản thảo; vấn đề toàn quốc, thí điểm tại Bình Dương; tách thông tin nội bộ khỏi giả định thiết kế
 
 ## Quyết định sản phẩm mới 19/10/2026
 
-Leader chốt cập nhật prediction ngày **1, 11, 21** từ snapshot **cuối tháng/10/20**, mỗi lần dự báo **một tháng lịch tới**. Đây là thiết kế prototype mới; không sửa thông tin nội bộ về danh sách tháng 9 hay giả định FPT đã vận hành lịch này. Batch 01/10 vẫn dự báo 01–31/10; batch 11/10 dự báo 11/10–10/11 và batch 21/10 dự báo 21/10–20/11. Dữ liệu/train v5 đã hoàn tất offline, chọn LightGBM tuned theo validation; Supabase/SHAP đã chuyển v5; UI source đã sửa/build local, Vercel/n8n chưa cutover.
+Leader chốt cập nhật prediction ngày **1, 11, 21** từ snapshot **cuối tháng/10/20**, mỗi lần dự báo **một tháng lịch tới**. Đây là thiết kế prototype mới; không sửa thông tin nội bộ về danh sách tháng 9 hay giả định FPT đã vận hành lịch này. Batch 01/10 vẫn dự báo 01–31/10; batch 11/10 dự báo 11/10–10/11 và batch 21/10 dự báo 21/10–20/11. Dữ liệu/train đã hoàn tất offline, chọn LightGBM tuned theo validation; Supabase/SHAP đã tích hợp. Trạng thái release/UI hiện hành xem IMPLEMENTATION.
 
 ## 1. Bối cảnh và mức độ vấn đề
 

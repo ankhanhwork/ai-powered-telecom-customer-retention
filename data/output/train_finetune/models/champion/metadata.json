@@ -1,0 +1,22 @@
+{
+  "candidate": "lightgbm_tuned",
+  "algorithm": "lightgbm",
+  "variant": "tuned",
+  "model_file": "model.txt",
+  "model_sha256": "881dc8ed7252389256e2c2fd20fb3c558c74e0fdbc43165f02946059ee6217a4",
+  "calibration_version": "rolling_month_v5_127_optuna_v1_lightgbm_tuned_platt",
+  "parameters": {
+    "max_depth": 7,
+    "learning_rate": 0.03694755509074355,
+    "num_leaves": 12,
+    "min_child_samples": 75,
+    "colsample_bytree": 0.8320457481218804,
+    "subsample": 0.7366114704534336,
+    "reg_lambda": 0.09565499215943825
+  },
+  "iterations": 114,
+  "feature_count": 127,
+  "approval_status": "Selected offline under user-authorized comparison; not deployed",
+  "shap_status": "Not regenerated for this new model; v4 mapping remains pinned to v4",
+  "selection_sha256": "725776d5b37b68e661b0cba27bd075155ed75383a0018b80f1e06b7a4f27ad5f"
+}

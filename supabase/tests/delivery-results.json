@@ -1,0 +1,12 @@
+{
+  "passed": 4,
+  "checks": [
+    "draft does not send",
+    "approved revision sent at commit without contact gate",
+    "receipt, stage and reminder updated",
+    "idempotent delivery and immutable sent body"
+  ],
+  "limits": [
+    "Local PGlite; no hosted Auth or provider"
+  ]
+}

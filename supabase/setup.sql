@@ -530,9 +530,29 @@ begin
 end $$;
 create function app_private.assert_contact(p_case uuid, p_channel text) returns void
 language plpgsql security definer set search_path = '' as $$
+declare v_customer uuid; v_settings public.workspace_settings; v_local timestamp;
 begin
-  -- Contact gate removed: staff can send on any channel at any time.
-  return;
+  if not exists(select 1 from public.retention_cases c
+    join public.contact_preferences p on p.customer_id = c.customer_id and p.channel = p_channel
+    where c.id = p_case and c.case_status <> 'closed'
+      and p.contact_allowed and p.opt_out_at is null) then
+    raise exception 'Contact not allowed or case closed';
+  end if;
+  select customer_id into v_customer from public.retention_cases where id=p_case;
+  perform 1 from public.customers where id=v_customer for update;
+  select * into v_settings from public.workspace_settings where singleton;
+  v_local:=now() at time zone 'Asia/Ho_Chi_Minh';
+  if v_settings.contact_window_start is not null and
+    (v_local::time<v_settings.contact_window_start or v_local::time>=v_settings.contact_window_end) then
+    raise exception 'Outside configured contact hours'; end if;
+  if v_settings.contact_cooldown>interval '0 seconds' and exists(
+    select 1 from public.messages m join public.retention_cases c on c.id=m.case_id
+    where c.customer_id=v_customer and m.direction='outbound' and m.delivery_status='sent'
+      and m.sent_at>now()-v_settings.contact_cooldown) then raise exception 'Contact cooldown applies'; end if;
+  if v_settings.daily_contact_limit is not null and (select count(*) from public.messages m
+    join public.retention_cases c on c.id=m.case_id where c.customer_id=v_customer and m.direction='outbound'
+      and m.delivery_status='sent' and (m.sent_at at time zone 'Asia/Ho_Chi_Minh')::date=v_local::date)
+      >=v_settings.daily_contact_limit then raise exception 'Daily contact limit reached'; end if;
 end $$;
 create function app_private.assert_offer(p_customer uuid, p_offer uuid, p_reviewer uuid) returns void
 language plpgsql security definer set search_path = '' as $$
@@ -2976,9 +2996,16 @@ begin
 end $$;
 notify pgrst,'reload schema';
 
-notify pgrst, 'reload schema';
-commit;
+-- Source: 20261021160000_remove_contact_gate.sql
+-- Removes the outbound contact gate (permission, closed case, hours, cooldown, daily limit).
+create or replace function app_private.assert_contact(p_case uuid, p_channel text) returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  -- Contact gate removed: staff can send on any channel at any time.
+  return;
+end $$;
 
+-- Source: 20261022000100_inline_mock_delivery.sql
 -- Mock transport: deliver approved messages inside the database at commit time, so sending
 -- no longer depends on the n8n delivery schedule (which is disabled to save execution quota).
 create or replace function app_private.mock_deliver_now(p_outbox_id uuid) returns void
@@ -3015,3 +3042,9 @@ end $$;
 drop trigger if exists delivery_outbox_mock_deliver on public.delivery_outbox;
 create constraint trigger delivery_outbox_mock_deliver after insert on public.delivery_outbox
   deferrable initially deferred for each row execute function app_private.mock_deliver_trigger();
+
+-- Deliver messages already waiting in the queue.
+select app_private.mock_deliver_now(id) from public.delivery_outbox where status='queued' order by created_at;
+
+notify pgrst, 'reload schema';
+commit;

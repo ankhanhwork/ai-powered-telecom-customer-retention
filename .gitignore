@@ -1,41 +1,34 @@
-# Secrets
+# Secrets and local accounts
 .env
 .env.*
 !.env.example
 !**/.env.example
-# Python / JS
+# Environments, dependencies and caches
 __pycache__/
 *.py[cod]
 .venv/
 .venv-*/
 venv/
-.ipynb_checkpoints/
 node_modules/
 dist/
 coverage/
 .vercel/
+.ipynb_checkpoints/
 *.log
 .dashboard-fixture.json
-# Data / model artifacts: documentation and empty folders remain trackable
-/data/raw/*
-/data/processed/*
-/data/inference/*
-/data/evaluation_private/*
-/data/synthetic/*
-!/data/**/.gitkeep
-!/data/**/README.md
-/ml/models/*
-!/ml/models/.gitkeep
+.chart-data-*/
+# Large local datasets; generator code remains tracked
+/data/original/*.csv
+/data/synthetic/dataset/*.csv
+/data/output/preprocess/*.csv
+generation_audit_private.csv
+*.sqlite3
 *.joblib
 *.pkl
 *.parquet
-# Local renders and generated exports
+# Scratch work and local tool settings
 /tmp/
-/deliverables/*
-!/deliverables/README.md
-!/deliverables/**/.gitkeep
+/.claude/
+/supabase/.temp/
 .DS_Store
 Thumbs.db
-
-# Supabase CLI transient cache
-supabase/.temp/

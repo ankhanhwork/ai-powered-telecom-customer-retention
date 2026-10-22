@@ -4,15 +4,17 @@ import unittest
 from datetime import date
 from pathlib import Path
 
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
+
 import pandas as pd
 
-import sys
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'generation'))
-from generate_data import cohort_role, generate_v4
-from generate_sample import FEATURES, validate
+from data.synthetic.generation.generate_data import cohort_role, generate
+from data.synthetic.generation.common import FEATURES
+from data.synthetic.generation.rolling_quality import validate_rolling
 
 
-class SimulatorV4Checks(unittest.TestCase):
+class SimulatorChecks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.root = Path(__file__).resolve().parents[2]
@@ -24,8 +26,8 @@ class SimulatorV4Checks(unittest.TestCase):
                                     'Tenure in Months':[24]*32,'Internet Service':['Yes']*32,
                                     'Customer Status':['Churned']*32})
         cls.fixture.to_csv(cls.source,index=False)
-        cls.config = json.loads((cls.root/'ml/generation/simulator.json').read_text())
-        cls.tables,cls.audit = generate_v4(cls.source,32,cls.config)
+        cls.config = json.loads((cls.root/'data/synthetic/generation/simulator.json').read_text())
+        cls.tables,cls.audit = generate(cls.source,32,cls.config)
 
     @classmethod
     def tearDownClass(cls):
@@ -36,32 +38,32 @@ class SimulatorV4Checks(unittest.TestCase):
         changed = self.fixture.copy()
         changed['Customer Status'] = 'Stayed'
         changed.to_csv(self.source,index=False)
-        tables,audit = generate_v4(self.source,32,self.config)
+        tables,audit = generate(self.source,32,self.config)
         for name in tables:
             pd.testing.assert_frame_equal(tables[name],self.tables[name])
         pd.testing.assert_frame_equal(audit,self.audit)
 
     def test_later_cutoff_cannot_change_past_features(self):
         earlier = {**self.config,'as_of':'2026-06-01'}
-        tables,_ = generate_v4(self.source,32,earlier)
+        tables,_ = generate(self.source,32,earlier)
         keys = ['customer_id','snapshot_date']
         left = tables['customer_features'].set_index(keys)[FEATURES].sort_index()
         right = self.tables['customer_features'].set_index(keys).loc[left.index,FEATURES].sort_index()
         pd.testing.assert_frame_equal(left,right,check_dtype=False)
 
-    def test_holdout_and_one_test_month(self):
+    def test_holdout_customer_roles_and_snapshot_schedule(self):
         x = self.tables['customer_features']
-        train_ids = set(x.loc[x['split'].eq('train'),'customer_id'])
-        val_ids = set(x.loc[x['split'].eq('validation'),'customer_id'])
-        test_ids = set(x.loc[x['split'].eq('test'),'customer_id'])
-        self.assertTrue(test_ids)
-        self.assertTrue(test_ids.isdisjoint(train_ids|val_ids))
-        self.assertEqual(set(x.loc[x['split'].eq('test'),'snapshot_date']),{'2026-08-31'})
-        for cid in test_ids:
+        audit_ids = set(x.loc[x.cohort_role.eq('audit_holdout'),'customer_id'])
+        development_ids = set(x.loc[x.cohort_role.eq('development'),'customer_id'])
+        self.assertTrue(audit_ids)
+        self.assertTrue(audit_ids.isdisjoint(development_ids))
+        dates = pd.to_datetime(x.snapshot_date)
+        self.assertTrue((dates.dt.day.isin([10,20]) | dates.dt.is_month_end).all())
+        for cid in audit_ids:
             self.assertEqual(cohort_role(cid,self.config),'audit_holdout')
 
     def test_integrity_and_audit_excluded(self):
-        self.assertTrue(validate(self.tables,date(2026,10,17))['checks_passed'])
+        self.assertTrue(validate_rolling(self.tables,date.fromisoformat(self.config['as_of']))['checks_passed'])
         x = self.tables['customer_features']
         self.assertNotIn('generation_probability',x)
         self.assertNotIn('episode',x)

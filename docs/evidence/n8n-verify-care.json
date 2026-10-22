@@ -1,8 +1,0 @@
-{
-  "mode": "verify-care",
-  "checked_at": "2026-10-18T08:36:10.429Z",
-  "checks": [
-    "Support workflow recorded mock receipt",
-    "Due reminder generated staff notification"
-  ]
-}

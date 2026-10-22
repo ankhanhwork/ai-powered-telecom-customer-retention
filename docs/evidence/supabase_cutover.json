@@ -1,0 +1,63 @@
+{
+  "runs": [
+    {
+      "model": "lightgbm_tuned",
+      "start": "2026-10-11",
+      "dataset": "synthetic_rolling_month_v5",
+      "snapshot": "2026-10-10",
+      "end_exclusive": "2026-11-11",
+      "source_sha256": "b8239b25dbd6ad514b0c151e98da9e5f56b5d21fd92872b5f7de6bd9712d3691"
+    }
+  ],
+  "cases": 207,
+  "staff": 2,
+  "alerts": 207,
+  "outbox": 0,
+  "contexts": 2705,
+  "messages": 0,
+  "outcomes": 0,
+  "customers": 2705,
+  "snapshots": 2705,
+  "auth_users": 3,
+  "public_rls": 25,
+  "predictions": 2705,
+  "queued_jobs": 0,
+  "bad_features": 0,
+  "backup_tables": 25,
+  "portal_mappings": 1,
+  "bad_context_model": 0,
+  "anon_backup_access": false,
+  "auth_backup_access": false,
+  "backed_up_customers": 3202,
+  "old_active_customers": 0,
+  "checked_on": "2026-10-19",
+  "agent_visible_cases": 1,
+  "supervisor_visible_cases": 207,
+  "portal_internal_cases": 0,
+  "portal_threads": 1,
+  "n8n_executions": 0,
+  "data_replacement": "Committed transaction; private backup retained, old active data removed",
+  "backup": "app_private.v4_demo_backup",
+  "restore_script": "supabase/restore_demo_v4.sql",
+  "migration": "20261019033021_rolling_month_v5_shap",
+  "limitations": [
+    "Hosted SQL role scopes verified; no browser end-to-end test or LLM/delivery execution.",
+    "UI source changed and built locally; no Vercel deployment in this task."
+  ],
+  "ml_tests": 43,
+  "db_existing_checks": 38,
+  "db_rolling_checks": 7,
+  "db_replacement_restore_checks": 2,
+  "ui_tests": 10,
+  "web_build": true,
+  "staging_rows_after_cleanup": 0,
+  "security_review": {
+    "public_rls_tables": 25,
+    "private_backup_browser_access": false,
+    "security_definer_warnings": 19,
+    "leaked_password_protection_enabled": false,
+    "notes": "Private staging/backup deny all API roles; no-policy INFO expected. Existing SECURITY DEFINER RPCs check roles/ownership. Auth protection not changed in this task.",
+    "password_security_url": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+  },
+  "cleanup_note": "Historical integration receipt. One-use replace/restore scripts were removed after repository cleanup; do not execute a live restore from this receipt."
+}

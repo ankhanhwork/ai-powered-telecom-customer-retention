@@ -1,0 +1,19 @@
+{
+  "candidate": "catboost_tuned",
+  "algorithm": "catboost",
+  "variant": "tuned",
+  "model_file": "model.cbm",
+  "model_sha256": "fc01ad186e28a3b150dbd138661289325093966546a6eb6b3333fec3d6e2f13f",
+  "calibration_version": "rolling_month_v5_127_optuna_v1_catboost_tuned_platt",
+  "parameters": {
+    "learning_rate": 0.03732820884292114,
+    "depth": 8,
+    "l2_leaf_reg": 5.967946016641736,
+    "random_strength": 1.334802848204616,
+    "bagging_temperature": 0.3737993305176374
+  },
+  "iterations": 239,
+  "feature_count": 127,
+  "approval_status": "Candidate in user-authorized offline comparison; not deployed",
+  "shap_status": "Not regenerated for this new model; v4 mapping remains pinned to v4"
+}

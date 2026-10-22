@@ -1,7 +1,7 @@
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-const w=JSON.parse(await readFile(new URL('../02_ai_ticket.json',import.meta.url),'utf8'));
+const w=JSON.parse(await readFile(new URL('../workflows/02_ai_ticket.json',import.meta.url),'utf8'));
 const code=w.nodes.find(n=>n.name==='Validate ticket').parameters.jsCode;
 const context={categories:{connection_issue:'Technical Support'},conversation:[{id:'m',direction:'inbound',body:'This happened last week too. I may cancel.'}]};
 const output={description:'Repeated service issue.',category:'connection_issue',priority:'normal',repeat_issue:'yes',churn_concern:'explicit',preferred_contact_time:null,missing_fields:['Router lights'],evidence:[{field:'repeat_issue',message_id:'m',quote:'This happened last week too.'},{field:'churn_concern',message_id:'m',quote:'I may cancel.'}]};

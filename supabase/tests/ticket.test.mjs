@@ -6,9 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 const here=dirname(fileURLToPath(import.meta.url));
 const root=resolve(here,'../..');
-let modulePath=resolve(here,'node_modules/@electric-sql/pglite/dist/index.js');
-try { await access(modulePath); } catch { modulePath=resolve(root,'tmp/db-tests/node_modules/@electric-sql/pglite/dist/index.js'); }
-const {PGlite}=await import(pathToFileURL(modulePath).href);
+const {PGlite}=await import('@electric-sql/pglite');
 const db=new PGlite();
 const bootstrap=`
 create role anon nologin;
