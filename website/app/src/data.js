@@ -14,9 +14,9 @@ export function shapShare(context, driver) {
   const increase=Math.log(p/(1-p))-base;
   return increase>1e-8 ? `${(100*contribution/increase).toFixed(1)}%` : 'Unavailable';
 }
-export function filterQueue(rows, search, status, mine, userId) {
+export function filterQueue(rows, search, status, mine, userId, owner='') {
   const term=search.trim().toLowerCase();
-  return rows.filter(r => (!mine || r.assigned_agent_id===userId) && (!status || r.case_status===status) && `${r.display_name} ${r.customer_ref} ${r.contract_ref}`.toLowerCase().includes(term));
+  return rows.filter(r => (!mine || r.assigned_agent_id===userId) && (!status || r.case_status===status) && (!owner || (owner==='unassigned' ? !r.assigned_agent_id : r.assigned_agent_id===owner)) && `${r.display_name} ${r.customer_ref} ${r.contract_ref}`.toLowerCase().includes(term));
 }
 export function externalMessages(messages) {
   return messages.filter(m => m.visibility==='external' && (m.direction==='inbound' || m.delivery_status==='sent'));

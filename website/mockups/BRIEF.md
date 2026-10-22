@@ -1,5 +1,9 @@
 # Mockup website — 3 màn hình tiếng Anh
 
+## Delta 22/10 — Assignment pipeline và nội dung giao diện
+
+Assignment của Supervisor có bộ lọc tìm khách/hợp đồng, tháng/năm theo `target_period_start`, và assignee (All agents / Unassigned / từng Agent) ngay dưới Team workload, sau đó là Care pipeline 5 stage dùng chung Queue. Mặc định tháng/năm mới nhất; counts và cards cùng tập lọc, click card mở Conversations đúng case. Bộ lọc chỉ áp pipeline, không đổi phạm vi nút Assign cases (vẫn latest prediction period ghi trên đầu trang) hoặc Team workload toàn kỳ. Không thêm bảng outcome tại Assignment. Bỏ footer/banner/note synthetic/simulated/human-approval khỏi UI theo yêu cầu leader; provenance và giới hạn demo vẫn giữ trong docs/evidence. Approval, consent, RLS và mock transport giữ nguyên.
+
 ## Case Assignment — UI đã duyệt và tích hợp 21/10
 
 Theo yêu cầu mới, **Assign cases** mở ba cards Manual/Round-robin/Weighted; icon **i** giải thích cách tính. Modal Config → Preview → Confirm → Results đã nối Supabase, có badge **Live workspace**, lịch sử synthetic ghi **Based on simulated history**. Giữ labels English. **Save team limits & default weights** là thao tác lưu cấu hình riêng; Preview không ghi. Confirm tạo assignment/audit/group notification, không gửi khách; lỗi retry cùng confirmation key. Details có chọn owner/capacity và **Confirm owner change**, unassign nhập reason; closed case không đổi owner. Notification batch dùng **Open queue**. Source/local live tại `http://127.0.0.1:5175/`; preview simulation cũ vẫn DEV-only tại `?preview=assignment`. Backend cloud đã áp, chưa push/deploy Vercel; proof/runtime và giới hạn ở [evidence](../../docs/evidence/case_assignment.json). Không còn coi phần mở rộng này chỉ là mockup chưa triển khai; đề xuất bên dưới giữ lịch sử review.

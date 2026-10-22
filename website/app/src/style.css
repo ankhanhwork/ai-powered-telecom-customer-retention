@@ -300,3 +300,5 @@ header .brand{font-size:20px;font-weight:700;letter-spacing:.2px;color:#fff;whit
 .compose-line .ai-request button{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;font-size:13px;white-space:nowrap;font-weight:500}
 .compose-line .send-button{width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .page-title>select{margin-left:0}
+
+.queue-head .filters{flex-wrap:wrap}.queue-head .filters>input{min-width:min(100%,260px)}

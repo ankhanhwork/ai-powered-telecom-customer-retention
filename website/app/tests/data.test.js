@@ -70,3 +70,18 @@ test('queue switches to valid latest period after replacing a batch',async()=>{
  assert.equal(queuePeriod(rows,'2026-10-11'),'2026-10-11');
  assert.equal(queuePeriod([],null),'');
 });
+
+test('assignment assignee filter combines search, status and Agent scope',()=>{
+ const rows=[
+  {case_id:'one',display_name:'Customer One',contract_ref:'ABC',assigned_agent_id:'a',case_status:'new'},
+  {case_id:'two',display_name:'Customer Two',contract_ref:'DEF',assigned_agent_id:'b',case_status:'closed'},
+  {case_id:'three',display_name:'Customer Three',contract_ref:'GHI',assigned_agent_id:null,case_status:'new'}
+ ];
+ assert.deepEqual(filterQueue(rows,'','',false,null,'unassigned'),[rows[2]]);
+ assert.deepEqual(filterQueue(rows,'abc','new',false,null,'a'),[rows[0]]);
+ assert.deepEqual(filterQueue(rows,'','',false,null,'b'),[rows[1]]);
+ assert.deepEqual(filterQueue(rows,'','',false,null,''),rows);
+ assert.deepEqual(filterQueue(rows,'','',false,null,'missing'),[]);
+ assert.deepEqual(filterQueue(rows,'','',true,'a','b'),[]);
+ assert.deepEqual(filterQueue(rows,'abc','',false,null,'unassigned'),[]);
+});
