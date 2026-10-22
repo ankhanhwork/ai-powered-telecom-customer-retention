@@ -37,10 +37,12 @@ def add(row, index, historical, score=None):
     stage = 'closed' if historical else states[(index * 7 % 19) % 5]
     if owner is None:
         stage = 'new'
+    # Closed care splits into Care completed / Failed (no answer, wrong number) like the Agent queue.
+    contact = 'not_contacted' if stage == 'new' else (['no_answer', 'wrong_contact'][index % 2] if stage == 'closed' and index % 6 == 0 else 'contacted')
     known = historical and index % 11 != 0
     outcome = float(row['churn_next_month']) == 1 if known else None
     record = dict(id=identity, ref=f"DEMO-{start[:7]}-{index+1:03}", customer=row['customer_id'],
-                  owner=owner, start=start, end=row['target_period_end_exclusive'], stage=stage,
+                  owner=owner, start=start, end=row['target_period_end_exclusive'], stage=stage, contact=contact,
                   created_at=created, outcome=outcome, churn_date=churn_date,
                   score=score, priority='high' if index % 4 == 0 else 'normal',
                   primary_issue=['Connection quality', 'Billing & payments', 'Support experience',

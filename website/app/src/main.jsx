@@ -7,6 +7,7 @@ import StageBar from './StageBar';
 import AssignmentPage from './AssignmentPage';
 import AssignmentPreview from './AssignmentPreview.jsx';
 import Dashboard from './Dashboard.jsx';
+import Notifications,{NotificationsPreview} from './Notifications.jsx';
 import CaseList from './CaseList';
 import {InfoTab,CallTab,InsightsTab} from './CasePanels';
 import RewriteRequest from './RewriteRequest';
@@ -37,11 +38,11 @@ function App(){
  useEffect(()=>{setSelected(null);setView('queue');setNotifications(null);setStaff(null);setPortal(false);if(!session)return;let live=true;(async()=>{try{const {data,error}=await supabase.from('staff_members').select('*').eq('user_id',session.user.id).eq('active',true).maybeSingle();if(error)throw error;if(!live)return;if(data){setStaff(data);setView(data.role==='supervisor'?'dashboard':'queue')}else setPortal(true)}catch(e){if(live)setError(e.message)}})();return()=>{live=false}},[session?.user.id]);
  async function act(fn,success){setBusy(true);setError('');setNotice('');try{await fn();if(success)setNotice(success)}catch(e){setError(e.message||'Request failed. Please try again.')}finally{setBusy(false)}}
  async function signOut(){try{await supabase.auth.signOut({scope:'local'})}catch{}setSession(null)}
- async function showNotifications(){await act(async()=>{const {data,error}=await supabase.from('notifications').select('*').eq('recipient_user_id',session.user.id).order('created_at',{ascending:false}).limit(30);if(error)throw error;setNotifications(data)});}
+ const showNotifications=()=>setNotifications(v=>v?null:true);
  return <><header><img src="/logo.png" alt="FPT Telecom"/><strong>{portal?'Internet Support':'Retention Workspace'}</strong>{staff&&<nav className="top-nav" aria-label="Workspace">{(staff.role==='supervisor'?[['dashboard','Dashboard'],['assign','Assignment']]:[['queue','Care Queue'],['chat','Conversations']]).map(([id,title])=><button key={id} aria-current={view===id?'page':undefined} className={view===id?'on':''} onClick={()=>setView(id)}>{title}</button>)}</nav>}<div className="account">{session?<>{staff&&<button aria-label="Open notifications" onClick={showNotifications}>Notifications</button>}<ProfileMenu name={staff?.display_name||session.user.email} role={staff?(staff.role==='agent'?'Customer Care':label(staff.role)):'Customer portal'} onSignOut={signOut}/></>:<span>Customer care</span>}</div></header>
  <div className="announcements" aria-live="polite">{error&&<div role="alert" className="error">{error}</div>}{notice&&<div className="success">{notice}</div>}{busy&&<div role="status">Saving…</div>}</div>
  {!ready?<Empty>Loading session…</Empty>:!session?<Login act={act} busy={busy}/>:staff?<div className="layout topbar-layout"><main className={view==='chat'?'chat-main':''}>{view==='chat'?<ChatScreen staff={staff} selected={selected} setSelected={setSelected} busy={busy} act={act}/>:staff.role==='supervisor'?(view==='assign'?<AssignmentPage staff={staff} act={act} openCase={id=>{setSelected(id);setView('chat')}}/>:<Dashboard openCase={id=>{setSelected(id);setView('chat')}}/>):<Queue staff={staff} act={act} open={id=>{setSelected(id);setView('chat')}}/>}</main></div>:portal?<Portal act={act} busy={busy}/>:<Empty>Loading account access…</Empty>}
- {notifications&&<section className="notification-panel" aria-label="Notifications"><div className="row"><h2>Notifications</h2><button onClick={()=>setNotifications(null)}>Close</button></div>{notifications.length?notifications.map(n=><article key={n.id}><strong>{n.title}</strong><p>{date(n.created_at)}</p><div className="row"><button onClick={()=>{setSelected(n.case_id);setView('chat');setNotifications(null)}}>Open case</button>{!n.read_at&&<button disabled={busy} onClick={()=>act(async()=>{await rpc('retention_mark_notification_read',{p_notification_id:n.id});setNotifications(v=>v.map(x=>x.id===n.id?{...x,read_at:new Date().toISOString()}:x))})}>Mark read</button>}</div></article>):<Empty>No notifications.</Empty>}</section>}
+ {notifications&&staff&&<Notifications staff={staff} act={act} busy={busy} onClose={()=>setNotifications(null)} onOpenCase={id=>{setSelected(id);setView('chat')}} onOpenView={setView}/>}
  </>
 }
 function Login({act,busy}){
@@ -120,4 +121,5 @@ function Portal({act,busy}){
 function DashboardPreview(){return <><header><img src="/logo.png" alt="FPT Telecom"/><strong>Retention Workspace</strong><div className="account">Trần Thanh Hằng · Supervisor</div></header><div className="layout"><aside><button className="active">◫ Dashboard</button><a href="/">← Open signed-in workspace</a></aside><main><Dashboard preview/></main></div><footer>Customer Care Workspace</footer></>}
 const dashboardPreview=import.meta.env.DEV&&new URLSearchParams(location.search).get('preview')==='dashboard';
 const assignmentPreview=import.meta.env.DEV&&new URLSearchParams(location.search).get('preview')==='assignment';
-createRoot(document.getElementById('root')).render(assignmentPreview?<AssignmentPreview/>:dashboardPreview?<DashboardPreview/>:<App/>);
+const notificationsPreview=import.meta.env.DEV&&new URLSearchParams(location.search).get('preview')==='notifications';
+createRoot(document.getElementById('root')).render(notificationsPreview?<NotificationsPreview/>:assignmentPreview?<AssignmentPreview/>:dashboardPreview?<DashboardPreview/>:<App/>);

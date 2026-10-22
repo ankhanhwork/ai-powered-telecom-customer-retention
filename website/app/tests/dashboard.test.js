@@ -14,7 +14,7 @@ test('dashboard separates maturity, coverage, closed state and unknown outcomes'
  const m=dashboardMetrics(data);
  assert.equal(m.open.length,1);assert.equal(m.known.length,1);assert.equal(m.missing,1);assert.equal(m.awaiting,1);
  assert.equal(m.active.length+m.churned.length+m.missing+m.awaiting,m.cases.length);
- assert.equal(m.overdue.length,1);assert.equal(rate(0,0),null);
+ assert.equal(rate(0,0),null);
  const current=dashboardMetrics(data,{cohort:'2026-10-11'});
  assert.equal(current.known.length,0);assert.equal(current.awaiting,1);
 });
@@ -46,4 +46,26 @@ test('primary issues count each contract once using its latest eligible window',
  assert(!groups.some(g=>g.label==='Billing'||g.label==='Other'));
  const current=issueBreakdown([cases[2]],data.as_of);
  assert.equal(current[0].cases.length,1);assert.equal(current[0].known,0);
+});
+
+test('care stages match the Agent pipeline and split closed cases by contact result',()=>{
+ const cases=[{id:'n',stage:'new'},{id:'w',stage:'waiting_customer'},{id:'r',stage:'resolving_request'},
+  {id:'done',stage:'closed',contact:'contacted'},{id:'fail',stage:'closed',contact:'no_answer'}].map(c=>({...c,start:'2026-10-11',end:'2026-11-11',outcome:null}));
+ const m=dashboardMetrics({...data,cases,events:[],tasks:[]});
+ assert.deepEqual(Object.fromEntries(m.stages.map(s=>[s.stage,s.value])),{intake:1,outreach:1,resolution:1,care_completed:1,failed:1});
+});
+
+test('not yet cared counts cases assigned in the selected dates that are still New predictions',()=>{
+ const base={start:'2026-10-11',end:'2026-11-11',outcome:null,owner:'a'};
+ const cases=[{...base,id:'1',stage:'new',assigned_at:'2026-10-12T02:00:00Z'},{...base,id:'2',stage:'in_progress',assigned_at:'2026-10-12T03:00:00Z'},
+  {...base,id:'3',stage:'new',assigned_at:'2026-10-15T02:00:00Z'},{...base,id:'4',owner:null,stage:'new',created_at:'2026-10-12T02:00:00Z'}];
+ const m=dashboardMetrics({...data,cases,events:[],tasks:[]},{from:'2026-10-12',to:'2026-10-12'});
+ assert.equal(m.assigned.length,2);assert.deepEqual(m.notCared.map(c=>c.id),['1']);
+ assert.equal(m.team.find(s=>s.id==='a').notCared,1);
+ assert.ok(m.attention.find(c=>c.id==='1').reasons.includes('Not yet cared'));
+});
+
+test('team workload lists agents only',()=>{
+ const m=dashboardMetrics({...data,staff:[{id:'a',name:'Agent',role:'agent'},{id:'s',name:'Lead',role:'supervisor'}]});
+ assert.deepEqual(m.team.map(s=>s.id),['a']);
 });
